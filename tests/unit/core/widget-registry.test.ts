@@ -55,4 +55,50 @@ describe('WidgetRegistry', () => {
     await registry.unregister('git');
     expect(registry.has('git')).to.be.false;
   });
+
+  it('should throw when registering duplicate widget', async () => {
+    const registry = new WidgetRegistry();
+    const widget1 = new GitWidget({ git: {} as any });
+    const widget2 = new GitWidget({ git: {} as any });
+
+    await registry.register(widget1);
+
+    let error: Error | null = null;
+    try {
+      await registry.register(widget2);
+    } catch (e) {
+      error = e as Error;
+    }
+    expect(error).to.exist;
+    expect(error!.message).to.include('already registered');
+  });
+
+  it('should handle widget initialization error', async () => {
+    const registry = new WidgetRegistry();
+    const errorWidget = {
+      id: 'error',
+      metadata: { name: 'Error', description: 'Test', version: '1.0.0', author: 'Test' },
+      initialize: async () => { throw new Error('Init failed'); },
+      render: async () => 'output',
+      update: async () => {},
+      isEnabled: () => true
+    };
+
+    let error: Error | null = null;
+    try {
+      await registry.register(errorWidget as any, { config: {} });
+    } catch (e) {
+      error = e as Error;
+    }
+    expect(error).to.exist;
+    expect(error!.message).to.equal('Init failed');
+    expect(registry.has('error')).to.be.false;
+  });
+
+  it('should handle unregister of non-existent widget gracefully', async () => {
+    const registry = new WidgetRegistry();
+
+    await registry.unregister('nonexistent');
+    expect(registry.has('nonexistent')).to.be.false;
+  });
 });
