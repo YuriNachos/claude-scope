@@ -1,0 +1,28 @@
+{
+  "name": "claude-scope",
+  "version": "0.1.0",
+  "description": "Claude Code plugin for session status and analytics",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "claude-scope": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test tests/**/*.test.ts",
+    "test:unit": "node --test tests/unit/**/*.test.ts",
+    "test:integration": "node --test tests/integration/**/*.test.ts",
+    "dev": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "simple-git": "^3.27.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
