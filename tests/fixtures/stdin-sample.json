@@ -1,21 +1,8 @@
 {
-  "type": "statusData",
-  "data": {
-    "session": {
-      "id": "session_20250105_123045",
-      "startTime": "2025-01-05T12:30:45.000Z"
-    },
-    "repository": {
-      "branch": "main",
-      "root": "/Users/user/project"
-    },
-    "tools": {
-      "active": ["Read", "Edit"],
-      "completed": 15
-    },
-    "context": {
-      "tokensUsed": 45678,
-      "tokensLimit": 200000
-    }
+  "session_id": "session_20250105_123045",
+  "cwd": "/Users/user/project",
+  "model": {
+    "id": "claude-opus-4-5-20251101",
+    "display_name": "Claude Opus 4.5"
   }
 }
