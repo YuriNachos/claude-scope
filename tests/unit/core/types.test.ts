@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { IWidget, IWidgetMetadata, WidgetContext } from '../../../src/core/types.js';
 
 describe('IWidget', () => {
@@ -19,12 +19,12 @@ describe('IWidget', () => {
       isEnabled: () => true
     };
 
-    assert.strictEqual(widgetMock.id, 'test-widget');
-    assert.strictEqual(widgetMock.metadata.name, 'Test Widget');
-    assert.strictEqual(typeof widgetMock.initialize, 'function');
-    assert.strictEqual(typeof widgetMock.render, 'function');
-    assert.strictEqual(typeof widgetMock.update, 'function');
-    assert.strictEqual(typeof widgetMock.isEnabled, 'function');
+    expect(widgetMock.id).to.equal('test-widget');
+    expect(widgetMock.metadata.name).to.equal('Test Widget');
+    expect(typeof widgetMock.initialize).to.equal('function');
+    expect(typeof widgetMock.render).to.equal('function');
+    expect(typeof widgetMock.update).to.equal('function');
+    expect(typeof widgetMock.isEnabled).to.equal('function');
   });
 
   it('should allow optional cleanup method', () => {
@@ -43,6 +43,6 @@ describe('IWidget', () => {
       cleanup: async () => {}
     };
 
-    assert.strictEqual(typeof widgetWithCleanup.cleanup, 'function');
+    expect(widgetWithCleanup.cleanup).to.exist;
   });
 });

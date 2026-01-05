@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert/strict';
+import { expect } from 'chai';
 import { Renderer } from '../../../src/core/renderer.js';
 
 describe('Renderer', () => {
@@ -16,7 +16,7 @@ describe('Renderer', () => {
 
     const result = await renderer.render([mockWidget as any], { width: 80, timestamp: Date.now() });
 
-    assert.ok(result.includes('test output'));
+    expect(result).to.include('test output');
   });
 
   it('should render multiple widgets on one line', async () => {
@@ -40,8 +40,8 @@ describe('Renderer', () => {
 
     const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
 
-    assert.ok(result.includes('output1'));
-    assert.ok(result.includes('output2'));
+    expect(result).to.include('output1');
+    expect(result).to.include('output2');
   });
 
   it('should skip disabled widgets', async () => {
@@ -57,7 +57,7 @@ describe('Renderer', () => {
 
     const result = await renderer.render([disabledWidget as any], { width: 80, timestamp: Date.now() });
 
-    assert.ok(!result.includes('should not see'));
+    expect(result).to.not.include('should not see');
   });
 
   it('should skip widgets that return null', async () => {
@@ -73,6 +73,6 @@ describe('Renderer', () => {
 
     const result = await renderer.render([nullWidget as any], { width: 80, timestamp: Date.now() });
 
-    assert.equal(result, '');
+    expect(result).to.equal('');
   });
 });

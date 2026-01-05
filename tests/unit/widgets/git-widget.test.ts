@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { GitWidget } from '../../../src/widgets/git-widget.js';
 import type { IGit } from '../../providers/git-provider.js';
 
@@ -16,8 +16,8 @@ describe('GitWidget', () => {
 
     const result = await widget.render({ width: 80, timestamp: Date.now() });
 
-    assert.ok(result);
-    assert.ok(result!.includes('feature-branch'));
+    expect(result).to.exist;
+    expect(result).to.include('feature-branch');
   });
 
   it('should return null when not in repository', async () => {
@@ -32,14 +32,14 @@ describe('GitWidget', () => {
 
     const result = await widget.render({ width: 80, timestamp: Date.now() });
 
-    assert.strictEqual(result, null);
+    expect(result).to.be.null;
   });
 
   it('should have correct metadata', () => {
     const widget = new GitWidget({ git: {} as any });
 
-    assert.strictEqual(widget.id, 'git');
-    assert.strictEqual(widget.metadata.name, 'Git Widget');
-    assert.strictEqual(widget.isEnabled(), true);
+    expect(widget.id).to.equal('git');
+    expect(widget.metadata.name).to.equal('Git Widget');
+    expect(widget.isEnabled()).to.be.true;
   });
 });

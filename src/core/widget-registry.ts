@@ -35,11 +35,13 @@ export class WidgetRegistry {
       return;
     }
 
-    if (widget.cleanup) {
-      await widget.cleanup();
+    try {
+      if (widget.cleanup) {
+        await widget.cleanup();
+      }
+    } finally {
+      this.widgets.delete(id);
     }
-
-    this.widgets.delete(id);
   }
 
   /**

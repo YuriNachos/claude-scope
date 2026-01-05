@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { GitProvider } from '../../../src/providers/git-provider.js';
 
 describe('GitProvider', () => {
@@ -14,7 +14,7 @@ describe('GitProvider', () => {
 
     const result = await provider.getBranch();
 
-    assert.strictEqual(result, 'main');
+    expect(result).to.equal('main');
   });
 
   it('should return null when not in git repository', async () => {
@@ -28,7 +28,7 @@ describe('GitProvider', () => {
 
     const result = await provider.getBranch();
 
-    assert.strictEqual(result, null);
+    expect(result).to.be.null;
   });
 
   it('should return isRepo correctly', async () => {
@@ -39,6 +39,6 @@ describe('GitProvider', () => {
     const provider = new GitProvider({ git: mockGit as any });
     await provider.init('/test/project');
 
-    assert.strictEqual(provider.isRepo(), true);
+    expect(provider.isRepo()).to.be.true;
   });
 });

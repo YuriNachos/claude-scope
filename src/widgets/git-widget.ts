@@ -37,7 +37,7 @@ export class GitWidget implements IWidget {
 
   async initialize(context: WidgetContext): Promise<void> {
     // Initialize with config if needed
-    this.enabled = context.config?.enabled !== false;
+    this.enabled = (context.config.enabled as boolean | undefined) !== false;
   }
 
   async render(context: RenderContext): Promise<string | null> {

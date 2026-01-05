@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { StdinData, ModelInfo, GitInfo, RenderContext } from '../../src/types.js';
 
 describe('StdinData', () => {
@@ -13,9 +13,9 @@ describe('StdinData', () => {
       }
     };
 
-    assert.strictEqual(mockData.session_id, 'test-session-123');
-    assert.strictEqual(mockData.cwd, '/Users/test/project');
-    assert.strictEqual(mockData.model.id, 'claude-opus-4-5');
+    expect(mockData.session_id).to.equal('test-session-123');
+    expect(mockData.cwd).to.equal('/Users/test/project');
+    expect(mockData.model.id).to.equal('claude-opus-4-5');
   });
 
   it('should accept ModelInfo structure', () => {
@@ -24,8 +24,8 @@ describe('StdinData', () => {
       display_name: 'Opus 4.5'
     };
 
-    assert.strictEqual(model.id, 'claude-opus-4-5');
-    assert.strictEqual(model.display_name, 'Opus 4.5');
+    expect(model.id).to.equal('claude-opus-4-5');
+    expect(model.display_name).to.equal('Opus 4.5');
   });
 
   it('should accept GitInfo structure', () => {
@@ -34,8 +34,8 @@ describe('StdinData', () => {
       isRepo: true
     };
 
-    assert.strictEqual(git.branch, 'main');
-    assert.strictEqual(git.isRepo, true);
+    expect(git.branch).to.equal('main');
+    expect(git.isRepo).to.be.true;
   });
 
   it('should accept RenderContext structure', () => {
@@ -44,7 +44,7 @@ describe('StdinData', () => {
       timestamp: Date.now()
     };
 
-    assert.strictEqual(context.width, 80);
-    assert.ok(typeof context.timestamp === 'number');
+    expect(context.width).to.equal(80);
+    expect(context.timestamp).to.be.a('number');
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it } from 'node:test';
-import assert from 'node:assert';
+import { expect } from 'chai';
 import { WidgetRegistry } from '../../../src/core/widget-registry.js';
 import { GitWidget } from '../../../src/widgets/git-widget.js';
 
@@ -10,7 +10,7 @@ describe('WidgetRegistry', () => {
 
     await registry.register(mockWidget);
 
-    assert.strictEqual(registry.has('git'), true);
+    expect(registry.has('git')).to.be.true;
   });
 
   it('should retrieve a registered widget', async () => {
@@ -20,7 +20,7 @@ describe('WidgetRegistry', () => {
     await registry.register(mockWidget);
     const retrieved = registry.get('git');
 
-    assert.strictEqual(retrieved, mockWidget);
+    expect(retrieved).to.equal(mockWidget);
   });
 
   it('should return all enabled widgets', async () => {
@@ -41,8 +41,8 @@ describe('WidgetRegistry', () => {
 
     const enabled = registry.getEnabledWidgets();
 
-    assert.strictEqual(enabled.length, 1);
-    assert.strictEqual(enabled[0].id, 'git');
+    expect(enabled).to.have.lengthOf(1);
+    expect(enabled[0].id).to.equal('git');
   });
 
   it('should unregister a widget', async () => {
@@ -50,9 +50,9 @@ describe('WidgetRegistry', () => {
     const widget = new GitWidget({ git: {} as any });
 
     await registry.register(widget);
-    assert.strictEqual(registry.has('git'), true);
+    expect(registry.has('git')).to.be.true;
 
     await registry.unregister('git');
-    assert.strictEqual(registry.has('git'), false);
+    expect(registry.has('git')).to.be.false;
   });
 });
