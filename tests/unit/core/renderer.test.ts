@@ -3,7 +3,144 @@ import { expect } from 'chai';
 import { Renderer } from '../../../src/core/renderer.js';
 
 describe('Renderer', () => {
-  it('should render single widget output', async () => {
+  describe('setSeparator', () => {
+    it('should have default separator of single space', async () => {
+      const renderer = new Renderer();
+      const widget1 = {
+        id: 'test1',
+        metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'A',
+        update: async () => {},
+        isEnabled: () => true
+      };
+      const widget2 = {
+        id: 'test2',
+        metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'B',
+        update: async () => {},
+        isEnabled: () => true
+      };
+
+      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+
+      expect(result).to.equal('A B');
+    });
+
+    it('should change separator when setSeparator is called', async () => {
+      const renderer = new Renderer();
+      renderer.setSeparator(' │ ');
+
+      const widget1 = {
+        id: 'test1',
+        metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'A',
+        update: async () => {},
+        isEnabled: () => true
+      };
+      const widget2 = {
+        id: 'test2',
+        metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'B',
+        update: async () => {},
+        isEnabled: () => true
+      };
+
+      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+
+      expect(result).to.equal('A │ B');
+    });
+
+    it('should allow changing separator multiple times', async () => {
+      const renderer = new Renderer();
+      const widget1 = {
+        id: 'test1',
+        metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'X',
+        update: async () => {},
+        isEnabled: () => true
+      };
+      const widget2 = {
+        id: 'test2',
+        metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'Y',
+        update: async () => {},
+        isEnabled: () => true
+      };
+
+      renderer.setSeparator(' | ');
+      let result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      expect(result).to.equal('X | Y');
+
+      renderer.setSeparator(' /// ');
+      result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      expect(result).to.equal('X /// Y');
+
+      renderer.setSeparator('');
+      result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      expect(result).to.equal('XY');
+    });
+
+    it('should handle multi-character separators', async () => {
+      const renderer = new Renderer();
+      renderer.setSeparator(' *** ');
+
+      const widget1 = {
+        id: 'test1',
+        metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'First',
+        update: async () => {},
+        isEnabled: () => true
+      };
+      const widget2 = {
+        id: 'test2',
+        metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'Second',
+        update: async () => {},
+        isEnabled: () => true
+      };
+
+      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+
+      expect(result).to.equal('First *** Second');
+    });
+
+    it('should handle special characters in separator', async () => {
+      const renderer = new Renderer();
+      renderer.setSeparator('\u2503\u2503'); // Double box drawing character
+
+      const widget1 = {
+        id: 'test1',
+        metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'L',
+        update: async () => {},
+        isEnabled: () => true
+      };
+      const widget2 = {
+        id: 'test2',
+        metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
+        initialize: async () => {},
+        render: async () => 'R',
+        update: async () => {},
+        isEnabled: () => true
+      };
+
+      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+
+      expect(result).to.include('\u2503\u2503');
+    });
+  });
+
+  describe('render', () => {
+    it('should render single widget output', async () => {
     const renderer = new Renderer();
     const mockWidget = {
       id: 'test',
@@ -75,54 +212,5 @@ describe('Renderer', () => {
 
     expect(result).to.equal('');
   });
-
-  it('should use custom separator', async () => {
-    const renderer = new Renderer();
-    const widget1 = {
-      id: 'test1',
-      metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
-      initialize: async () => {},
-      render: async () => 'output1',
-      update: async () => {},
-      isEnabled: () => true
-    };
-    const widget2 = {
-      id: 'test2',
-      metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
-      initialize: async () => {},
-      render: async () => 'output2',
-      update: async () => {},
-      isEnabled: () => true
-    };
-
-    renderer.setSeparator(' | ');
-    const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
-
-    expect(result).to.equal('output1 | output2');
-  });
-
-  it('should use empty separator', async () => {
-    const renderer = new Renderer();
-    const widget1 = {
-      id: 'test1',
-      metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
-      initialize: async () => {},
-      render: async () => 'output1',
-      update: async () => {},
-      isEnabled: () => true
-    };
-    const widget2 = {
-      id: 'test2',
-      metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
-      initialize: async () => {},
-      render: async () => 'output2',
-      update: async () => {},
-      isEnabled: () => true
-    };
-
-    renderer.setSeparator('');
-    const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
-
-    expect(result).to.equal('output1output2');
   });
 });
