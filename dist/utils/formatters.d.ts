@@ -45,4 +45,12 @@ export declare function progressBar(percent: number, width?: number): string;
  * @returns ANSI color code
  */
 export declare function getContextColor(percent: number): string;
+/**
+ * Colorize text with ANSI color code
+ *
+ * @param text - Text to colorize
+ * @param color - ANSI color code
+ * @returns Colorized text with reset code
+ */
+export declare function colorize(text: string, color: string): string;
 //# sourceMappingURL=formatters.d.ts.map

@@ -100,4 +100,14 @@ export function getContextColor(percent) {
         return '\x1b[31m'; // Red
     }
 }
+/**
+ * Colorize text with ANSI color code
+ *
+ * @param text - Text to colorize
+ * @param color - ANSI color code
+ * @returns Colorized text with reset code
+ */
+export function colorize(text, color) {
+    return `${color}${text}\x1b[0m`;
+}
 //# sourceMappingURL=formatters.js.map
