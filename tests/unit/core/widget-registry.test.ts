@@ -13,6 +13,16 @@ describe('WidgetRegistry', () => {
     expect(registry.has('git')).to.be.true;
   });
 
+  it('should register a widget with context', async () => {
+    const registry = new WidgetRegistry();
+    const mockWidget = new GitWidget({ git: {} as any });
+
+    await registry.register(mockWidget, { config: { enabled: true } });
+
+    expect(registry.has('git')).to.be.true;
+    expect(mockWidget.isEnabled()).to.be.true;
+  });
+
   it('should retrieve a registered widget', async () => {
     const registry = new WidgetRegistry();
     const mockWidget = new GitWidget({ git: {} as any });
