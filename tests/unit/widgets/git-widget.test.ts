@@ -11,7 +11,7 @@ describe('GitWidget', () => {
     };
 
     const widget = new GitWidget({ git: mockGit });
-    await widget.initialize({});
+    await widget.initialize({ config: {} });
     await widget.update({ cwd: '/test/project', model: { id: 'test', display_name: 'Test' }, session_id: '123' });
 
     const result = await widget.render({ width: 80, timestamp: Date.now() });
@@ -27,7 +27,7 @@ describe('GitWidget', () => {
     };
 
     const widget = new GitWidget({ git: mockGit });
-    await widget.initialize({});
+    await widget.initialize({ config: {} });
     await widget.update({ cwd: '/test/project', model: { id: 'test', display_name: 'Test' }, session_id: '123' });
 
     const result = await widget.render({ width: 80, timestamp: Date.now() });
