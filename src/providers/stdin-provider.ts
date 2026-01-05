@@ -46,13 +46,14 @@ export class StdinProvider {
     let data: unknown;
     try {
       data = JSON.parse(input);
-    } catch (error) {
+    } catch {
       throw new StdinParseError('Failed to parse stdin data: Invalid JSON');
     }
 
     // Validate data structure
     if (!this.validate(data)) {
-      throw new StdinValidationError('stdin data validation failed: missing required fields');
+      const error = this.getValidationError(data);
+      throw new StdinValidationError(`stdin data validation failed: ${error}`);
     }
 
     return data as StdinData;
@@ -96,5 +97,42 @@ export class StdinProvider {
     }
 
     return true;
+  }
+
+  /**
+   * Validate stdin data and return detailed error message
+   * @param data Data to validate
+   * @returns Error message if invalid, null if valid
+   */
+  private getValidationError(data: unknown): string | null {
+    if (typeof data !== 'object' || data === null) {
+      return 'stdin data must be an object';
+    }
+
+    const obj = data as Record<string, unknown>;
+
+    if (typeof obj.session_id !== 'string') {
+      return 'missing session_id';
+    }
+
+    if (typeof obj.cwd !== 'string') {
+      return 'missing cwd';
+    }
+
+    if (typeof obj.model !== 'object' || obj.model === null) {
+      return 'missing model';
+    }
+
+    const model = obj.model as Record<string, unknown>;
+
+    if (typeof model.id !== 'string') {
+      return 'missing model.id';
+    }
+
+    if (typeof model.display_name !== 'string') {
+      return 'missing model.display_name';
+    }
+
+    return null;
   }
 }

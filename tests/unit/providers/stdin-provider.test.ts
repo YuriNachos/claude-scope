@@ -1,6 +1,6 @@
 import { describe, it, beforeEach } from 'node:test';
 import { expect } from 'chai';
-import { StdinProvider } from '../../../src/providers/stdin-provider.js';
+import { StdinProvider, StdinParseError, StdinValidationError } from '../../../src/providers/stdin-provider.js';
 import type { StdinData } from '../../../src/types.js';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -43,8 +43,8 @@ describe('StdinProvider', () => {
         await provider.parse('{ invalid json }');
         throw new Error('Expected parse to throw StdinParseError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('Failed to parse stdin data');
+        expect(error).to.be.instanceOf(StdinParseError);
+        expect((error as StdinParseError).message).to.include('Failed to parse stdin data');
       }
     });
 
@@ -63,8 +63,8 @@ describe('StdinProvider', () => {
         await provider.parse(JSON.stringify(invalidData));
         throw new Error('Expected parse to throw StdinValidationError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('validation');
+        expect(error).to.be.instanceOf(StdinValidationError);
+        expect((error as StdinValidationError).message).to.include('validation');
       }
     });
 
@@ -83,8 +83,8 @@ describe('StdinProvider', () => {
         await provider.parse(JSON.stringify(invalidData));
         throw new Error('Expected parse to throw StdinValidationError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('validation');
+        expect(error).to.be.instanceOf(StdinValidationError);
+        expect((error as StdinValidationError).message).to.include('validation');
       }
     });
 
@@ -100,8 +100,8 @@ describe('StdinProvider', () => {
         await provider.parse(JSON.stringify(invalidData));
         throw new Error('Expected parse to throw StdinValidationError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('validation');
+        expect(error).to.be.instanceOf(StdinValidationError);
+        expect((error as StdinValidationError).message).to.include('validation');
       }
     });
 
@@ -120,8 +120,8 @@ describe('StdinProvider', () => {
         await provider.parse(JSON.stringify(invalidData));
         throw new Error('Expected parse to throw StdinValidationError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('validation');
+        expect(error).to.be.instanceOf(StdinValidationError);
+        expect((error as StdinValidationError).message).to.include('validation');
       }
     });
 
@@ -140,8 +140,8 @@ describe('StdinProvider', () => {
         await provider.parse(JSON.stringify(invalidData));
         throw new Error('Expected parse to throw StdinValidationError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('validation');
+        expect(error).to.be.instanceOf(StdinValidationError);
+        expect((error as StdinValidationError).message).to.include('validation');
       }
     });
 
@@ -152,8 +152,8 @@ describe('StdinProvider', () => {
         await provider.parse('');
         throw new Error('Expected parse to throw StdinParseError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('stdin data is empty');
+        expect(error).to.be.instanceOf(StdinParseError);
+        expect((error as StdinParseError).message).to.include('stdin data is empty');
       }
     });
 
@@ -164,8 +164,8 @@ describe('StdinProvider', () => {
         await provider.parse('   ');
         throw new Error('Expected parse to throw StdinParseError');
       } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include('stdin data is empty');
+        expect(error).to.be.instanceOf(StdinParseError);
+        expect((error as StdinParseError).message).to.include('stdin data is empty');
       }
     });
 
@@ -214,7 +214,7 @@ describe('StdinProvider', () => {
           id: 'claude-opus-4-5-20251101',
           display_name: 'Claude Opus 4.5'
         }
-      } as any;
+      } as Partial<StdinData> as StdinData;
 
       expect(provider.validate(invalidData)).to.be.false;
     });
@@ -227,7 +227,7 @@ describe('StdinProvider', () => {
           id: 'claude-opus-4-5-20251101',
           display_name: 'Claude Opus 4.5'
         }
-      } as any;
+      } as Partial<StdinData> as StdinData;
 
       expect(provider.validate(invalidData)).to.be.false;
     });
@@ -237,7 +237,7 @@ describe('StdinProvider', () => {
       const invalidData = {
         session_id: 'session_20250105_123045',
         cwd: '/Users/user/project'
-      } as any;
+      } as Partial<StdinData> as StdinData;
 
       expect(provider.validate(invalidData)).to.be.false;
     });
@@ -250,7 +250,7 @@ describe('StdinProvider', () => {
         model: {
           display_name: 'Claude Opus 4.5'
         }
-      } as any;
+      } as Partial<StdinData> as StdinData;
 
       expect(provider.validate(invalidData)).to.be.false;
     });
@@ -263,7 +263,7 @@ describe('StdinProvider', () => {
         model: {
           id: 'claude-opus-4-5-20251101'
         }
-      } as any;
+      } as Partial<StdinData> as StdinData;
 
       expect(provider.validate(invalidData)).to.be.false;
     });
