@@ -42,4 +42,47 @@ describe('GitWidget', () => {
     expect(widget.metadata.name).to.equal('Git Widget');
     expect(widget.isEnabled()).to.be.true;
   });
+
+  it('should return null when widget is disabled', async () => {
+    const mockGit: IGit = {
+      checkIsRepo: async () => true,
+      branch: async () => ({ current: 'main', all: ['main'] })
+    };
+
+    const widget = new GitWidget({ git: mockGit });
+    await widget.initialize({ config: { enabled: false } });
+    await widget.update({ cwd: '/test/project', model: { id: 'test', display_name: 'Test' }, session_id: '123' });
+
+    expect(widget.isEnabled()).to.be.false;
+
+    const result = await widget.render({ width: 80, timestamp: Date.now() });
+    expect(result).to.be.null;
+  });
+
+  it('should return null when branch is null', async () => {
+    const mockGit: IGit = {
+      checkIsRepo: async () => true,
+      branch: async () => ({ current: null, all: ['main'] })
+    };
+
+    const widget = new GitWidget({ git: mockGit });
+    await widget.initialize({ config: {} });
+    await widget.update({ cwd: '/test/project', model: { id: 'test', display_name: 'Test' }, session_id: '123' });
+
+    const result = await widget.render({ width: 80, timestamp: Date.now() });
+
+    expect(result).to.be.null;
+  });
+
+  it('should handle enabled config explicitly', async () => {
+    const mockGit: IGit = {
+      checkIsRepo: async () => true,
+      branch: async () => ({ current: 'main', all: ['main'] })
+    };
+
+    const widget = new GitWidget({ git: mockGit });
+    await widget.initialize({ config: { enabled: true } });
+
+    expect(widget.isEnabled()).to.be.true;
+  });
 });
