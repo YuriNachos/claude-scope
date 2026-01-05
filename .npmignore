@@ -1,0 +1,36 @@
+# Source files (we ship compiled dist/)
+src/
+tsconfig.json
+
+# Tests
+tests/
+*.test.ts
+test.setup.ts
+
+# CI/CD
+.github/
+ workflows/
+
+# Documentation (internal)
+docs/
+CLAUDE.md
+
+# Development files
+.eslintrc*
+.prettierrc*
+.vscode/
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Dependencies (installed via npm install)
+node_modules/
+
+# Git
+.git/
+.gitignore
+
+# Misc
+*.log
+.DS_Store
