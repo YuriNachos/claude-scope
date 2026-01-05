@@ -1,0 +1,17 @@
+{
+  "branch": "main",
+  "commit": {
+    "hash": "a1b2c3d4e5f6",
+    "message": "feat: add new feature",
+    "author": "User <user@example.com>",
+    "date": "2025-01-05T12:00:00.000Z"
+  },
+  "status": {
+    "modified": ["src/index.ts"],
+    "staged": [],
+    "untracked": []
+  },
+  "remotes": {
+    "origin": "https://github.com/YuriNachos/claude-scope.git"
+  }
+}
