@@ -5,6 +5,12 @@
   "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "bin": {
     "claude-scope": "./dist/index.js"
   },
