@@ -2,30 +2,28 @@ import { describe, it, beforeEach } from 'node:test';
 import { expect } from 'chai';
 import { GitProvider } from '../../../src/providers/git-provider.js';
 import type { IGit } from '../../../src/providers/git-provider.js';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 describe('GitProvider', () => {
   describe('init', () => {
     it('should initialize with repository path', async () => {
-      const mockGit = {
+      const mockGit: IGit = {
         checkIsRepo: async () => true,
         branch: async () => ({ current: 'main', all: ['main'] })
       };
 
-      const provider = new GitProvider({ git: mockGit as any });
+      const provider = new GitProvider({ git: mockGit });
       await provider.init('/test/project');
 
       expect(provider.isRepo()).to.be.true;
     });
 
     it('should set isRepo to false for non-git directory', async () => {
-      const mockGit = {
+      const mockGit: IGit = {
         checkIsRepo: async () => false,
         branch: async () => ({ current: null, all: [] })
       };
 
-      const provider = new GitProvider({ git: mockGit as any });
+      const provider = new GitProvider({ git: mockGit });
       await provider.init('/test/non-repo');
 
       expect(provider.isRepo()).to.be.false;
@@ -145,23 +143,6 @@ describe('GitProvider', () => {
         current: 'main',
         all: ['main', 'develop', 'feature-branch']
       };
-
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => fixtureData
-      };
-
-      const provider = new GitProvider({ git: mockGit });
-      await provider.init('/test/project');
-
-      const result = await provider.getBranch();
-
-      expect(result).to.equal('main');
-    });
-
-    it('should return branch data from fixture file', async () => {
-      const fixturePath = join(process.cwd(), 'tests/fixtures/git-data.json');
-      const fixtureData = JSON.parse(readFileSync(fixturePath, 'utf-8'));
 
       const mockGit: IGit = {
         checkIsRepo: async () => true,
