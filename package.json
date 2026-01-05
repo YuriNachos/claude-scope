@@ -12,6 +12,7 @@
     "test": "tsx --test tests/**/*.test.ts",
     "test:unit": "tsx --test tests/unit/**/*.test.ts",
     "test:integration": "tsx --test tests/integration/**/*.test.ts",
+    "test:coverage": "c8 --reporter=text --reporter=html --exclude='tests/**' --exclude='**/*.test.ts' tsx --test tests/**/*.test.ts",
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "c8": "^10.1.3",
     "chai": "^6.2.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
