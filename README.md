@@ -58,3 +58,26 @@ Or for global install:
 Once configured, claude-scope displays the current git branch in your statusline.
 
 **Note:** This is an early release with basic functionality. Additional features (repository status, session analytics, etc.) are planned for future releases.
+
+## Releasing
+
+To create a new release:
+
+1. Update version in `package.json`
+2. Commit changes
+3. Create and push tag:
+
+```bash
+git tag v0.1.0
+git push origin main
+git push origin v0.1.0
+```
+
+The GitHub Actions workflow will:
+- Run all tests
+- Build the project
+- Generate coverage report
+- Commit `dist/` to repository
+- Create GitHub Release with auto-generated notes
+
+**Note:** If tests fail, the release will not be created.
