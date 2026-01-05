@@ -210,6 +210,51 @@ function createStdinData(overrides?: Partial<StdinData>): StdinData {
 - **Test Quality**: Use helper functions to reduce duplication, flexible assertions for maintainability
 - **Error Handling**: Widgets should handle errors gracefully and return `null` on failure
 
+## GitHub CLI
+
+This project uses **GitHub CLI (gh)** for Git operations instead of direct git commands.
+
+### Why GitHub CLI?
+
+- Better integration with GitHub (releases, PRs, actions)
+- Consistent interface for GitHub-specific operations
+- Pre-installed in the development environment
+
+### Installation
+
+```bash
+# macOS
+brew install gh
+
+# Authenticate
+gh auth login
+```
+
+### Common Operations
+
+| Operation | GitHub CLI | Direct Git |
+|-----------|-----------|------------|
+| View status | `gh repo view` | `git status` |
+| Create release | `gh release create v1.0.0` | Manual web UI |
+| List releases | `gh release list` | N/A |
+| View workflow runs | `gh run list` | N/A |
+| Monitor workflow | `gh run watch` | N/A |
+| Clone with auth | `gh repo clone owner/repo` | `git clone https://...` |
+
+### When to Use What
+
+**Use GitHub CLI (gh)** for:
+- Creating releases and tags
+- Checking GitHub Actions status
+- Creating/viewing pull requests
+- Cloning repositories (authenticated)
+
+**Use direct git** for:
+- Local commits (`git commit`)
+- Branch operations (`git checkout`, `git branch`)
+- Local staging (`git add`, `git status`)
+- Push/pull when not GitHub-specific
+
 ## Git Conventions
 
 ### Commit Messages
