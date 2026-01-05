@@ -3,7 +3,8 @@
  * Combines widget outputs into statusline
  */
 
-import type { IWidget, RenderContext } from './types.js';
+import type { IWidget } from './types.js';
+import type { RenderContext } from '../types.js';
 
 /**
  * Renderer for combining widget outputs

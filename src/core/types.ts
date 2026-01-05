@@ -62,3 +62,7 @@ export interface IWidget {
    */
   cleanup?(): Promise<void>;
 }
+
+// Re-export shared types for widget convenience
+// Widgets can import everything from core/types.js as their primary entry point
+export type { StdinData, RenderContext };
