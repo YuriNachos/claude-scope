@@ -4,16 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Claude Code CLI tool that displays git branch information in the statusline. Users working in Claude Code will see the current git branch as part of their terminal status.
+Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: Minimal working version with git widget only.
+**Current version**: v0.1.0 - Minimal working version with git widget only.
+
+**Planned features**: Context usage, active tools, running agents, todo progress, token/cost monitoring, session analytics.
 
 ## Architecture
 
-### Widget Registry Pattern
+### Widget Registry Pattern (Senior-Level Design)
 
 This project uses a **modular widget architecture** with a central registry, following Dependency Inversion Principle and modern TypeScript plugin best practices.
 
+**Current Implementation** (v0.1.0):
 ```
 src/
 ├── core/
@@ -24,30 +27,45 @@ src/
 │   ├── stdin-provider.ts     # Stdin data parser
 │   └── git-provider.ts       # Git operations wrapper
 ├── widgets/
-│   └── git-widget.ts         # Git branch widget
+│   └── git-widget.ts         # Git branch widget ✓
 ├── utils/
 │   └── colors.ts             # ANSI color utilities
 ├── index.ts                  # CLI entry point
 └── types.ts                  # Shared types
+```
 
-tests/
-├── unit/
-│   ├── core/
-│   │   ├── widget-registry.test.ts
-│   │   └── renderer.test.ts
-│   ├── providers/
-│   │   ├── stdin-provider.test.ts
-│   │   └── git-provider.test.ts
-│   ├── widgets/
-│   │   └── git-widget.test.ts
-│   └── utils/
-│       └── colors.test.ts
-├── integration/
-│   ├── cli-flow.integration.test.ts
-│   └── entry-point.integration.test.ts
-└── fixtures/
-    ├── stdin-sample.json
-    └── git-data.json
+**Planned Architecture** (future versions):
+```
+src/
+├── core/
+│   ├── types.ts
+│   ├── widget-registry.ts
+│   ├── config-loader.ts      # TODO: JSON config parser & validator
+│   └── renderer.ts
+├── providers/
+│   ├── stdin-provider.ts
+│   ├── transcript-provider.ts # TODO: Transcript parser
+│   └── git-provider.ts
+├── storage/                  # TODO: SQLite-based persistence
+│   ├── session-store.ts      # PLANNED
+│   └── analytics-store.ts    # PLANNED
+├── widgets/
+│   ├── git-widget.ts         # ✓ Implemented
+│   ├── session-widget.ts     # PLANNED
+│   ├── tools-widget.ts       # PLANNED
+│   ├── agents-widget.ts      # PLANNED
+│   ├── todos-widget.ts       # PLANNED
+│   ├── context-widget.ts     # PLANNED
+│   ├── cost-widget.ts        # PLANNED
+│   └── analytics-widget.ts   # PLANNED
+├── utils/
+│   ├── colors.ts
+│   └── formatters.ts         # PLANNED
+├── config/                   # TODO: Configuration system
+│   ├── default.config.json
+│   └── presets/              # PLANNED: compact, detailed, minimal
+├── index.ts
+└── types.ts
 ```
 
 ### Widget Interface
@@ -82,35 +100,77 @@ interface StdinData {
 }
 ```
 
-### Testing
+### Configuration (PLANNED)
+
+Widget behavior will be configured via JSON (`~/.config/claude-scope/config.json`):
+
+```json
+{
+  "updateIntervalMs": 300,
+  "persistence": {
+    "enabled": true,
+    "path": "~/.config/claude-scope/sessions.db"
+  },
+  "widgets": ["session", "context", "tools", "agents", "todos", "cost", "analytics"],
+  "widgetConfig": {
+    "cost": { "showEstimated": true, "currency": "USD" },
+    "analytics": { "historyDays": 7 }
+  }
+}
+```
+
+### Presets (PLANNED)
+
+Predefined configurations will be available in `config/presets/`:
+- `compact.json` - Minimal display (session, context, todos)
+- `detailed.json` - Full display with all widgets
+- `minimal.json` - Essential info only
+
+### Storage (PLANNED)
+
+SQLite-based storage for session analytics:
+- Session history (model, duration, tokens)
+- Cost tracking per session
+- Aggregate statistics
+
+## Testing
 
 This project follows a **test-driven approach** with comprehensive coverage.
 
-#### Test Structure
+### Test Structure
 
-- **Unit tests** (`tests/unit/`) - Test individual modules in isolation
-  - Mirror `src/` directory structure
-  - Mock all external dependencies via DI
-  - Use `node:test` framework with `chai/expect` assertions
+```
+tests/
+├── unit/
+│   ├── core/
+│   │   ├── widget-registry.test.ts
+│   │   └── renderer.test.ts
+│   ├── providers/
+│   │   ├── stdin-provider.test.ts
+│   │   └── git-provider.test.ts
+│   ├── widgets/
+│   │   └── git-widget.test.ts
+│   └── utils/
+│       └── colors.test.ts
+├── integration/
+│   ├── cli-flow.integration.test.ts
+│   └── entry-point.integration.test.ts
+└── fixtures/
+    ├── stdin-sample.json
+    └── git-data.json
+```
 
-- **Integration tests** (`tests/integration/`) - Test complete CLI flow
-  - End-to-end scenarios from stdin to output
-
-- **Fixtures** (`tests/fixtures/`) - Reusable test data
-  - `stdin-sample.json` - Sample stdin payload
-  - `git-data.json` - Sample git branch data
-
-#### Test Guidelines
+### Test Guidelines
 
 | Practice | Description |
 |----------|-------------|
 | **Test file naming** | `*.test.ts` suffix |
 | **Coverage target** | >80% for core modules, >60% for widgets |
-| **Mock external deps** | Use DI pattern with helper functions (`createMockGit`, `createStdinData`) |
+| **Mock external deps** | Use DI pattern with helper functions |
 | **Test isolation** | Each test should be independent, use `beforeEach`/`afterEach` |
-| **Assertions** | Use flexible matchers (`expect().to.match()`) over hardcoded values |
+| **Assertions** | Use flexible matchers over hardcoded values |
 
-#### Helper Functions
+### Helper Functions
 
 Tests use helper functions to reduce duplication:
 
@@ -141,6 +201,7 @@ function createStdinData(overrides?: Partial<StdinData>): StdinData {
 2. **Single Responsibility** - Each module has one clear purpose
 3. **Testability** - DI allows mocking all dependencies
 4. **Extensibility** - Add new widgets without modifying core code
+5. **Configuration-Driven** - Widget order and behavior controlled by JSON config (PLANNED)
 
 ## Development Rules
 
