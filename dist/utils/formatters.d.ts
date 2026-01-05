@@ -30,7 +30,7 @@ export declare function formatCostUSD(usd: number): string;
  * Create a visual progress bar
  *
  * @param percent - Percentage (0-100)
- * @param width - Bar width in characters (default: 20)
+ * @param width - Bar width in characters (default: DEFAULT_PROGRESS_BAR_WIDTH)
  * @returns Progress bar string like "████████░░░░░░░░░░░"
  */
 export declare function progressBar(percent: number, width?: number): string;

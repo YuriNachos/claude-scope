@@ -6,6 +6,7 @@
 import { StdinDataWidget } from '../core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
 import { progressBar, getContextColor, colorize } from '../utils/formatters.js';
+import { DEFAULT_PROGRESS_BAR_WIDTH } from '../constants.js';
 export class ContextWidget extends StdinDataWidget {
     id = 'context';
     metadata = createWidgetMetadata('Context', 'Displays context window usage with progress bar');
@@ -18,7 +19,7 @@ export class ContextWidget extends StdinDataWidget {
             current_usage.cache_creation_input_tokens +
             current_usage.cache_read_input_tokens;
         const percent = Math.round((used / context_window_size) * 100);
-        const bar = progressBar(percent, 20);
+        const bar = progressBar(percent, DEFAULT_PROGRESS_BAR_WIDTH);
         const color = getContextColor(percent);
         return colorize(`[${bar}] ${percent}%`, color);
     }
