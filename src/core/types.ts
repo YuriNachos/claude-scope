@@ -4,6 +4,9 @@
 
 import type { StdinData, RenderContext } from '../types.js';
 
+// Re-export for convenience
+export type { StdinData, RenderContext } from '../types.js';
+
 /**
  * Widget metadata describing the widget
  */
