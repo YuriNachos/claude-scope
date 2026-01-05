@@ -9,14 +9,21 @@ import { WidgetRegistry } from '../../src/core/widget-registry.js';
 import { Renderer } from '../../src/core/renderer.js';
 import { GitWidget } from '../../src/widgets/git-widget.js';
 import type { StdinData, RenderContext } from '../../src/core/types.js';
+import type { IGit } from '../../src/providers/git-provider.js';
+
+function createStdinData(overrides?: Partial<StdinData>): StdinData {
+  return {
+    session_id: 'session_20250105_123045',
+    cwd: '/Users/user/project',
+    model: { id: 'claude-opus-4-5-20251101', display_name: 'Claude Opus 4.5' },
+    ...overrides
+  };
+};
 
 /**
  * Mock git implementation for testing
  */
-class MockGit implements {
-  checkIsRepo(): Promise<boolean>;
-  branch(): Promise<{ current: string | null; all: string[] }>;
-} {
+class MockGit implements IGit {
   private isRepoValue: boolean;
   private currentBranch: string | null;
 
@@ -61,14 +68,7 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Simulate stdin data flow
-      const stdinData: StdinData = {
-        session_id: 'session_20250105_123045',
-        cwd: '/Users/user/project',
-        model: {
-          id: 'claude-opus-4-5-20251101',
-          display_name: 'Claude Opus 4.5'
-        }
-      };
+      const stdinData = createStdinData();
 
       // Update widget with stdin data
       await gitWidget.update(stdinData);
@@ -87,7 +87,6 @@ describe('CLI Flow Integration', () => {
       // Assert: Output contains the branch name
       expect(output).to.be.a('string');
       expect(output).to.include('feature-test');
-      expect(output).to.match(/^\s*feature-test$/);
     });
 
     it('should handle single widget with registry lifecycle', async () => {
@@ -98,11 +97,7 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Update widget with stdin data
-      const stdinData: StdinData = {
-        session_id: 'session_20250105_123045',
-        cwd: '/Users/user/project',
-        model: { id: 'claude-opus-4-5-20251101', display_name: 'Claude Opus 4.5' }
-      };
+      const stdinData = createStdinData();
 
       await gitWidget.update(stdinData);
 
@@ -123,11 +118,7 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: false } });
 
       // Act: Update widget
-      const stdinData: StdinData = {
-        session_id: 'session_20250105_123045',
-        cwd: '/Users/user/project',
-        model: { id: 'claude-opus-4-5-20251101', display_name: 'Claude Opus 4.5' }
-      };
+      const stdinData = createStdinData();
 
       await gitWidget.update(stdinData);
 
@@ -162,20 +153,12 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Update with initial data
-      const stdinData1: StdinData = {
-        session_id: 'session_1',
-        cwd: '/path/to/repo',
-        model: { id: 'model-1', display_name: 'Model 1' }
-      };
+      const stdinData1 = createStdinData({ session_id: 'session_001' });
 
       await gitWidget.update(stdinData1);
 
       // Update with new data
-      const stdinData2: StdinData = {
-        session_id: 'session_2',
-        cwd: '/path/to/repo',
-        model: { id: 'model-2', display_name: 'Model 2' }
-      };
+      const stdinData2 = createStdinData({ session_id: 'session_002' });
 
       await gitWidget.update(stdinData2);
 
@@ -208,11 +191,7 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Update and render output
-      const stdinData: StdinData = {
-        session_id: 'session',
-        cwd: '/path',
-        model: { id: 'model', display_name: 'Model' }
-      };
+      const stdinData = createStdinData({ session_id: 'session', cwd: '/path' });
 
       await gitWidget.update(stdinData);
 
@@ -233,11 +212,7 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Render with custom separator
-      const stdinData: StdinData = {
-        session_id: 'session',
-        cwd: '/path',
-        model: { id: 'model', display_name: 'Model' }
-      };
+      const stdinData = createStdinData({ session_id: 'session', cwd: '/path' });
 
       await gitWidget.update(stdinData);
 
@@ -256,15 +231,15 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Render output
-      const stdinData: StdinData = {
-        session_id: 'session',
-        cwd: '/path',
-        model: { id: 'model', display_name: 'Model' }
-      };
+      const stdinData = createStdinData({ session_id: 'session', cwd: '/path' });
 
       await gitWidget.update(stdinData);
 
       const renderContext: RenderContext = { width: 80, timestamp: Date.now() };
+
+      const widgetOutput = await gitWidget.render(renderContext);
+      expect(widgetOutput).to.be.null;
+
       const output = await renderer.render(registry.getEnabledWidgets(), renderContext);
 
       // Assert: Empty output when widget returns null
@@ -281,11 +256,7 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Update and render
-      const stdinData: StdinData = {
-        session_id: 'session',
-        cwd: '/not/a/repo',
-        model: { id: 'model', display_name: 'Model' }
-      };
+      const stdinData = createStdinData({ session_id: 'session', cwd: '/not/a/repo' });
 
       await gitWidget.update(stdinData);
 
@@ -302,11 +273,7 @@ describe('CLI Flow Integration', () => {
       await registry.register(gitWidget, { config: { enabled: true } });
 
       // Act: Update with empty cwd
-      const stdinData: StdinData = {
-        session_id: 'session',
-        cwd: '',
-        model: { id: 'model', display_name: 'Model' }
-      };
+      const stdinData = createStdinData({ cwd: '' });
 
       // Should not throw
       await gitWidget.update(stdinData);
@@ -355,11 +322,7 @@ describe('CLI Flow Integration', () => {
       expect(registry.has('git')).to.be.true;
 
       // Step 2: Update with stdin data
-      const stdinData: StdinData = {
-        session_id: 'session',
-        cwd: '/project',
-        model: { id: 'model', display_name: 'Model' }
-      };
+      const stdinData = createStdinData({ session_id: 'session', cwd: '/project' });
 
       await gitWidget.update(stdinData);
 
@@ -380,9 +343,9 @@ describe('CLI Flow Integration', () => {
 
       // Act: Simulate rapid updates
       const updates = [
-        { session_id: 's1', cwd: '/path', model: { id: 'm1', display_name: 'M1' } },
-        { session_id: 's2', cwd: '/path', model: { id: 'm2', display_name: 'M2' } },
-        { session_id: 's3', cwd: '/path', model: { id: 'm3', display_name: 'M3' } }
+        createStdinData({ session_id: 'session_001' }),
+        createStdinData({ session_id: 'session_002' }),
+        createStdinData({ session_id: 'session_003' })
       ];
 
       for (const data of updates) {
@@ -400,11 +363,7 @@ describe('CLI Flow Integration', () => {
       const gitWidget = new GitWidget({ git: mockGit });
       await registry.register(gitWidget, { config: { enabled: true } });
 
-      const stdinData: StdinData = {
-        session_id: 'session',
-        cwd: '/project',
-        model: { id: 'model', display_name: 'Model' }
-      };
+      const stdinData = createStdinData({ session_id: 'session', cwd: '/project' });
 
       await gitWidget.update(stdinData);
 

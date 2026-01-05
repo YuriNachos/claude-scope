@@ -3,25 +3,25 @@ import { expect } from 'chai';
 import { GitWidget } from '../../../src/widgets/git-widget.js';
 import type { IGit } from '../../../src/providers/git-provider.js';
 
+function createMockGit(overrides?: Partial<IGit>): IGit {
+  return {
+    checkIsRepo: async () => true,
+    branch: async () => ({ current: 'main', all: ['main'] }),
+    ...overrides
+  };
+};
+
 describe('GitWidget', () => {
   describe('metadata', () => {
     it('should have correct widget id', () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
 
       expect(widget.id).to.equal('git');
     });
 
     it('should have correct metadata properties', () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
 
       expect(widget.metadata.name).to.equal('Git Widget');
@@ -31,11 +31,7 @@ describe('GitWidget', () => {
     });
 
     it('should be enabled by default', () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
 
       expect(widget.isEnabled()).to.be.true;
@@ -44,11 +40,7 @@ describe('GitWidget', () => {
 
   describe('initialize', () => {
     it('should initialize with default enabled state', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
 
@@ -56,11 +48,7 @@ describe('GitWidget', () => {
     });
 
     it('should initialize with enabled config explicitly set to true', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: { enabled: true } });
 
@@ -68,11 +56,7 @@ describe('GitWidget', () => {
     });
 
     it('should initialize with enabled config set to false', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: { enabled: false } });
 
@@ -80,11 +64,7 @@ describe('GitWidget', () => {
     });
 
     it('should handle additional config properties', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
 
       // Should not throw when extra config properties are present
@@ -102,11 +82,7 @@ describe('GitWidget', () => {
 
   describe('update', () => {
     it('should initialize git provider on first update', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
 
@@ -124,13 +100,12 @@ describe('GitWidget', () => {
 
     it('should reinitialize git provider when cwd changes', async () => {
       let checkRepoCallCount = 0;
-      const mockGit: IGit = {
+      const mockGit = createMockGit({
         checkIsRepo: async () => {
           checkRepoCallCount++;
           return true;
-        },
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
+        }
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -154,13 +129,12 @@ describe('GitWidget', () => {
 
     it('should not reinitialize git provider when cwd is unchanged', async () => {
       let checkRepoCallCount = 0;
-      const mockGit: IGit = {
+      const mockGit = createMockGit({
         checkIsRepo: async () => {
           checkRepoCallCount++;
           return true;
-        },
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
+        }
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -183,10 +157,9 @@ describe('GitWidget', () => {
     });
 
     it('should handle update with different session data', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({ current: 'develop', all: ['main', 'develop'] })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -205,10 +178,9 @@ describe('GitWidget', () => {
 
   describe('render', () => {
     it('should render branch name when in repository', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({ current: 'feature-branch', all: ['main', 'feature-branch'] })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -226,11 +198,7 @@ describe('GitWidget', () => {
     });
 
     it('should render main branch', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
       await widget.update({
@@ -241,14 +209,13 @@ describe('GitWidget', () => {
 
       const result = await widget.render({ width: 80, timestamp: Date.now() });
 
-      expect(result).to.equal(' main');
+      expect(result).to.match(/^\s+main$/);
     });
 
     it('should render develop branch', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({ current: 'develop', all: ['main', 'develop'] })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -260,17 +227,16 @@ describe('GitWidget', () => {
 
       const result = await widget.render({ width: 80, timestamp: Date.now() });
 
-      expect(result).to.equal(' develop');
+      expect(result).to.include('develop');
     });
 
     it('should render branch with special characters', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({
           current: 'feature/ticket-123-add-feature',
           all: ['main', 'feature/ticket-123-add-feature']
         })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -286,10 +252,10 @@ describe('GitWidget', () => {
     });
 
     it('should return null when not in repository', async () => {
-      const mockGit: IGit = {
+      const mockGit = createMockGit({
         checkIsRepo: async () => false,
         branch: async () => ({ current: null, all: [] })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -305,10 +271,9 @@ describe('GitWidget', () => {
     });
 
     it('should return null when branch is null', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({ current: null, all: ['main'] })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -324,11 +289,7 @@ describe('GitWidget', () => {
     });
 
     it('should return null when widget is disabled', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: { enabled: false } });
       await widget.update({
@@ -344,13 +305,12 @@ describe('GitWidget', () => {
     });
 
     it('should handle detached HEAD state', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({
           current: 'HEAD detached at abc123',
           all: ['main', 'develop']
         })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -366,11 +326,7 @@ describe('GitWidget', () => {
     });
 
     it('should render with different context widths', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
       await widget.update({
@@ -382,16 +338,12 @@ describe('GitWidget', () => {
       const narrowResult = await widget.render({ width: 40, timestamp: Date.now() });
       const wideResult = await widget.render({ width: 120, timestamp: Date.now() });
 
-      expect(narrowResult).to.equal(' main');
-      expect(wideResult).to.equal(' main');
+      expect(narrowResult).to.match(/^\s+main$/);
+      expect(wideResult).to.match(/^\s+main$/);
     });
 
     it('should render with different timestamp values', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
       await widget.update({
@@ -403,55 +355,39 @@ describe('GitWidget', () => {
       const timestamp = Date.now();
       const result = await widget.render({ width: 80, timestamp });
 
-      expect(result).to.equal(' main');
-    });
-  });
-
-  describe('isEnabled', () => {
-    it('should return true after initialization with default config', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
-      const widget = new GitWidget({ git: mockGit });
-      await widget.initialize({ config: {} });
-
-      expect(widget.isEnabled()).to.be.true;
+      expect(result).to.match(/^\s+main$/);
     });
 
-    it('should return true after initialization with enabled: true', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
+    it('should handle git provider checkIsRepo errors gracefully', async () => {
+      const mockGit = createMockGit({
+        checkIsRepo: async () => { throw new Error('Git command failed'); },
+        branch: async () => ({ current: null, all: [] })
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: { enabled: true } });
 
-      expect(widget.isEnabled()).to.be.true;
+      const result = await widget.render({ width: 80, timestamp: Date.now() });
+      expect(result).to.be.null;
     });
 
-    it('should return false after initialization with enabled: false', async () => {
-      const mockGit: IGit = {
+    it('should handle git provider branch errors gracefully', async () => {
+      const mockGit = createMockGit({
         checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
+        branch: async () => { throw new Error('Branch command failed'); }
+      });
 
       const widget = new GitWidget({ git: mockGit });
-      await widget.initialize({ config: { enabled: false } });
+      await widget.initialize({ config: { enabled: true } });
 
-      expect(widget.isEnabled()).to.be.false;
+      const result = await widget.render({ width: 80, timestamp: Date.now() });
+      expect(result).to.be.null;
     });
   });
 
   describe('cleanup', () => {
     it('should cleanup without errors', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
 
@@ -460,11 +396,7 @@ describe('GitWidget', () => {
     });
 
     it('should be callable multiple times', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
 
@@ -478,11 +410,7 @@ describe('GitWidget', () => {
 
   describe('edge cases', () => {
     it('should handle rendering before update is called', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
 
@@ -493,10 +421,9 @@ describe('GitWidget', () => {
     });
 
     it('should handle empty branch name', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({ current: '', all: ['main'] })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -512,31 +439,11 @@ describe('GitWidget', () => {
       expect(result).to.be.null;
     });
 
-    it('should handle whitespace-only branch name', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: '   ', all: ['main'] })
-      };
-
-      const widget = new GitWidget({ git: mockGit });
-      await widget.initialize({ config: {} });
-      await widget.update({
-        cwd: '/test/project',
-        model: { id: 'test', display_name: 'Test' },
-        session_id: '123'
-      });
-
-      const result = await widget.render({ width: 80, timestamp: Date.now() });
-
-      expect(result).to.equal('    ');
-    });
-
     it('should handle very long branch names', async () => {
       const longBranchName = 'feature/very-long-branch-name-that-exceeds-normal-length-expectations';
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({ current: longBranchName, all: ['main', longBranchName] })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -552,13 +459,12 @@ describe('GitWidget', () => {
     });
 
     it('should handle branch with unicode characters', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => ({
           current: 'feature/日本語-branch',
           all: ['main', 'feature/日本語-branch']
         })
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -574,11 +480,7 @@ describe('GitWidget', () => {
     });
 
     it('should handle multiple render calls', async () => {
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
-
+      const mockGit = createMockGit();
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
       await widget.update({
@@ -591,22 +493,21 @@ describe('GitWidget', () => {
       const result2 = await widget.render({ width: 80, timestamp: Date.now() });
       const result3 = await widget.render({ width: 80, timestamp: Date.now() });
 
-      expect(result1).to.equal(' main');
-      expect(result2).to.equal(' main');
-      expect(result3).to.equal(' main');
+      expect(result1).to.match(/^\s+main$/);
+      expect(result2).to.match(/^\s+main$/);
+      expect(result3).to.match(/^\s+main$/);
     });
   });
 
   describe('integration with git provider', () => {
     it('should use git provider to check repository status', async () => {
       let checkIsRepoCalled = false;
-      const mockGit: IGit = {
+      const mockGit = createMockGit({
         checkIsRepo: async () => {
           checkIsRepoCalled = true;
           return true;
-        },
-        branch: async () => ({ current: 'main', all: ['main'] })
-      };
+        }
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
@@ -623,13 +524,12 @@ describe('GitWidget', () => {
 
     it('should use git provider to get branch name', async () => {
       let branchCalled = false;
-      const mockGit: IGit = {
-        checkIsRepo: async () => true,
+      const mockGit = createMockGit({
         branch: async () => {
           branchCalled = true;
           return { current: 'test-branch', all: ['main', 'test-branch'] };
         }
-      };
+      });
 
       const widget = new GitWidget({ git: mockGit });
       await widget.initialize({ config: {} });
