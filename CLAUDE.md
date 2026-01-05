@@ -207,6 +207,12 @@ describe('SessionWidget', () => {
 - Do not create tags as part of automated implementation tasks
 - Tag format: `v` + semantic version (e.g., `v1.0.0`, `v0.1.0`)
 
+### Documentation Commits
+- **NEVER commit docs/ files without explicit user permission**
+- Files in `docs/` directory (plans, research, issues, etc.) should remain untracked by default
+- Only commit docs/ when user explicitly requests it
+- Exception: CLAUDE.md is part of the project and should be committed when updated
+
 ### Workflow
 - Use `gh` CLI for GitHub operations (issues, PRs, etc.)
 
