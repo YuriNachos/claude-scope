@@ -42,7 +42,5 @@ export async function main(): Promise<string> {
   return output;
 }
 
-// Run if executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().then(console.log).catch(console.error);
-}
+// Run when executed (works with both direct node and npx)
+main().then(console.log).catch(console.error);

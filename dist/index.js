@@ -30,8 +30,6 @@ export async function main() {
     const output = await renderer.render(registry.getEnabledWidgets(), { width: 80, timestamp: Date.now() });
     return output;
 }
-// Run if executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-    main().then(console.log).catch(console.error);
-}
+// Run when executed (works with both direct node and npx)
+main().then(console.log).catch(console.error);
 //# sourceMappingURL=index.js.map
