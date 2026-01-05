@@ -12,62 +12,8 @@ import { ContextWidget } from './widgets/context-widget.js';
 import { CostWidget } from './widgets/cost-widget.js';
 import { DurationWidget } from './widgets/duration-widget.js';
 import { GitChangesWidget } from './widgets/git-changes-widget.js';
-import { simpleGit } from 'simple-git';
-import type { IGit } from './providers/git-provider.js';
+import { createGitAdapter } from './providers/git-provider.js';
 import type { StdinData } from './types.js';
-
-/**
- * Adapter to wrap simple-git with our IGit interface
- */
-class SimpleGitAdapter implements IGit {
-  constructor(private git: ReturnType<typeof simpleGit>) {}
-
-  async checkIsRepo(): Promise<boolean> {
-    try {
-      await this.git.status();
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  async branch(): Promise<{ current: string | null; all: string[] }> {
-    const branches = await this.git.branch();
-    return {
-      current: branches.current || null,
-      all: branches.all
-    };
-  }
-
-  async diffStats(): Promise<{ insertions: number; deletions: number } | null> {
-    try {
-      const summary = await this.git.diffSummary(['--shortstat']);
-
-      // Parse the summary object
-      let insertions = 0;
-      let deletions = 0;
-
-      if (summary.files && summary.files.length > 0) {
-        for (const file of summary.files) {
-          if ('insertions' in file && typeof file.insertions === 'number') {
-            insertions += file.insertions;
-          }
-          if ('deletions' in file && typeof file.deletions === 'number') {
-            deletions += file.deletions;
-          }
-        }
-      }
-
-      if (insertions === 0 && deletions === 0) {
-        return null;
-      }
-
-      return { insertions, deletions };
-    } catch {
-      return null;
-    }
-  }
-}
 
 /**
  * Create mock StdinData for development/testing
@@ -115,9 +61,8 @@ function createMockStdinData(): StdinData {
  * Main entry point
  */
 export async function main(): Promise<string> {
-  // Initialize git adapter
-  const git = simpleGit();
-  const gitAdapter = new SimpleGitAdapter(git);
+  // Initialize git adapter using factory method
+  const gitAdapter = createGitAdapter();
 
   // Create registry
   const registry = new WidgetRegistry();

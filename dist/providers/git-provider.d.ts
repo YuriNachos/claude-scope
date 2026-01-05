@@ -2,6 +2,7 @@
  * Git operations provider
  * Wraps simple-git for dependency injection
  */
+import { type SimpleGit } from 'simple-git';
 import type { GitInfo, GitChanges } from '../types.js';
 /**
  * Git interface for dependency injection
@@ -54,4 +55,10 @@ export declare class GitProvider {
      */
     getInfo(): Promise<GitInfo>;
 }
+/**
+ * Factory method to create an IGit instance from simple-git
+ * @param gitInstance - Optional simple-git instance (creates default if not provided)
+ * @returns IGit implementation
+ */
+export declare function createGitAdapter(gitInstance?: SimpleGit): IGit;
 //# sourceMappingURL=git-provider.d.ts.map
