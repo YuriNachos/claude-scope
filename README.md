@@ -2,6 +2,9 @@
 
 Claude Code plugin for session status and analytics.
 
+**Requirements:**
+- Node.js 18 or higher
+
 ## Installation
 
 ### Via npx (recommended)
@@ -52,9 +55,6 @@ Or for global install:
 
 ## Usage
 
-Once configured, claude-scope automatically displays:
-- Current git branch
-- Repository status
-- Session information
+Once configured, claude-scope displays the current git branch in your statusline.
 
-The statusline updates in real-time as you work.
+**Note:** This is an early release with basic functionality. Additional features (repository status, session analytics, etc.) are planned for future releases.
