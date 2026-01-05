@@ -4,11 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Claude Code plugin that displays detailed session status and analytics in the terminal. Users working in Claude Code will see real-time information about their current session, including context usage, active tools, running agents, todo progress, token/cost monitoring, and session analytics.
+Claude Code CLI tool that displays git branch information in the statusline. Users working in Claude Code will see the current git branch as part of their terminal status.
+
+**Current version**: Minimal working version with git widget only.
 
 ## Architecture
 
-### Widget Registry Pattern (Senior-Level Design)
+### Widget Registry Pattern
 
 This project uses a **modular widget architecture** with a central registry, following Dependency Inversion Principle and modern TypeScript plugin best practices.
 
@@ -17,61 +19,35 @@ src/
 ├── core/
 │   ├── types.ts              # Core types (IWidget, IWidgetMetadata, etc.)
 │   ├── widget-registry.ts    # Central registry for widget management
-│   ├── config-loader.ts      # JSON config parser & validator
 │   └── renderer.ts           # Unified rendering engine
 ├── providers/
-│   ├── stdin-provider.ts     # Stdin data source
-│   ├── transcript-provider.ts # Transcript parser
-│   └── git-provider.ts       # Git operations
-├── storage/
-│   ├── session-store.ts      # SQLite-based persistence
-│   └── analytics-store.ts    # Session history & stats
+│   ├── stdin-provider.ts     # Stdin data parser
+│   └── git-provider.ts       # Git operations wrapper
 ├── widgets/
-│   ├── base/
-│   │   ├── session-widget.ts      # Session info widget
-│   │   ├── tools-widget.ts        # Tools activity widget
-│   │   ├── agents-widget.ts       # Agent tracking widget
-│   │   ├── todos-widget.ts        # Todo progress widget
-│   │   ├── context-widget.ts      # Context usage widget
-│   │   ├── cost-widget.ts         # Token/cost monitoring widget
-│   │   └── analytics-widget.ts    # Session analytics widget
-│   └── widget-interface.ts        # IWidget interface
+│   └── git-widget.ts         # Git branch widget
 ├── utils/
-│   ├── colors.ts             # ANSI color utilities
-│   └── formatters.ts         # Text formatting helpers
-├── config/
-│   ├── default.config.json   # Default configuration
-│   └── presets/              # Predefined themes (compact, detailed, minimal)
-├── index.ts                  # Entry point with DI
+│   └── colors.ts             # ANSI color utilities
+├── index.ts                  # CLI entry point
 └── types.ts                  # Shared types
 
 tests/
 ├── unit/
 │   ├── core/
 │   │   ├── widget-registry.test.ts
-│   │   ├── config-loader.test.ts
 │   │   └── renderer.test.ts
 │   ├── providers/
 │   │   ├── stdin-provider.test.ts
-│   │   ├── transcript-provider.test.ts
 │   │   └── git-provider.test.ts
-│   ├── storage/
-│   │   ├── session-store.test.ts
-│   │   └── analytics-store.test.ts
 │   ├── widgets/
-│   │   ├── session-widget.test.ts
-│   │   ├── tools-widget.test.ts
-│   │   └── ...
+│   │   └── git-widget.test.ts
 │   └── utils/
-│       ├── colors.test.ts
-│       └── formatters.test.ts
+│       └── colors.test.ts
 ├── integration/
-│   └── widget-registry.integration.test.ts
-├── fixtures/
-│   ├── stdin-data.json
-│   ├── transcript-data.jsonl
-│   └── config-samples.json
-└── setup.ts                  # Test setup & mocks
+│   ├── cli-flow.integration.test.ts
+│   └── entry-point.integration.test.ts
+└── fixtures/
+    ├── stdin-sample.json
+    └── git-data.json
 ```
 
 ### Widget Interface
@@ -91,85 +67,72 @@ interface IWidget {
 }
 ```
 
-### Configuration
+### Stdin Data Format
 
-Widget behavior is configured via JSON (`~/.config/claude-scope/config.json`):
+Claude Code sends JSON via stdin with this structure:
 
-```json
-{
-  "updateIntervalMs": 300,
-  "persistence": {
-    "enabled": true,
-    "path": "~/.config/claude-scope/sessions.db"
-  },
-  "widgets": ["session", "context", "tools", "agents", "todos", "cost", "analytics"],
-  "widgetConfig": {
-    "cost": { "showEstimated": true, "currency": "USD" },
-    "analytics": { "historyDays": 7 }
-  }
+```typescript
+interface StdinData {
+  session_id: string;
+  cwd: string;
+  model: {
+    id: string;
+    display_name: string;
+  };
 }
 ```
 
-### Presets
-
-Predefined configurations in `config/presets/`:
-- `compact.json` - Minimal display (session, context, todos)
-- `detailed.json` - Full display with all widgets
-- `minimal.json` - Essential info only
-
-### Storage
-
-SQLite-based storage for session analytics:
-- Session history (model, duration, tokens)
-- Cost tracking per session
-- Aggregate statistics
-
 ### Testing
 
-This project follows a **test-driven approach** with comprehensive coverage across unit and integration tests.
+This project follows a **test-driven approach** with comprehensive coverage.
 
 #### Test Structure
 
 - **Unit tests** (`tests/unit/`) - Test individual modules in isolation
   - Mirror `src/` directory structure
   - Mock all external dependencies via DI
-  - Fast execution, no external I/O
+  - Use `node:test` framework with `chai/expect` assertions
 
-- **Integration tests** (`tests/integration/`) - Test module interactions
-  - Real filesystem for storage tests
-  - Mock stdin/transcript for end-to-end scenarios
+- **Integration tests** (`tests/integration/`) - Test complete CLI flow
+  - End-to-end scenarios from stdin to output
 
 - **Fixtures** (`tests/fixtures/`) - Reusable test data
-  - Sample stdin JSON payloads
-  - Transcript snippets for parsing tests
-  - Config variations for edge cases
+  - `stdin-sample.json` - Sample stdin payload
+  - `git-data.json` - Sample git branch data
 
 #### Test Guidelines
 
 | Practice | Description |
 |----------|-------------|
-| **Test file naming** | `*.test.ts` suffix, co-located with source in `tests/unit/` |
+| **Test file naming** | `*.test.ts` suffix |
 | **Coverage target** | >80% for core modules, >60% for widgets |
-| **Mock external deps** | Use DI pattern to inject mocks for stdin, git, fs |
-| **Test isolation** | Each test should be independent, cleanup after itself |
+| **Mock external deps** | Use DI pattern with helper functions (`createMockGit`, `createStdinData`) |
+| **Test isolation** | Each test should be independent, use `beforeEach`/`afterEach` |
+| **Assertions** | Use flexible matchers (`expect().to.match()`) over hardcoded values |
 
-#### Example Test Structure
+#### Helper Functions
+
+Tests use helper functions to reduce duplication:
 
 ```typescript
-// tests/unit/widgets/session-widget.test.ts
-import { describe, it, expect, beforeEach } from 'node:test';
-import { SessionWidget } from '../../../src/widgets/base/session-widget.js';
-
-describe('SessionWidget', () => {
-  const mockDeps = {
-    // Injected via DI
+// Create mock git provider with optional overrides
+function createMockGit(overrides?: Partial<IGit>): IGit {
+  return {
+    checkIsRepo: async () => true,
+    branch: async () => ({ current: 'main', all: ['main'] }),
+    ...overrides
   };
+}
 
-  it('should render session info correctly', async () => {
-    const widget = new SessionWidget(mockDeps);
-    // Act & Assert
-  });
-});
+// Create stdin data with optional overrides
+function createStdinData(overrides?: Partial<StdinData>): StdinData {
+  return {
+    session_id: 'session_20250105_123045',
+    cwd: '/Users/user/project',
+    model: { id: 'claude-opus-4-5-20251101', display_name: 'Claude Opus 4.5' },
+    ...overrides
+  };
+};
 ```
 
 ### Key Architectural Principles
@@ -178,17 +141,13 @@ describe('SessionWidget', () => {
 2. **Single Responsibility** - Each module has one clear purpose
 3. **Testability** - DI allows mocking all dependencies
 4. **Extensibility** - Add new widgets without modifying core code
-5. **Configuration-Driven** - Widget order and behavior controlled by JSON config
 
 ## Development Rules
 
-- **File Size Constraints**: Keep files <~500 LOC; split/refactor as needed.
-- **Stick to Specifications**: When implementing from a plan/specification:
-  - Follow the exact code structure specified
-  - Do not "adapt" or "improve" without explicit approval
-  - If you find a genuine issue with the spec, ask before changing
-  - Test assertions must match what the spec specifies (e.g., use `expect` if spec says `expect`)
-  - Deviations from the spec will be rejected
+- **File Size Constraints**: Keep files <~500 LOC; split/refactor as needed
+- **Type Safety**: Use proper TypeScript types, avoid `any` in production code
+- **Test Quality**: Use helper functions to reduce duplication, flexible assertions for maintainability
+- **Error Handling**: Widgets should handle errors gracefully and return `null` on failure
 
 ## Git Conventions
 
@@ -203,18 +162,12 @@ describe('SessionWidget', () => {
 ### Git Tags
 - **NEVER create git tags without explicit user permission**
 - Tags should only be created when the user explicitly requests them
-- Example: User says "create a tag for v1.0.0" → then create tag
-- Do not create tags as part of automated implementation tasks
 - Tag format: `v` + semantic version (e.g., `v1.0.0`, `v0.1.0`)
 
 ### Documentation Commits
 - **NEVER commit docs/ files without explicit user permission**
 - Files in `docs/` directory (plans, research, issues, etc.) should remain untracked by default
-- Only commit docs/ when user explicitly requests it
 - Exception: CLAUDE.md is part of the project and should be committed when updated
-
-### Workflow
-- Use `gh` CLI for GitHub operations (issues, PRs, etc.)
 
 ## License
 
