@@ -6,6 +6,11 @@
 import { WidgetRegistry } from './core/widget-registry.js';
 import { Renderer } from './core/renderer.js';
 import { GitWidget } from './widgets/git-widget.js';
+import { ModelWidget } from './widgets/model-widget.js';
+import { ContextWidget } from './widgets/context-widget.js';
+import { CostWidget } from './widgets/cost-widget.js';
+import { DurationWidget } from './widgets/duration-widget.js';
+import { GitChangesWidget } from './widgets/git-changes-widget.js';
 import { simpleGit } from 'simple-git';
 /**
  * Adapter to wrap simple-git with our IGit interface
@@ -107,13 +112,23 @@ export async function main() {
     const gitAdapter = new SimpleGitAdapter(git);
     // Create registry
     const registry = new WidgetRegistry();
-    // Create and register git widget
-    const gitWidget = new GitWidget({ git: gitAdapter });
-    await registry.register(gitWidget);
-    // Create renderer
+    // Register all widgets
+    await registry.register(new ModelWidget());
+    await registry.register(new ContextWidget());
+    await registry.register(new CostWidget());
+    await registry.register(new DurationWidget());
+    await registry.register(new GitWidget({ git: gitAdapter }));
+    await registry.register(new GitChangesWidget(gitAdapter));
+    // Create renderer with pipe separator
     const renderer = new Renderer();
-    // Render output
-    await gitWidget.update(createMockStdinData());
+    renderer.setSeparator(' │ ');
+    // Create mock data for dev (in real usage, comes from stdin)
+    const mockData = createMockStdinData();
+    // Update all widgets with data
+    for (const widget of registry.getAll()) {
+        await widget.update(mockData);
+    }
+    // Render
     const output = await renderer.render(registry.getEnabledWidgets(), { width: 80, timestamp: Date.now() });
     return output;
 }
