@@ -101,4 +101,85 @@ describe('WidgetRegistry', () => {
     await registry.unregister('nonexistent');
     expect(registry.has('nonexistent')).to.be.false;
   });
+
+  it('should clear all widgets', async () => {
+    const registry = new WidgetRegistry();
+    const widget1 = new GitWidget({ git: {} as any });
+    const widget2 = {
+      id: 'test2',
+      metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
+      initialize: async () => {},
+      render: async () => 'output',
+      update: async () => {},
+      isEnabled: () => true
+    };
+
+    await registry.register(widget1);
+    await registry.register(widget2 as any);
+    expect(registry.getAll()).to.have.lengthOf(2);
+
+    await registry.clear();
+    expect(registry.getAll()).to.have.lengthOf(0);
+  });
+
+  it('should call cleanup on all widgets during clear', async () => {
+    const registry = new WidgetRegistry();
+    let cleanup1Called = false;
+    let cleanup2Called = false;
+
+    const widget1 = {
+      id: 'test1',
+      metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
+      initialize: async () => {},
+      render: async () => 'output',
+      update: async () => {},
+      isEnabled: () => true,
+      cleanup: async () => { cleanup1Called = true; }
+    };
+
+    const widget2 = {
+      id: 'test2',
+      metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },
+      initialize: async () => {},
+      render: async () => 'output',
+      update: async () => {},
+      isEnabled: () => true,
+      cleanup: async () => { cleanup2Called = true; }
+    };
+
+    await registry.register(widget1 as any);
+    await registry.register(widget2 as any);
+    await registry.clear();
+
+    expect(cleanup1Called).to.be.true;
+    expect(cleanup2Called).to.be.true;
+  });
+
+  it('should propagate cleanup errors during clear', async () => {
+    const registry = new WidgetRegistry();
+
+    const widget1 = {
+      id: 'test1',
+      metadata: { name: 'Test1', description: 'Test', version: '1.0.0', author: 'Test' },
+      initialize: async () => {},
+      render: async () => 'output',
+      update: async () => {},
+      isEnabled: () => true,
+      cleanup: async () => { throw new Error('Cleanup failed'); }
+    };
+
+    await registry.register(widget1 as any);
+
+    let error: Error | null = null;
+    try {
+      await registry.clear();
+    } catch (e) {
+      error = e as Error;
+    }
+
+    expect(error).to.exist;
+    expect(error!.message).to.equal('Cleanup failed');
+    // Note: current implementation throws on first cleanup error
+    // and doesn't complete clearing remaining widgets
+  });
 });
