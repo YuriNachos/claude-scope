@@ -1,15 +1,7 @@
 import { describe, it, beforeEach } from 'node:test';
 import { expect } from 'chai';
 import { GitWidget } from '../../../src/widgets/git-widget.js';
-import type { IGit } from '../../../src/providers/git-provider.js';
-
-function createMockGit(overrides?: Partial<IGit>): IGit {
-  return {
-    checkIsRepo: async () => true,
-    branch: async () => ({ current: 'main', all: ['main'] }),
-    ...overrides
-  };
-};
+import { createMockGit } from '../../fixtures/mock-data.js';
 
 describe('GitWidget', () => {
   describe('metadata', () => {

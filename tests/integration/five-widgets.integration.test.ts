@@ -11,51 +11,7 @@ import { ContextWidget } from '../../src/widgets/context-widget.js';
 import { CostWidget } from '../../src/widgets/cost-widget.js';
 import { DurationWidget } from '../../src/widgets/duration-widget.js';
 import { GitChangesWidget } from '../../src/widgets/git-changes-widget.js';
-import type { IGit } from '../../src/providers/git-provider.js';
-import type { StdinData } from '../../src/types.js';
-
-// Mock git provider
-function createMockGit(overrides: Partial<IGit> = {}): IGit {
-  return {
-    checkIsRepo: async () => true,
-    branch: async () => ({ current: 'main', all: ['main', 'develop'] }),
-    diffStats: async () => ({ insertions: 42, deletions: 10 }),
-    ...overrides
-  };
-}
-
-// Helper to create mock StdinData
-function createMockStdinData(overrides: Partial<StdinData> = {}): StdinData {
-  return {
-    hook_event_name: 'Status',
-    session_id: 'test-session',
-    transcript_path: '/test/transcript.json',
-    cwd: '/test/project',
-    model: { id: 'claude-opus-4-5', display_name: 'Opus 4.5' },
-    workspace: { current_dir: '/test/project', project_dir: '/test/project' },
-    version: '1.0.0',
-    output_style: { name: 'default' },
-    cost: {
-      total_cost_usd: 0.0123,
-      total_duration_ms: 330000,
-      total_api_duration_ms: 15000,
-      total_lines_added: 42,
-      total_lines_removed: 10
-    },
-    context_window: {
-      total_input_tokens: 15234,
-      total_output_tokens: 4521,
-      context_window_size: 200000,
-      current_usage: {
-        input_tokens: 8500,
-        output_tokens: 1200,
-        cache_creation_input_tokens: 5000,
-        cache_read_input_tokens: 2000
-      }
-    },
-    ...overrides
-  };
-}
+import { createMockGit, createMockStdinData } from '../fixtures/mock-data.js';
 
 describe('Five Widgets Integration', () => {
   it('should render all widgets in single line with pipe separator', async () => {
@@ -71,7 +27,16 @@ describe('Five Widgets Integration', () => {
     const renderer = new Renderer();
     renderer.setSeparator(' │ ');
 
-    const mockData = createMockStdinData();
+    const mockData = createMockStdinData({
+      model: { id: 'claude-opus-4-5', display_name: 'Opus 4.5' },
+      cost: {
+        total_cost_usd: 0.0123,
+        total_duration_ms: 330000,
+        total_api_duration_ms: 15000,
+        total_lines_added: 42,
+        total_lines_removed: 10
+      }
+    });
     for (const widget of registry.getAll()) {
       await widget.update(mockData);
     }
@@ -103,7 +68,9 @@ describe('Five Widgets Integration', () => {
     const renderer = new Renderer();
     renderer.setSeparator(' │ ');
 
-    const mockData = createMockStdinData();
+    const mockData = createMockStdinData({
+      model: { id: 'claude-opus-4-5', display_name: 'Opus 4.5' }
+    });
     for (const widget of registry.getAll()) {
       await widget.update(mockData);
     }
@@ -156,7 +123,9 @@ describe('Five Widgets Integration', () => {
     const renderer = new Renderer();
     renderer.setSeparator(' │ ');
 
-    const mockData = createMockStdinData();
+    const mockData = createMockStdinData({
+      model: { id: 'claude-opus-4-5', display_name: 'Opus 4.5' }
+    });
     for (const widget of registry.getAll()) {
       await widget.update(mockData);
     }
