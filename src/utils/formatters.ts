@@ -2,6 +2,8 @@
  * Formatter utilities for displaying data in human-readable formats
  */
 
+import { DEFAULT_PROGRESS_BAR_WIDTH } from '../constants.js';
+
 /**
  * Format milliseconds to human-readable duration
  *
@@ -71,10 +73,10 @@ export function formatCostUSD(usd: number): string {
  * Create a visual progress bar
  *
  * @param percent - Percentage (0-100)
- * @param width - Bar width in characters (default: 20)
+ * @param width - Bar width in characters (default: DEFAULT_PROGRESS_BAR_WIDTH)
  * @returns Progress bar string like "████████░░░░░░░░░░░"
  */
-export function progressBar(percent: number, width: number = 20): string {
+export function progressBar(percent: number, width: number = DEFAULT_PROGRESS_BAR_WIDTH): string {
   const clampedPercent = Math.max(0, Math.min(100, percent));
   const filled = Math.round((clampedPercent / 100) * width);
   const empty = width - filled;
