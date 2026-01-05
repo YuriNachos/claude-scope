@@ -3,7 +3,7 @@
  * Wraps simple-git for dependency injection
  */
 
-import type { GitInfo } from '../types.js';
+import type { GitInfo, GitChanges } from '../types.js';
 
 /**
  * Git interface for dependency injection
@@ -11,6 +11,7 @@ import type { GitInfo } from '../types.js';
 export interface IGit {
   checkIsRepo(): Promise<boolean>;
   branch(): Promise<{ current: string | null; all: string[] }>;
+  diffStats(): Promise<{ insertions: number; deletions: number } | null>;
 }
 
 /**
@@ -52,6 +53,26 @@ export class GitProvider {
 
     const result = await this.git.branch();
     return result.current;
+  }
+
+  /**
+   * Get git diff statistics
+   * @returns Changes with insertions and deletions, or null if not a repo
+   */
+  async getChanges(): Promise<GitChanges | null> {
+    if (!this._isRepo) {
+      return null;
+    }
+
+    const stats = await this.git.diffStats();
+    if (!stats) {
+      return null;
+    }
+
+    return {
+      insertions: stats.insertions,
+      deletions: stats.deletions
+    };
   }
 
   /**

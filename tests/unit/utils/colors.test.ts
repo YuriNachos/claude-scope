@@ -21,7 +21,9 @@ import {
   bold,
   dim,
   italic,
-  underline
+  underline,
+  contextColors,
+  colorize
 } from '../../../src/utils/colors.js';
 
 describe('color utilities', () => {
@@ -203,6 +205,58 @@ describe('color utilities', () => {
         expect(code.startsWith('\x1b[')).to.be.true;
         expect(code.endsWith('m')).to.be.true;
       });
+    });
+  });
+
+  describe('context colors', () => {
+    it('should provide low usage color (green)', () => {
+      expect(contextColors.low).to.equal(green);
+    });
+
+    it('should provide medium usage color (yellow)', () => {
+      expect(contextColors.medium).to.equal(yellow);
+    });
+
+    it('should provide high usage color (red)', () => {
+      expect(contextColors.high).to.equal(red);
+    });
+
+    it('should have all three colors different', () => {
+      expect(contextColors.low).to.not.equal(contextColors.medium);
+      expect(contextColors.medium).to.not.equal(contextColors.high);
+      expect(contextColors.low).to.not.equal(contextColors.high);
+    });
+  });
+
+  describe('colorize function', () => {
+    it('should wrap text with color and reset', () => {
+      const result = colorize('Hello', red);
+      expect(result).to.equal('\x1b[31mHello\x1b[0m');
+    });
+
+    it('should handle empty string', () => {
+      const result = colorize('', green);
+      expect(result).to.equal('\x1b[32m\x1b[0m');
+    });
+
+    it('should handle special characters', () => {
+      const result = colorize('Hello\nWorld', blue);
+      expect(result).to.equal('\x1b[34mHello\nWorld\x1b[0m');
+    });
+
+    it('should handle unicode', () => {
+      const result = colorize('Привет', yellow);
+      expect(result).to.equal('\x1b[33mПривет\x1b[0m');
+    });
+
+    it('should handle emoji', () => {
+      const result = colorize('✨', magenta);
+      expect(result).to.equal('\x1b[35m✨\x1b[0m');
+    });
+
+    it('should work with context colors', () => {
+      const result = colorize('Low', contextColors.low);
+      expect(result).to.equal('\x1b[32mLow\x1b[0m');
     });
   });
 });

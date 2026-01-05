@@ -37,3 +37,23 @@ export const bold = '\x1b[1m';
 export const dim = '\x1b[2m';
 export const italic = '\x1b[3m';
 export const underline = '\x1b[4m';
+
+/**
+ * Context usage colors
+ * Used for context progress bar based on usage percentage
+ */
+export const contextColors = {
+  low: green,     // <50% usage
+  medium: yellow, // 50-79% usage
+  high: red       // >=80% usage
+} as const;
+
+/**
+ * Wrap text in ANSI color
+ * @param text - Text to colorize
+ * @param color - ANSI color code
+ * @returns Colorized text with reset code
+ */
+export function colorize(text: string, color: string): string {
+  return `${color}${text}${reset}`;
+}

@@ -33,4 +33,20 @@ export declare const bold = "\u001B[1m";
 export declare const dim = "\u001B[2m";
 export declare const italic = "\u001B[3m";
 export declare const underline = "\u001B[4m";
+/**
+ * Context usage colors
+ * Used for context progress bar based on usage percentage
+ */
+export declare const contextColors: {
+    readonly low: "\u001B[32m";
+    readonly medium: "\u001B[33m";
+    readonly high: "\u001B[31m";
+};
+/**
+ * Wrap text in ANSI color
+ * @param text - Text to colorize
+ * @param color - ANSI color code
+ * @returns Colorized text with reset code
+ */
+export declare function colorize(text: string, color: string): string;
 //# sourceMappingURL=colors.d.ts.map

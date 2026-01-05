@@ -1,0 +1,158 @@
+/**
+ * Unit tests for ModelWidget
+ */
+
+import { describe, it, beforeEach } from 'node:test';
+import { expect } from 'chai';
+import { ModelWidget } from '../../../src/widgets/model-widget.js';
+import type { StdinData } from '../../../src/types.js';
+
+// Helper to create mock StdinData
+function createMockStdinData(overrides: Partial<StdinData> = {}): StdinData {
+  return {
+    hook_event_name: 'Status',
+    session_id: 'test-session',
+    transcript_path: '/test/transcript.json',
+    cwd: '/test/project',
+    model: { id: 'test-model', display_name: 'Test Model' },
+    workspace: { current_dir: '/test/project', project_dir: '/test/project' },
+    version: '1.0.0',
+    output_style: { name: 'default' },
+    cost: {
+      total_cost_usd: 0.01,
+      total_duration_ms: 60000,
+      total_api_duration_ms: 5000,
+      total_lines_added: 10,
+      total_lines_removed: 5
+    },
+    context_window: {
+      total_input_tokens: 1000,
+      total_output_tokens: 500,
+      context_window_size: 200000,
+      current_usage: {
+        input_tokens: 500,
+        output_tokens: 250,
+        cache_creation_input_tokens: 100,
+        cache_read_input_tokens: 50
+      }
+    },
+    ...overrides
+  };
+}
+
+describe('ModelWidget', () => {
+  describe('initialization', () => {
+    it('should have correct id', () => {
+      const widget = new ModelWidget();
+      expect(widget.id).to.equal('model');
+    });
+
+    it('should have correct metadata', () => {
+      const widget = new ModelWidget();
+      expect(widget.metadata.name).to.equal('Model');
+      expect(widget.metadata.description).to.equal('Displays the current Claude model name');
+      expect(widget.metadata.version).to.equal('1.0.0');
+      expect(widget.metadata.author).to.equal('claude-scope');
+    });
+
+    it('should be enabled by default', async () => {
+      const widget = new ModelWidget();
+      await widget.initialize({ config: {} });
+      expect(widget.isEnabled()).to.be.true;
+    });
+  });
+
+  describe('render', () => {
+    it('should return model display name', async () => {
+      const widget = new ModelWidget();
+      await widget.update(createMockStdinData({ model: { id: 'claude-opus-4-5', display_name: 'Opus 4.5' } }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.equal('Opus 4.5');
+    });
+
+    it('should return different model names', async () => {
+      const widget = new ModelWidget();
+
+      await widget.update(createMockStdinData({ model: { id: 'claude-sonnet-4-1', display_name: 'Sonnet 4.1' } }));
+      expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('Sonnet 4.1');
+
+      await widget.update(createMockStdinData({ model: { id: 'claude-haiku-4-1', display_name: 'Haiku 4.1' } }));
+      expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('Haiku 4.1');
+    });
+
+    it('should handle model names with special characters', async () => {
+      const widget = new ModelWidget();
+      await widget.update(createMockStdinData({ model: { id: 'test', display_name: 'Claude-3.5-Sonnet (Beta)' } }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.equal('Claude-3.5-Sonnet (Beta)');
+    });
+
+    it('should throw error when render called before update', async () => {
+      const widget = new ModelWidget();
+
+      let threw = false;
+      try {
+        await widget.render({ width: 80, timestamp: 0 });
+      } catch (error) {
+        threw = true;
+        expect((error as Error).message).to.include('not initialized');
+      }
+      expect(threw).to.be.true;
+    });
+
+    it('should ignore render context width', async () => {
+      const widget = new ModelWidget();
+      await widget.update(createMockStdinData({ model: { id: 'test', display_name: 'Test Model' } }));
+
+      const result1 = await widget.render({ width: 10, timestamp: 0 });
+      const result2 = await widget.render({ width: 100, timestamp: 0 });
+
+      expect(result1).to.equal(result2);
+      expect(result1).to.equal('Test Model');
+    });
+  });
+
+  describe('widget contract', () => {
+    it('should implement all required methods', async () => {
+      const widget = new ModelWidget();
+
+      expect(typeof widget.initialize).to.equal('function');
+      expect(typeof widget.update).to.equal('function');
+      expect(typeof widget.render).to.equal('function');
+      expect(typeof widget.isEnabled).to.equal('function');
+    });
+
+    it('should work with widget registry lifecycle', async () => {
+      const widget = new ModelWidget();
+
+      await widget.initialize({ config: {} });
+      await widget.update(createMockStdinData());
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.be.a('string');
+    });
+  });
+
+  describe('enabled state', () => {
+    it('should respect enabled config', async () => {
+      const widget = new ModelWidget();
+      await widget.initialize({ config: { enabled: false } });
+
+      expect(widget.isEnabled()).to.be.false;
+    });
+
+    it('should render regardless of enabled state', async () => {
+      const widget = new ModelWidget();
+      await widget.initialize({ config: { enabled: false } });
+      await widget.update(createMockStdinData({ model: { id: 'test', display_name: 'Test' } }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.equal('Test');
+    });
+  });
+});

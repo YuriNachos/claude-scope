@@ -32,6 +32,23 @@ export class GitProvider {
         return result.current;
     }
     /**
+     * Get git diff statistics
+     * @returns Changes with insertions and deletions, or null if not a repo
+     */
+    async getChanges() {
+        if (!this._isRepo) {
+            return null;
+        }
+        const stats = await this.git.diffStats();
+        if (!stats) {
+            return null;
+        }
+        return {
+            insertions: stats.insertions,
+            deletions: stats.deletions
+        };
+    }
+    /**
      * Check if current path is a git repository
      */
     isRepo() {

@@ -2,7 +2,7 @@
  * Git operations provider
  * Wraps simple-git for dependency injection
  */
-import type { GitInfo } from '../types.js';
+import type { GitInfo, GitChanges } from '../types.js';
 /**
  * Git interface for dependency injection
  */
@@ -12,6 +12,10 @@ export interface IGit {
         current: string | null;
         all: string[];
     }>;
+    diffStats(): Promise<{
+        insertions: number;
+        deletions: number;
+    } | null>;
 }
 /**
  * Dependencies for GitProvider
@@ -36,6 +40,11 @@ export declare class GitProvider {
      * @returns Branch name or null if not in repo
      */
     getBranch(): Promise<string | null>;
+    /**
+     * Get git diff statistics
+     * @returns Changes with insertions and deletions, or null if not a repo
+     */
+    getChanges(): Promise<GitChanges | null>;
     /**
      * Check if current path is a git repository
      */
