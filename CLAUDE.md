@@ -220,16 +220,6 @@ This project uses **GitHub CLI (gh)** for Git operations instead of direct git c
 - Consistent interface for GitHub-specific operations
 - Pre-installed in the development environment
 
-### Installation
-
-```bash
-# macOS
-brew install gh
-
-# Authenticate
-gh auth login
-```
-
 ### Common Operations
 
 | Operation | GitHub CLI | Direct Git |
