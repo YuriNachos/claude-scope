@@ -183,6 +183,12 @@ describe('SessionWidget', () => {
 ## Development Rules
 
 - **File Size Constraints**: Keep files <~500 LOC; split/refactor as needed.
+- **Stick to Specifications**: When implementing from a plan/specification:
+  - Follow the exact code structure specified
+  - Do not "adapt" or "improve" without explicit approval
+  - If you find a genuine issue with the spec, ask before changing
+  - Test assertions must match what the spec specifies (e.g., use `expect` if spec says `expect`)
+  - Deviations from the spec will be rejected
 
 ## Git Conventions
 
@@ -193,6 +199,13 @@ describe('SessionWidget', () => {
 - Keep first line under 50 characters
 - Use imperative mood ("add" not "added")
 - Do not include AI attribution in messages
+
+### Git Tags
+- **NEVER create git tags without explicit user permission**
+- Tags should only be created when the user explicitly requests them
+- Example: User says "create a tag for v1.0.0" → then create tag
+- Do not create tags as part of automated implementation tasks
+- Tag format: `v` + semantic version (e.g., `v1.0.0`, `v0.1.0`)
 
 ### Workflow
 - Use `gh` CLI for GitHub operations (issues, PRs, etc.)
