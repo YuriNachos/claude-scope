@@ -41,6 +41,11 @@ jobs:
           git diff --staged --quiet || git commit -m "build: compile dist/ for ${{ github.ref_name }}"
           git push origin HEAD:main
 
+      - name: Publish to npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
