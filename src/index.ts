@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * Claude Scope - Claude Code statusline plugin
  * Entry point

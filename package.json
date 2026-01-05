@@ -2,6 +2,7 @@
   "name": "claude-scope",
   "version": "0.1.0",
   "description": "Claude Code plugin for session status and analytics",
+  "license": "MIT",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
