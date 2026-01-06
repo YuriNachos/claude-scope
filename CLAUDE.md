@@ -6,15 +6,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.2.5
+**Current version**: v0.3.0
 
 **Implemented features**:
 - Git branch and changes display
+- Multi-line statusline (config counts on second line)
 - Model information display
 - Context usage with progress bar
 - Session duration tracking
 - Cost estimation display
 - Lines added/removed display
+- Configuration counts (CLAUDE.md, rules, MCPs, hooks)
 
 **Planned features**: Active tools, running agents, todo progress, session analytics, configuration system.
 
@@ -24,7 +26,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 
 This project uses a **modular widget architecture** with a central registry, following Dependency Inversion Principle and modern TypeScript plugin best practices.
 
-**Current Implementation** (v0.2.5):
+**Current Implementation** (v0.3.0):
 ```
 src/
 ├── core/
@@ -35,7 +37,8 @@ src/
 ├── data/
 │   └── stdin-provider.ts     # Stdin JSON parser and validation
 ├── providers/
-│   └── git-provider.ts       # Git operations wrapper (IGit interface)
+│   ├── git-provider.ts       # Git operations wrapper (IGit interface)
+│   └── config-provider.ts    # Claude Code config scanner with caching
 ├── widgets/
 │   ├── core/
 │   │   └── stdin-data-widget.ts  # Base class for widgets receiving StdinData
@@ -45,6 +48,7 @@ src/
 │   ├── context-widget.ts     # Context usage with progress bar
 │   ├── cost-widget.ts        # Cost display widget
 │   ├── lines-widget.ts       # Lines added/removed widget
+│   ├── config-count-widget.ts # Configuration counts widget
 │   ├── duration-widget.ts    # Session duration formatter
 │   └── model-widget.ts       # Model display widget
 ├── ui/
@@ -121,6 +125,16 @@ interface IWidget {
 }
 ```
 
+**Widget metadata** includes `line` property for multi-line support:
+
+```typescript
+interface IWidgetMetadata {
+  name: string;
+  description: string;
+  line?: number;  // Which statusline line (0 = first, 1 = second, etc.)
+}
+```
+
 ### Widget Base Class
 
 For widgets that receive `StdinData`, use the `StdinDataWidget` base class (Template Method Pattern):
@@ -180,6 +194,18 @@ interface ContextUsage {
   percentage: number;
 }
 ```
+
+### Renderer
+
+The `Renderer` class combines widget outputs into multiple statusline lines:
+
+```typescript
+const lines = await renderer.render(widgets, context);
+// Returns: string[] (array of lines, one per line number)
+```
+
+Widgets are grouped by their `line` property and rendered separately.
+Lines are joined with newlines in the main entry point.
 
 ### Git Provider Abstraction
 
