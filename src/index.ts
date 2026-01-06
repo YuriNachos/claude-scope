@@ -36,9 +36,10 @@ export async function main(): Promise<string> {
     // Read JSON from stdin
     const stdin = await readStdin();
 
-    // If stdin is empty, return empty string
+    // If stdin is empty, still try to show git info
     if (!stdin || stdin.trim().length === 0) {
-      return '';
+      const fallback = await tryGitFallback();
+      return fallback;
     }
 
     // Parse and validate with StdinProvider
@@ -78,7 +79,26 @@ export async function main(): Promise<string> {
 
     return output || '';
   } catch (error) {
-    // Return empty string on any error
+    // Try to show at least git info on error
+    const fallback = await tryGitFallback();
+    return fallback;
+  }
+}
+
+/**
+ * Fallback: try to show at least git info when stdin parsing fails
+ */
+async function tryGitFallback(): Promise<string> {
+  try {
+    const cwd = process.cwd();
+
+    const widget = new GitWidget();
+    await widget.initialize({ config: {} });
+    await widget.update({ cwd, session_id: 'fallback' } as any);
+
+    const result = await widget.render({ width: 80, timestamp: Date.now() });
+    return result || '';
+  } catch {
     return '';
   }
 }

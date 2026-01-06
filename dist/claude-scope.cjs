@@ -279,7 +279,7 @@ var GitWidget = class {
       if (!branch) {
         return null;
       }
-      return ` ${branch}`;
+      return branch;
     } catch {
       return null;
     }
@@ -722,7 +722,8 @@ async function main() {
   try {
     const stdin = await readStdin();
     if (!stdin || stdin.trim().length === 0) {
-      return "";
+      const fallback = await tryGitFallback();
+      return fallback;
     }
     const provider = new StdinProvider();
     const stdinData = await provider.parse(stdin);
@@ -748,6 +749,19 @@ async function main() {
     );
     return output || "";
   } catch (error) {
+    const fallback = await tryGitFallback();
+    return fallback;
+  }
+}
+async function tryGitFallback() {
+  try {
+    const cwd = process.cwd();
+    const widget = new GitWidget();
+    await widget.initialize({ config: {} });
+    await widget.update({ cwd, session_id: "fallback" });
+    const result = await widget.render({ width: 80, timestamp: Date.now() });
+    return result || "";
+  } catch {
     return "";
   }
 }

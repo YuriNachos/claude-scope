@@ -43,7 +43,7 @@ export class GitWidget {
             if (!branch) {
                 return null;
             }
-            return ` ${branch}`;
+            return branch;
         }
         catch {
             // Log specific error for debugging but return null (graceful degradation)

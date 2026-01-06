@@ -56,22 +56,26 @@ describe('E2E: CLI stdin → stdout flow', () => {
     expect(stdout).to.include('2m 0s');
   });
 
-  it('should return empty string for invalid JSON', async () => {
+  it('should return git fallback for invalid JSON', async () => {
     const { stdout } = await execAsync(`echo 'invalid json' | node dist/index.js`, {
       cwd: process.cwd()
     });
 
-    // Should return empty output (no status line)
-    expect(stdout.trim()).to.equal('');
+    // Should return git branch as fallback (or empty if not in git repo)
+    // We're in a git repo, so expect branch name
+    expect(stdout).to.not.equal('');
+    // Should contain branch name (main, master, or feature branch)
+    expect(stdout).to.match(/main|master|origin/);
   });
 
-  it('should return empty string for empty stdin', async () => {
+  it('should return git fallback for empty stdin', async () => {
     const { stdout } = await execAsync(`echo '' | node dist/index.js`, {
       cwd: process.cwd()
     });
 
-    // Should return empty output
-    expect(stdout.trim()).to.equal('');
+    // Should return git branch as fallback
+    expect(stdout).to.not.equal('');
+    expect(stdout).to.match(/main|master|origin/);
   });
 
   it('should correctly calculate context percentage without cache_read tokens', async () => {

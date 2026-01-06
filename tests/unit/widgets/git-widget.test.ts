@@ -156,7 +156,7 @@ describe('GitWidget', () => {
       expect(result).to.be.null;
     });
 
-    it('should render branch name with leading space', async () => {
+    it('should render branch name without leading space', async () => {
       const mockGit = new MockGit();
       mockGit.setBranch('develop');
 
@@ -166,7 +166,7 @@ describe('GitWidget', () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.be.a('string');
-      expect(result).to.match(/^\s+\S+/); // Starts with whitespace
+      expect(result).to.equal('develop'); // No leading space
     });
 
     it('should handle detached HEAD state (commit hash)', async () => {
