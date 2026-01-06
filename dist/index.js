@@ -60,9 +60,10 @@ export async function main() {
         for (const widget of registry.getAll()) {
             await widget.update(stdinData);
         }
-        // Render
-        const output = await renderer.render(registry.getEnabledWidgets(), { width: 80, timestamp: Date.now() });
-        return output || '';
+        // Render (now returns array of lines)
+        const lines = await renderer.render(registry.getEnabledWidgets(), { width: 80, timestamp: Date.now() });
+        // Join with newline
+        return lines.join('\n');
     }
     catch (error) {
         // Try to show at least git info on error

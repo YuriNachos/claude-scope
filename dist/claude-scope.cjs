@@ -143,34 +143,51 @@ var Renderer = class {
     this.showErrors = options.showErrors ?? false;
   }
   /**
-   * Render widgets into a single line with error boundaries
+   * Render widgets into multiple lines with error boundaries
    *
-   * Widgets that throw errors are logged (via onError callback) and skipped,
-   * allowing other widgets to continue rendering.
+   * Widgets are grouped by their metadata.line property and rendered
+   * on separate lines. Widgets that throw errors are logged (via onError
+   * callback) and skipped, allowing other widgets to continue rendering.
    *
    * @param widgets - Array of widgets to render
    * @param context - Render context with width and timestamp
-   * @returns Combined widget outputs separated by separator
+   * @returns Array of rendered lines (one per line number)
    */
   async render(widgets, context) {
-    const outputs = [];
+    const lineMap = /* @__PURE__ */ new Map();
     for (const widget of widgets) {
       if (!widget.isEnabled()) {
         continue;
       }
-      try {
-        const output = await widget.render(context);
-        if (output !== null) {
-          outputs.push(output);
-        }
-      } catch (error) {
-        this.handleError(error, widget);
-        if (this.showErrors) {
-          outputs.push(`${widget.id}:<err>`);
+      const line = widget.metadata.line ?? 0;
+      if (!lineMap.has(line)) {
+        lineMap.set(line, []);
+      }
+      lineMap.get(line).push(widget);
+    }
+    const lines = [];
+    const sortedLines = Array.from(lineMap.entries()).sort((a, b) => a[0] - b[0]);
+    for (const [, widgetsForLine] of sortedLines) {
+      const outputs = [];
+      for (const widget of widgetsForLine) {
+        try {
+          const output = await widget.render(context);
+          if (output !== null) {
+            outputs.push(output);
+          }
+        } catch (error) {
+          this.handleError(error, widget);
+          if (this.showErrors) {
+            outputs.push(`${widget.id}:<err>`);
+          }
         }
       }
+      const line = outputs.join(this.separator);
+      if (line) {
+        lines.push(line);
+      }
     }
-    return outputs.join(this.separator);
+    return lines;
   }
   /**
    * Set custom separator
@@ -193,12 +210,13 @@ var Renderer = class {
 };
 
 // src/core/widget-types.ts
-function createWidgetMetadata(name, description, version = "1.0.0", author = "claude-scope") {
+function createWidgetMetadata(name, description, version = "1.0.0", author = "claude-scope", line = 0) {
   return {
     name,
     description,
     version,
-    author
+    author,
+    line
   };
 }
 
@@ -252,7 +270,11 @@ var GitWidget = class {
   id = "git";
   metadata = createWidgetMetadata(
     "Git Widget",
-    "Displays current git branch"
+    "Displays current git branch",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
   );
   gitFactory;
   git = null;
@@ -360,7 +382,11 @@ var ModelWidget = class extends StdinDataWidget {
   id = "model";
   metadata = createWidgetMetadata(
     "Model",
-    "Displays the current Claude model name"
+    "Displays the current Claude model name",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
   );
   renderWithData(data, context) {
     return data.model.display_name;
@@ -424,7 +450,11 @@ var ContextWidget = class extends StdinDataWidget {
   id = "context";
   metadata = createWidgetMetadata(
     "Context",
-    "Displays context window usage with progress bar"
+    "Displays context window usage with progress bar",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
   );
   renderWithData(data, context) {
     const { current_usage, context_window_size } = data.context_window;
@@ -442,7 +472,11 @@ var CostWidget = class extends StdinDataWidget {
   id = "cost";
   metadata = createWidgetMetadata(
     "Cost",
-    "Displays session cost in USD"
+    "Displays session cost in USD",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
   );
   renderWithData(data, context) {
     if (!data.cost || data.cost.total_cost_usd === void 0) return null;
@@ -455,7 +489,11 @@ var LinesWidget = class extends StdinDataWidget {
   id = "lines";
   metadata = createWidgetMetadata(
     "Lines",
-    "Displays lines added/removed in session"
+    "Displays lines added/removed in session",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
   );
   renderWithData(data, context) {
     const added = data.cost?.total_lines_added ?? 0;
@@ -471,7 +509,11 @@ var DurationWidget = class extends StdinDataWidget {
   id = "duration";
   metadata = createWidgetMetadata(
     "Duration",
-    "Displays elapsed session time"
+    "Displays elapsed session time",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
   );
   renderWithData(data, context) {
     if (!data.cost || data.cost.total_duration_ms === void 0) return null;
@@ -484,7 +526,11 @@ var GitChangesWidget = class {
   id = "git-changes";
   metadata = createWidgetMetadata(
     "Git Changes",
-    "Displays git diff statistics"
+    "Displays git diff statistics",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
   );
   gitFactory;
   git = null;
@@ -760,11 +806,11 @@ async function main() {
     for (const widget of registry.getAll()) {
       await widget.update(stdinData);
     }
-    const output = await renderer.render(
+    const lines = await renderer.render(
       registry.getEnabledWidgets(),
       { width: 80, timestamp: Date.now() }
     );
-    return output || "";
+    return lines.join("\n");
   } catch (error) {
     const fallback = await tryGitFallback();
     return fallback;

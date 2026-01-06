@@ -37,40 +37,60 @@ export class Renderer {
   }
 
   /**
-   * Render widgets into a single line with error boundaries
+   * Render widgets into multiple lines with error boundaries
    *
-   * Widgets that throw errors are logged (via onError callback) and skipped,
-   * allowing other widgets to continue rendering.
+   * Widgets are grouped by their metadata.line property and rendered
+   * on separate lines. Widgets that throw errors are logged (via onError
+   * callback) and skipped, allowing other widgets to continue rendering.
    *
    * @param widgets - Array of widgets to render
    * @param context - Render context with width and timestamp
-   * @returns Combined widget outputs separated by separator
+   * @returns Array of rendered lines (one per line number)
    */
-  async render(widgets: IWidget[], context: RenderContext): Promise<string> {
-    const outputs: string[] = [];
+  async render(widgets: IWidget[], context: RenderContext): Promise<string[]> {
+    // Group widgets by line
+    const lineMap = new Map<number, IWidget[]>();
 
     for (const widget of widgets) {
       if (!widget.isEnabled()) {
         continue;
       }
 
-      try {
-        const output = await widget.render(context);
-        if (output !== null) {
-          outputs.push(output);
-        }
-      } catch (error) {
-        // Log error but continue rendering other widgets
-        this.handleError(error as Error, widget);
+      const line = widget.metadata.line ?? 0;
+      if (!lineMap.has(line)) {
+        lineMap.set(line, []);
+      }
+      lineMap.get(line)!.push(widget);
+    }
 
-        // Optional: show error placeholder in output
-        if (this.showErrors) {
-          outputs.push(`${widget.id}:<err>`);
+    // Render each line
+    const lines: string[] = [];
+    const sortedLines = Array.from(lineMap.entries()).sort((a, b) => a[0] - b[0]);
+
+    for (const [, widgetsForLine] of sortedLines) {
+      const outputs: string[] = [];
+
+      for (const widget of widgetsForLine) {
+        try {
+          const output = await widget.render(context);
+          if (output !== null) {
+            outputs.push(output);
+          }
+        } catch (error) {
+          this.handleError(error as Error, widget);
+          if (this.showErrors) {
+            outputs.push(`${widget.id}:<err>`);
+          }
         }
+      }
+
+      const line = outputs.join(this.separator);
+      if (line) {
+        lines.push(line);
       }
     }
 
-    return outputs.join(this.separator);
+    return lines;
   }
 
   /**

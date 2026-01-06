@@ -27,16 +27,17 @@ export declare class Renderer {
     private showErrors;
     constructor(options?: RendererOptions);
     /**
-     * Render widgets into a single line with error boundaries
+     * Render widgets into multiple lines with error boundaries
      *
-     * Widgets that throw errors are logged (via onError callback) and skipped,
-     * allowing other widgets to continue rendering.
+     * Widgets are grouped by their metadata.line property and rendered
+     * on separate lines. Widgets that throw errors are logged (via onError
+     * callback) and skipped, allowing other widgets to continue rendering.
      *
      * @param widgets - Array of widgets to render
      * @param context - Render context with width and timestamp
-     * @returns Combined widget outputs separated by separator
+     * @returns Array of rendered lines (one per line number)
      */
-    render(widgets: IWidget[], context: RenderContext): Promise<string>;
+    render(widgets: IWidget[], context: RenderContext): Promise<string[]>;
     /**
      * Set custom separator
      */

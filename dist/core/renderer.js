@@ -19,37 +19,54 @@ export class Renderer {
         this.showErrors = options.showErrors ?? false;
     }
     /**
-     * Render widgets into a single line with error boundaries
+     * Render widgets into multiple lines with error boundaries
      *
-     * Widgets that throw errors are logged (via onError callback) and skipped,
-     * allowing other widgets to continue rendering.
+     * Widgets are grouped by their metadata.line property and rendered
+     * on separate lines. Widgets that throw errors are logged (via onError
+     * callback) and skipped, allowing other widgets to continue rendering.
      *
      * @param widgets - Array of widgets to render
      * @param context - Render context with width and timestamp
-     * @returns Combined widget outputs separated by separator
+     * @returns Array of rendered lines (one per line number)
      */
     async render(widgets, context) {
-        const outputs = [];
+        // Group widgets by line
+        const lineMap = new Map();
         for (const widget of widgets) {
             if (!widget.isEnabled()) {
                 continue;
             }
-            try {
-                const output = await widget.render(context);
-                if (output !== null) {
-                    outputs.push(output);
+            const line = widget.metadata.line ?? 0;
+            if (!lineMap.has(line)) {
+                lineMap.set(line, []);
+            }
+            lineMap.get(line).push(widget);
+        }
+        // Render each line
+        const lines = [];
+        const sortedLines = Array.from(lineMap.entries()).sort((a, b) => a[0] - b[0]);
+        for (const [, widgetsForLine] of sortedLines) {
+            const outputs = [];
+            for (const widget of widgetsForLine) {
+                try {
+                    const output = await widget.render(context);
+                    if (output !== null) {
+                        outputs.push(output);
+                    }
+                }
+                catch (error) {
+                    this.handleError(error, widget);
+                    if (this.showErrors) {
+                        outputs.push(`${widget.id}:<err>`);
+                    }
                 }
             }
-            catch (error) {
-                // Log error but continue rendering other widgets
-                this.handleError(error, widget);
-                // Optional: show error placeholder in output
-                if (this.showErrors) {
-                    outputs.push(`${widget.id}:<err>`);
-                }
+            const line = outputs.join(this.separator);
+            if (line) {
+                lines.push(line);
             }
         }
-        return outputs.join(this.separator);
+        return lines;
     }
     /**
      * Set custom separator

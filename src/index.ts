@@ -73,13 +73,14 @@ export async function main(): Promise<string> {
       await widget.update(stdinData);
     }
 
-    // Render
-    const output = await renderer.render(
+    // Render (now returns array of lines)
+    const lines = await renderer.render(
       registry.getEnabledWidgets(),
       { width: 80, timestamp: Date.now() }
     );
 
-    return output || '';
+    // Join with newline
+    return lines.join('\n');
   } catch (error) {
     // Try to show at least git info on error
     const fallback = await tryGitFallback();

@@ -40,12 +40,15 @@ describe('Core Widgets Integration', () => {
       await widget.update(mockData);
     }
 
-    const output = await renderer.render(
+    const lines = await renderer.render(
       registry.getEnabledWidgets(),
       { width: 80, timestamp: Date.now() }
     );
 
-    expect(output).to.be.a('string');
+    // Join for testing (simulates main() behavior)
+    const output = lines.join('\n');
+
+    expect(lines).to.be.an('array');
     expect(output).to.include('Opus 4.5');
     expect(output).to.include('[');
     expect(output).to.include(']');
@@ -71,10 +74,11 @@ describe('Core Widgets Integration', () => {
       await widget.update(mockData);
     }
 
-    const output = await renderer.render(
+    const lines = await renderer.render(
       registry.getEnabledWidgets(),
       { width: 80, timestamp: Date.now() }
     );
+    const output = lines.join('\n');
 
     expect(output).to.include('Opus 4.5');
   });
@@ -131,10 +135,13 @@ describe('Core Widgets Integration', () => {
       await widget.update(mockData);
     }
 
-    const output = await renderer.render(
+    const lines = await renderer.render(
       registry.getEnabledWidgets(),
       { width: 80, timestamp: Date.now() }
     );
+
+    // Join for testing
+    const output = lines.join('\n');
 
     // Check order by finding positions
     const modelPos = output.indexOf('Opus 4.5');
@@ -144,7 +151,7 @@ describe('Core Widgets Integration', () => {
 
     expect(modelPos).to.be.lessThan(contextPos);
     expect(contextPos).to.be.lessThan(costPos);
-    expect(costPos).to.be.lessThan(linesPos);
+    expect(costPos).to.be.below(linesPos);
   });
 
   it('should handle updates to all widgets', async () => {
@@ -166,10 +173,11 @@ describe('Core Widgets Integration', () => {
       await widget.update(mockData);
     }
 
-    let output = await renderer.render(
+    let lines = await renderer.render(
       registry.getEnabledWidgets(),
       { width: 80, timestamp: Date.now() }
     );
+    let output = lines.join('\n');
 
     expect(output).to.include('Model 1');
     expect(output).to.include('$1.00');
@@ -184,10 +192,11 @@ describe('Core Widgets Integration', () => {
       await widget.update(mockData);
     }
 
-    output = await renderer.render(
+    lines = await renderer.render(
       registry.getEnabledWidgets(),
       { width: 80, timestamp: Date.now() }
     );
+    output = lines.join('\n');
 
     expect(output).to.include('Model 2');
     expect(output).to.include('$2.50');

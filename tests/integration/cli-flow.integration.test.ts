@@ -91,13 +91,16 @@ describe('CLI Flow Integration', () => {
         timestamp: Date.now()
       };
 
-      const output = await renderer.render(
+      const lines = await renderer.render(
         registry.getEnabledWidgets(),
         renderContext
       );
 
+      // Join lines for testing (simulates main() behavior)
+      const output = lines.join('\n');
+
       // Assert: Output contains widget data
-      expect(output).to.be.a('string');
+      expect(lines).to.be.an('array');
       expect(output).to.include('Claude Opus 4.5');
       expect(output).to.include('$0.01');
     });
@@ -114,10 +117,10 @@ describe('CLI Flow Integration', () => {
 
       // Render output
       const renderContext: RenderContext = { width: 80, timestamp: Date.now() };
-      const output = await renderer.render(registry.getEnabledWidgets(), renderContext);
+      const lines = await renderer.render(registry.getEnabledWidgets(), renderContext);
 
       // Assert: No output (widget disabled)
-      expect(output).to.equal('');
+      expect(lines).to.deep.equal([]);
     });
   });
 
@@ -188,11 +191,12 @@ describe('CLI Flow Integration', () => {
       await modelWidget.update(stdinData);
 
       const renderContext: RenderContext = { width: 80, timestamp: Date.now() };
-      const output = await renderer.render(registry.getEnabledWidgets(), renderContext);
+      const lines = await renderer.render(registry.getEnabledWidgets(), renderContext);
+      const output = lines.join('\n');
 
       // Assert: Output contains model name
       expect(output).to.include('Opus 4.5');
-      expect(output).to.be.a('string');
+      expect(lines).to.be.an('array');
     });
 
     it('should render output with custom separator', async () => {
@@ -210,7 +214,8 @@ describe('CLI Flow Integration', () => {
       await modelWidget.update(stdinData);
 
       const renderContext: RenderContext = { width: 80, timestamp: Date.now() };
-      const output = await customRenderer.render(registry.getEnabledWidgets(), renderContext);
+      const lines = await customRenderer.render(registry.getEnabledWidgets(), renderContext);
+      const output = lines.join('\n');
 
       // Assert: Output contains model
       expect(output).to.include('Opus 4.5');
@@ -229,10 +234,10 @@ describe('CLI Flow Integration', () => {
       const widgetOutput = await costWidget.render(renderContext);
       expect(widgetOutput).to.be.null;
 
-      const output = await renderer.render(registry.getEnabledWidgets(), renderContext);
+      const lines = await renderer.render(registry.getEnabledWidgets(), renderContext);
 
       // Assert: Empty output when widget returns null
-      expect(output).to.equal('');
+      expect(lines).to.deep.equal([]);
     });
   });
 
@@ -299,7 +304,8 @@ describe('CLI Flow Integration', () => {
 
       // Step 3: Render output
       const renderContext: RenderContext = { width: 80, timestamp: Date.now() };
-      const output = await renderer.render(registry.getEnabledWidgets(), renderContext);
+      const lines = await renderer.render(registry.getEnabledWidgets(), renderContext);
+      const output = lines.join('\n');
       expect(output).to.include('Opus 4.5');
 
       // Step 4: Cleanup
@@ -343,8 +349,8 @@ describe('CLI Flow Integration', () => {
       const outputs: string[] = [];
       for (let i = 0; i < 3; i++) {
         const renderContext: RenderContext = { width: 80, timestamp: Date.now() };
-        const output = await renderer.render(registry.getEnabledWidgets(), renderContext);
-        outputs.push(output);
+        const lines = await renderer.render(registry.getEnabledWidgets(), renderContext);
+        outputs.push(lines.join('\n'));
       }
 
       // Assert: All renders succeed
