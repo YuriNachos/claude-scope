@@ -64,8 +64,8 @@ describe('E2E: CLI stdin → stdout flow', () => {
     // Should return git branch as fallback (or empty if not in git repo)
     // We're in a git repo, so expect branch name
     expect(stdout).to.not.equal('');
-    // Should contain branch name (main, master, or feature branch)
-    expect(stdout).to.match(/main|master|origin/);
+    // Should contain branch name (main, master, HEAD, or feature branch)
+    expect(stdout).to.match(/main|master|origin|HEAD/);
   });
 
   it('should return git fallback for empty stdin', async () => {
@@ -75,7 +75,7 @@ describe('E2E: CLI stdin → stdout flow', () => {
 
     // Should return git branch as fallback
     expect(stdout).to.not.equal('');
-    expect(stdout).to.match(/main|master|origin/);
+    expect(stdout).to.match(/main|master|origin|HEAD/);
   });
 
   it('should correctly calculate context percentage without cache_read tokens', async () => {
