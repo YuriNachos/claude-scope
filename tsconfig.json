@@ -17,7 +17,12 @@
     "allowSyntheticDefaultImports": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "#*": ["src/*"],
+      "#core/*": ["src/core/*"],
+      "#widgets/*": ["src/widgets/*"],
+      "#data/*": ["src/data/*"],
+      "#ui/*": ["src/ui/*"],
+      "#schemas/*": ["src/schemas/*"]
     }
   },
   "include": ["src/**/*"],
