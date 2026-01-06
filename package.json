@@ -28,7 +28,8 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
-    "simple-git": "^3.27.0"
+    "simple-git": "^3.27.0",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
