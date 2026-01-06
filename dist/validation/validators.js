@@ -1,4 +1,4 @@
-import { success, failure } from './result';
+import { success, failure } from './result.js';
 export function string() {
     return {
         validate(value) {
