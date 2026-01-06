@@ -4,13 +4,7 @@
   "description": "Claude Code plugin for session status and analytics",
   "license": "MIT",
   "type": "module",
-  "main": "dist/index.js",
-  "exports": {
-    ".": {
-      "import": "dist/index.js",
-      "types": "dist/index.d.ts"
-    }
-  },
+  "main": "dist/claude-scope.cjs",
   "bin": {
     "claude-scope": "dist/claude-scope.cjs"
   },
