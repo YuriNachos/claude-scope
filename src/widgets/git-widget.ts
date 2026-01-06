@@ -4,22 +4,14 @@
  *
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
  * because it has different lifecycle requirements:
- * - Uses GitProvider instead of transforming StdinData directly
+ * - Uses simple-git directly for git operations
  * - Maintains internal state (currentCwd) for change detection
- * - Needs to reinitialize GitProvider when cwd changes
+ * - Needs to reinitialize git instance when cwd changes
  */
 
+import { simpleGit, type SimpleGit } from 'simple-git';
 import type { IWidget, WidgetContext, RenderContext, StdinData } from '../core/types.js';
-import type { GitProviderDeps } from '../providers/git-provider.js';
-import { GitProvider } from '../providers/git-provider.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
-
-/**
- * Git widget dependencies
- */
-export interface GitWidgetDeps {
-  git: GitProviderDeps['git'];
-}
 
 /**
  * Widget displaying git branch information
@@ -31,12 +23,12 @@ export class GitWidget implements IWidget {
     'Displays current git branch'
   );
 
-  private gitProvider: GitProvider;
+  private git: SimpleGit;
   private enabled = true;
-  private currentCwd = '';
+  private cwd: string | null = null;
 
-  constructor(deps: GitWidgetDeps) {
-    this.gitProvider = new GitProvider({ git: deps.git });
+  constructor() {
+    this.git = simpleGit();
   }
 
   async initialize(context: WidgetContext): Promise<void> {
@@ -44,12 +36,14 @@ export class GitWidget implements IWidget {
   }
 
   async render(context: RenderContext): Promise<string | null> {
-    if (!this.enabled || !this.gitProvider.isRepo()) {
+    if (!this.enabled || !this.cwd) {
       return null;
     }
 
     try {
-      const branch = await this.gitProvider.getBranch();
+      const status = await this.git.status();
+      const branch = status.current || null;
+
       if (!branch) {
         return null;
       }
@@ -57,15 +51,16 @@ export class GitWidget implements IWidget {
       return ` ${branch}`;
     } catch (error) {
       // Log specific error for debugging but return null (graceful degradation)
-      console.debug(`[GitWidget] Failed to get branch: ${(error as Error).message}`);
+      console.debug(`[GitWidget] Failed to get status: ${(error as Error).message}`);
       return null;
     }
   }
 
   async update(data: StdinData): Promise<void> {
-    if (data.cwd !== this.currentCwd) {
-      this.currentCwd = data.cwd;
-      await this.gitProvider.init(data.cwd);
+    // Re-initialize git if cwd changed
+    if (data.cwd !== this.cwd) {
+      this.cwd = data.cwd;
+      this.git = simpleGit(data.cwd);
     }
   }
 
@@ -74,6 +69,6 @@ export class GitWidget implements IWidget {
   }
 
   async cleanup(): Promise<void> {
-    // No resources to clean up
+    // simple-git doesn't need cleanup
   }
 }
