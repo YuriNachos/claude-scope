@@ -5,7 +5,7 @@
  */
 import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
-import { formatDuration } from '../utils/formatters.js';
+import { formatDuration } from '../ui/utils/formatters.js';
 export class DurationWidget extends StdinDataWidget {
     id = 'duration';
     metadata = createWidgetMetadata('Duration', 'Displays elapsed session time');

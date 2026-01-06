@@ -6,7 +6,7 @@
 
 import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
-import { formatDuration } from '../utils/formatters.js';
+import { formatDuration } from '../ui/utils/formatters.js';
 import type { RenderContext, StdinData } from '../types.js';
 
 export class DurationWidget extends StdinDataWidget {

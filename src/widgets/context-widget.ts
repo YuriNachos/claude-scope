@@ -6,7 +6,7 @@
 
 import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
-import { progressBar, getContextColor, colorize } from '../utils/formatters.js';
+import { progressBar, getContextColor, colorize } from '../ui/utils/formatters.js';
 import { DEFAULTS } from '../constants.js';
 import type { RenderContext, StdinData } from '../types.js';
 
