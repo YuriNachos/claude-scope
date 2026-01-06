@@ -48,12 +48,18 @@ export class GitWidget implements IWidget {
       return null;
     }
 
-    const branch = await this.gitProvider.getBranch();
-    if (!branch) {
+    try {
+      const branch = await this.gitProvider.getBranch();
+      if (!branch) {
+        return null;
+      }
+
+      return ` ${branch}`;
+    } catch (error) {
+      // Log specific error for debugging but return null (graceful degradation)
+      console.debug(`[GitWidget] Failed to get branch: ${(error as Error).message}`);
       return null;
     }
-
-    return ` ${branch}`;
   }
 
   async update(data: StdinData): Promise<void> {
