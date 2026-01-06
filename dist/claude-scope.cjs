@@ -429,7 +429,7 @@ var ContextWidget = class extends StdinDataWidget {
   renderWithData(data, context) {
     const { current_usage, context_window_size } = data.context_window;
     if (!current_usage) return null;
-    const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.output_tokens;
+    const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
     const percent = Math.round(used / context_window_size * 100);
     const bar = progressBar(percent, DEFAULTS.PROGRESS_BAR_WIDTH);
     const color = getContextColor(percent);
