@@ -1,13 +1,13 @@
 /**
  * Cost Widget
  *
- * Displays session cost in USD
+ * Displays total session cost
  */
 
 import { StdinDataWidget } from '../core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
 import { formatCostUSD } from '../utils/formatters.js';
-import type { RenderContext } from '../core/types.js';
+import type { RenderContext, StdinData } from '../types.js';
 
 export class CostWidget extends StdinDataWidget {
   readonly id = 'cost';
@@ -16,8 +16,8 @@ export class CostWidget extends StdinDataWidget {
     'Displays session cost in USD'
   );
 
-  async render(context: RenderContext): Promise<string | null> {
-    const data = this.getData();
+  protected renderWithData(data: StdinData, context: RenderContext): string | null {
+    if (!data.cost) return null;
     return formatCostUSD(data.cost.total_cost_usd);
   }
 }

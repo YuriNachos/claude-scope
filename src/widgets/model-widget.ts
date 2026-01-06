@@ -6,7 +6,7 @@
 
 import { StdinDataWidget } from '../core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
-import type { RenderContext } from '../core/types.js';
+import type { RenderContext, StdinData } from '../types.js';
 
 export class ModelWidget extends StdinDataWidget {
   readonly id = 'model';
@@ -15,8 +15,7 @@ export class ModelWidget extends StdinDataWidget {
     'Displays the current Claude model name'
   );
 
-  async render(context: RenderContext): Promise<string | null> {
-    const data = this.getData();
+  protected renderWithData(data: StdinData, context: RenderContext): string | null {
     return data.model.display_name;
   }
 }
