@@ -4,7 +4,7 @@
 
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { DurationWidget } from '../../../src/widgets/duration-widget.js';
+import { DurationWidget } from '#/widgets/duration-widget.js';
 import { createMockStdinData } from '../../fixtures/mock-data.js';
 
 describe('DurationWidget', () => {

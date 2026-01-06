@@ -4,9 +4,9 @@
 
 import { describe, it, beforeEach } from 'node:test';
 import { expect } from 'chai';
-import { StdinDataWidget } from '../../../src/core/stdin-data-widget.js';
+import { StdinDataWidget } from '#/core/stdin-data-widget.js';
 import { createMockStdinData } from '../../fixtures/mock-data.js';
-import type { IWidgetMetadata, WidgetContext, RenderContext } from '../../../src/core/types.js';
+import type { IWidgetMetadata, WidgetContext, RenderContext } from '#/core/types.js';
 
 // Test implementation of abstract class
 class TestWidget extends StdinDataWidget {

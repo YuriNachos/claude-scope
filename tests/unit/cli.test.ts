@@ -2,7 +2,7 @@ import { describe, it } from 'node:test';
 import { expect } from 'chai';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
-import { main } from '../../src/index.js';
+import { main } from '#/index.js';
 
 describe('CLI Entry Point', () => {
   describe('built distribution', () => {

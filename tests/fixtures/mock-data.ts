@@ -2,7 +2,7 @@
  * Mock data fixtures for testing
  */
 
-import type { StdinData } from '../../src/types.js';
+import type { StdinData } from '#/types.js';
 
 /**
  * Create mock StdinData with optional overrides

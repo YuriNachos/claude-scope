@@ -4,7 +4,7 @@
 
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { StdinProvider, StdinParseError, StdinValidationError } from '../../../src/data/stdin-provider.js';
+import { StdinProvider, StdinParseError, StdinValidationError } from '#/data/stdin-provider.js';
 
 describe('StdinProvider', () => {
   const validInput = JSON.stringify({

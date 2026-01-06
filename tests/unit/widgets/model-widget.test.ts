@@ -4,7 +4,7 @@
 
 import { describe, it, beforeEach } from 'node:test';
 import { expect } from 'chai';
-import { ModelWidget } from '../../../src/widgets/model-widget.js';
+import { ModelWidget } from '#/widgets/model-widget.js';
 import { createMockStdinData } from '../../fixtures/mock-data.js';
 
 describe('ModelWidget', () => {

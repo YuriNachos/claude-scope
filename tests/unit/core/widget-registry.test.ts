@@ -1,12 +1,12 @@
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { WidgetRegistry } from '../../../src/core/widget-registry.js';
-import { GitWidget } from '../../../src/widgets/git-widget.js';
+import { WidgetRegistry } from '#/core/widget-registry.js';
+import { GitWidget } from '#/widgets/git/git-widget.js';
 
 describe('WidgetRegistry', () => {
   it('should register a widget', async () => {
     const registry = new WidgetRegistry();
-    const mockWidget = new GitWidget({ git: {} as any });
+    const mockWidget = new GitWidget();
 
     await registry.register(mockWidget);
 
@@ -15,7 +15,7 @@ describe('WidgetRegistry', () => {
 
   it('should register a widget with context', async () => {
     const registry = new WidgetRegistry();
-    const mockWidget = new GitWidget({ git: {} as any });
+    const mockWidget = new GitWidget();
 
     await registry.register(mockWidget, { config: { enabled: true } });
 
@@ -25,7 +25,7 @@ describe('WidgetRegistry', () => {
 
   it('should retrieve a registered widget', async () => {
     const registry = new WidgetRegistry();
-    const mockWidget = new GitWidget({ git: {} as any });
+    const mockWidget = new GitWidget();
 
     await registry.register(mockWidget);
     const retrieved = registry.get('git');
@@ -35,7 +35,7 @@ describe('WidgetRegistry', () => {
 
   it('should return all enabled widgets', async () => {
     const registry = new WidgetRegistry();
-    const widget1 = new GitWidget({ git: {} as any });
+    const widget1 = new GitWidget();
     const widget2 = {
       id: 'test',
       metadata: { name: 'Test', description: 'Test', version: '1.0.0', author: 'Test' },
@@ -57,7 +57,7 @@ describe('WidgetRegistry', () => {
 
   it('should unregister a widget', async () => {
     const registry = new WidgetRegistry();
-    const widget = new GitWidget({ git: {} as any });
+    const widget = new GitWidget();
 
     await registry.register(widget);
     expect(registry.has('git')).to.be.true;
@@ -68,8 +68,8 @@ describe('WidgetRegistry', () => {
 
   it('should throw when registering duplicate widget', async () => {
     const registry = new WidgetRegistry();
-    const widget1 = new GitWidget({ git: {} as any });
-    const widget2 = new GitWidget({ git: {} as any });
+    const widget1 = new GitWidget();
+    const widget2 = new GitWidget();
 
     await registry.register(widget1);
 
@@ -114,7 +114,7 @@ describe('WidgetRegistry', () => {
 
   it('should clear all widgets', async () => {
     const registry = new WidgetRegistry();
-    const widget1 = new GitWidget({ git: {} as any });
+    const widget1 = new GitWidget();
     const widget2 = {
       id: 'test2',
       metadata: { name: 'Test2', description: 'Test', version: '1.0.0', author: 'Test' },

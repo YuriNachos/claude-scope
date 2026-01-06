@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
 import { simpleGit } from 'simple-git';
-import { main } from '../../src/index.js';
+import { main } from '#/index.js';
 
 describe('Entry Point Integration', () => {
   it('should output git branch for current repository', async () => {

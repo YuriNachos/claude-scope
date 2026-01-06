@@ -4,7 +4,7 @@
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import { expect } from 'chai';
-import { GitWidget } from '../../../src/widgets/git/git-widget.js';
+import { GitWidget } from '#/widgets/git/git-widget.js';
 import { mkdtemp, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { simpleGit } from 'simple-git';

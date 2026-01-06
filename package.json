@@ -49,6 +49,7 @@
     "#widgets/*": "./src/widgets/*.js",
     "#data/*": "./src/data/*.js",
     "#ui/*": "./src/ui/*.js",
+    "#utils/*": "./src/utils/*.js",
     "#schemas/*": "./src/schemas/*.js"
   }
 }

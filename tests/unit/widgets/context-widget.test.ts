@@ -4,9 +4,9 @@
 
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { ContextWidget } from '../../../src/widgets/context-widget.js';
+import { ContextWidget } from '#/widgets/context-widget.js';
 import { createMockStdinData } from '../../fixtures/mock-data.js';
-import type { ContextUsage } from '../../../src/types.js';
+import type { ContextUsage } from '#/types.js';
 import { matchSnapshot, stripAnsi } from '../../helpers/snapshot.js';
 
 describe('ContextWidget', () => {

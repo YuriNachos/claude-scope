@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { Renderer } from '../../../src/core/renderer.js';
+import { Renderer } from '#/core/renderer.js';
 
 describe('Renderer', () => {
   describe('setSeparator', () => {
