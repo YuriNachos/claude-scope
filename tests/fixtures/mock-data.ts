@@ -38,17 +38,3 @@ export function createMockStdinData(overrides: Partial<StdinData> = {}): StdinDa
     ...overrides
   };
 }
-
-/**
- * Create mock IGit interface with optional overrides
- */
-import type { IGit } from '../../src/providers/git-provider.js';
-
-export function createMockGit(overrides: Partial<IGit> = {}): IGit {
-  return {
-    checkIsRepo: async () => true,
-    branch: async () => ({ current: 'main', all: ['main'] }),
-    diffStats: async () => ({ insertions: 42, deletions: 10 }),
-    ...overrides
-  };
-}

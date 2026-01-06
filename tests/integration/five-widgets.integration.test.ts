@@ -1,5 +1,5 @@
 /**
- * Integration tests for 5 core widgets
+ * Integration tests for core widgets
  */
 
 import { describe, it } from 'node:test';
@@ -10,19 +10,16 @@ import { ModelWidget } from '../../src/widgets/model-widget.js';
 import { ContextWidget } from '../../src/widgets/context-widget.js';
 import { CostWidget } from '../../src/widgets/cost-widget.js';
 import { DurationWidget } from '../../src/widgets/duration-widget.js';
-import { GitChangesWidget } from '../../src/widgets/git-changes-widget.js';
-import { createMockGit, createMockStdinData } from '../fixtures/mock-data.js';
+import { createMockStdinData } from '../fixtures/mock-data.js';
 
-describe('Five Widgets Integration', () => {
+describe('Core Widgets Integration', () => {
   it('should render all widgets in single line with pipe separator', async () => {
     const registry = new WidgetRegistry();
-    const mockGit = createMockGit();
 
     await registry.register(new ModelWidget());
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
     await registry.register(new DurationWidget());
-    await registry.register(new GitChangesWidget(mockGit));
 
     const renderer = new Renderer();
     renderer.setSeparator(' │ ');
@@ -52,18 +49,13 @@ describe('Five Widgets Integration', () => {
     expect(output).to.include(']');
     expect(output).to.include('$0.01');
     expect(output).to.include('5m 30s');
-    expect(output).to.include('+42,-10');
     expect(output).to.include(' │ ');
   });
 
   it('should skip widgets that return null', async () => {
     const registry = new WidgetRegistry();
-    const mockGit = createMockGit({
-      diffStats: async () => null // No git changes
-    });
 
     await registry.register(new ModelWidget());
-    await registry.register(new GitChangesWidget(mockGit));
 
     const renderer = new Renderer();
     renderer.setSeparator(' │ ');
@@ -81,22 +73,19 @@ describe('Five Widgets Integration', () => {
     );
 
     expect(output).to.include('Opus 4.5');
-    expect(output).to.not.include('+'); // No git changes
   });
 
   it('should handle all widgets enabled by default', async () => {
     const registry = new WidgetRegistry();
-    const mockGit = createMockGit();
 
     await registry.register(new ModelWidget());
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
     await registry.register(new DurationWidget());
-    await registry.register(new GitChangesWidget(mockGit));
 
     const enabledWidgets = registry.getEnabledWidgets();
 
-    expect(enabledWidgets).to.have.lengthOf(5);
+    expect(enabledWidgets).to.have.lengthOf(4);
   });
 
   it('should respect widget disabled config', async () => {
@@ -113,7 +102,6 @@ describe('Five Widgets Integration', () => {
 
   it('should render in correct widget order', async () => {
     const registry = new WidgetRegistry();
-    const mockGit = createMockGit();
 
     // Register in specific order
     await registry.register(new ModelWidget());
@@ -146,7 +134,6 @@ describe('Five Widgets Integration', () => {
 
   it('should handle updates to all widgets', async () => {
     const registry = new WidgetRegistry();
-    const mockGit = createMockGit();
 
     await registry.register(new ModelWidget());
     await registry.register(new CostWidget());
