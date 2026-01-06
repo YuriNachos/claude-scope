@@ -1,19 +1,21 @@
 /**
  * Git status widget
  * Displays current git branch
+ *
+ * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
+ * because it has different lifecycle requirements:
+ * - Uses GitProvider instead of transforming StdinData directly
+ * - Maintains internal state (currentCwd) for change detection
+ * - Needs to reinitialize GitProvider when cwd changes
  */
 import { GitProvider } from '../providers/git-provider.js';
+import { createWidgetMetadata } from '../core/widget-types.js';
 /**
  * Widget displaying git branch information
  */
 export class GitWidget {
     id = 'git';
-    metadata = {
-        name: 'Git Widget',
-        description: 'Displays current git branch',
-        version: '1.0.0',
-        author: 'claude-scope'
-    };
+    metadata = createWidgetMetadata('Git Widget', 'Displays current git branch');
     gitProvider;
     enabled = true;
     currentCwd = '';
@@ -21,8 +23,7 @@ export class GitWidget {
         this.gitProvider = new GitProvider({ git: deps.git });
     }
     async initialize(context) {
-        // Initialize with config if needed
-        this.enabled = context.config.enabled !== false;
+        this.enabled = context.config?.enabled !== false;
     }
     async render(context) {
         if (!this.enabled || !this.gitProvider.isRepo()) {
@@ -32,7 +33,6 @@ export class GitWidget {
         if (!branch) {
             return null;
         }
-        // Simple format:  branch-name
         return ` ${branch}`;
     }
     async update(data) {

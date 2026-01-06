@@ -1,8 +1,14 @@
 /**
  * Git status widget
  * Displays current git branch
+ *
+ * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
+ * because it has different lifecycle requirements:
+ * - Uses GitProvider instead of transforming StdinData directly
+ * - Maintains internal state (currentCwd) for change detection
+ * - Needs to reinitialize GitProvider when cwd changes
  */
-import type { IWidget, IWidgetMetadata, WidgetContext, RenderContext, StdinData } from '../core/types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '../core/types.js';
 import type { GitProviderDeps } from '../providers/git-provider.js';
 /**
  * Git widget dependencies
@@ -15,7 +21,7 @@ export interface GitWidgetDeps {
  */
 export declare class GitWidget implements IWidget {
     readonly id = "git";
-    readonly metadata: IWidgetMetadata;
+    readonly metadata: import("../core/types.js").IWidgetMetadata;
     private gitProvider;
     private enabled;
     private currentCwd;

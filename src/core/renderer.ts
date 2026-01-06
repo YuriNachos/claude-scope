@@ -5,12 +5,13 @@
 
 import type { IWidget } from './types.js';
 import type { RenderContext } from '../types.js';
+import { DEFAULTS } from '../constants.js';
 
 /**
  * Renderer for combining widget outputs
  */
 export class Renderer {
-  private separator = ' ';
+  private separator: string = DEFAULTS.SEPARATOR;
 
   /**
    * Render widgets into a single line

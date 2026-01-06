@@ -1,11 +1,18 @@
 /**
  * Git status widget
  * Displays current git branch
+ *
+ * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
+ * because it has different lifecycle requirements:
+ * - Uses GitProvider instead of transforming StdinData directly
+ * - Maintains internal state (currentCwd) for change detection
+ * - Needs to reinitialize GitProvider when cwd changes
  */
 
-import type { IWidget, IWidgetMetadata, WidgetContext, RenderContext, StdinData } from '../core/types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '../core/types.js';
 import type { GitProviderDeps } from '../providers/git-provider.js';
 import { GitProvider } from '../providers/git-provider.js';
+import { createWidgetMetadata } from '../core/widget-types.js';
 
 /**
  * Git widget dependencies
@@ -19,13 +26,10 @@ export interface GitWidgetDeps {
  */
 export class GitWidget implements IWidget {
   readonly id = 'git';
-
-  readonly metadata: IWidgetMetadata = {
-    name: 'Git Widget',
-    description: 'Displays current git branch',
-    version: '1.0.0',
-    author: 'claude-scope'
-  };
+  readonly metadata = createWidgetMetadata(
+    'Git Widget',
+    'Displays current git branch'
+  );
 
   private gitProvider: GitProvider;
   private enabled = true;
@@ -36,8 +40,7 @@ export class GitWidget implements IWidget {
   }
 
   async initialize(context: WidgetContext): Promise<void> {
-    // Initialize with config if needed
-    this.enabled = (context.config.enabled as boolean | undefined) !== false;
+    this.enabled = context.config?.enabled !== false;
   }
 
   async render(context: RenderContext): Promise<string | null> {
@@ -50,7 +53,6 @@ export class GitWidget implements IWidget {
       return null;
     }
 
-    // Simple format:  branch-name
     return ` ${branch}`;
   }
 

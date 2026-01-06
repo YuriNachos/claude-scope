@@ -2,7 +2,7 @@
  * Formatter utilities for displaying data in human-readable formats
  */
 
-import { DEFAULT_PROGRESS_BAR_WIDTH } from '../constants.js';
+import { TIME, COST_THRESHOLDS, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from '../constants.js';
 
 /**
  * Format milliseconds to human-readable duration
@@ -19,10 +19,10 @@ import { DEFAULT_PROGRESS_BAR_WIDTH } from '../constants.js';
 export function formatDuration(ms: number): string {
   if (ms <= 0) return '0s';
 
-  const seconds = Math.floor(ms / 1000);
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
+  const seconds = Math.floor(ms / TIME.MS_PER_SECOND);
+  const hours = Math.floor(seconds / TIME.SECONDS_PER_HOUR);
+  const minutes = Math.floor((seconds % TIME.SECONDS_PER_HOUR) / TIME.SECONDS_PER_MINUTE);
+  const secs = seconds % TIME.SECONDS_PER_MINUTE;
 
   const parts: string[] = [];
 
@@ -57,10 +57,10 @@ export function formatCostUSD(usd: number): string {
   if (usd < 0) {
     // Negative values: 2 decimal places
     return `$${usd.toFixed(2)}`;
-  } else if (absUsd < 0.01) {
+  } else if (absUsd < COST_THRESHOLDS.SMALL) {
     // 4 decimal places for very small positive values
     return `$${usd.toFixed(4)}`;
-  } else if (absUsd < 100) {
+  } else if (absUsd < COST_THRESHOLDS.LARGE) {
     // 2 decimal places for normal values
     return `$${usd.toFixed(2)}`;
   } else {
@@ -73,10 +73,10 @@ export function formatCostUSD(usd: number): string {
  * Create a visual progress bar
  *
  * @param percent - Percentage (0-100)
- * @param width - Bar width in characters (default: DEFAULT_PROGRESS_BAR_WIDTH)
- * @returns Progress bar string like "████████░░░░░░░░░░░"
+ * @param width - Bar width in characters (default: DEFAULTS.PROGRESS_BAR_WIDTH)
+ * @returns Progress bar string like "████████░░░░░░░░░░░░"
  */
-export function progressBar(percent: number, width: number = DEFAULT_PROGRESS_BAR_WIDTH): string {
+export function progressBar(percent: number, width: number = DEFAULTS.PROGRESS_BAR_WIDTH): string {
   const clampedPercent = Math.max(0, Math.min(100, percent));
   const filled = Math.round((clampedPercent / 100) * width);
   const empty = width - filled;
@@ -96,12 +96,12 @@ export function progressBar(percent: number, width: number = DEFAULT_PROGRESS_BA
 export function getContextColor(percent: number): string {
   const clampedPercent = Math.max(0, Math.min(100, percent));
 
-  if (clampedPercent < 50) {
-    return '\x1b[32m'; // Green
-  } else if (clampedPercent < 80) {
-    return '\x1b[33m'; // Yellow
+  if (clampedPercent < CONTEXT_THRESHOLDS.LOW_MEDIUM) {
+    return ANSI_COLORS.GREEN;
+  } else if (clampedPercent < CONTEXT_THRESHOLDS.MEDIUM_HIGH) {
+    return ANSI_COLORS.YELLOW;
   } else {
-    return '\x1b[31m'; // Red
+    return ANSI_COLORS.RED;
   }
 }
 
@@ -113,5 +113,5 @@ export function getContextColor(percent: number): string {
  * @returns Colorized text with reset code
  */
 export function colorize(text: string, color: string): string {
-  return `${color}${text}\x1b[0m`;
+  return `${color}${text}${ANSI_COLORS.RESET}`;
 }

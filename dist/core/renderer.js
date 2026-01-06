@@ -2,11 +2,12 @@
  * Unified rendering engine
  * Combines widget outputs into statusline
  */
+import { DEFAULTS } from '../constants.js';
 /**
  * Renderer for combining widget outputs
  */
 export class Renderer {
-    separator = ' ';
+    separator = DEFAULTS.SEPARATOR;
     /**
      * Render widgets into a single line
      */
