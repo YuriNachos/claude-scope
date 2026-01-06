@@ -1,6 +1,6 @@
 /**
  * Stdin provider for parsing JSON data from stdin
- * Parses and validates Claude Code session data using Zod
+ * Parses and validates Claude Code session data
  */
 import type { StdinData } from '../types.js';
 /**

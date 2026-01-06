@@ -1,9 +1,9 @@
 /**
  * Stdin provider for parsing JSON data from stdin
- * Parses and validates Claude Code session data using Zod
+ * Parses and validates Claude Code session data
  */
-import { z } from 'zod';
 import { StdinDataSchema } from '../schemas/stdin-schema.js';
+import { formatError } from '../validation/result.js';
 /**
  * Error thrown when stdin parsing fails
  */
@@ -46,23 +46,12 @@ export class StdinProvider {
         catch (error) {
             throw new StdinParseError(`Invalid JSON: ${error.message}`);
         }
-        // Validate with Zod
-        try {
-            return StdinDataSchema.parse(data);
+        // Validate with schema
+        const result = StdinDataSchema.validate(data);
+        if (!result.success) {
+            throw new StdinValidationError(`Validation failed: ${formatError(result.error)}`);
         }
-        catch (error) {
-            if (error instanceof z.ZodError) {
-                // Format error messages nicely
-                const errorDetails = error.issues
-                    .map((e) => {
-                    const path = e.path.length > 0 ? e.path.join('.') : 'root';
-                    return `${path}: ${e.message}`;
-                })
-                    .join(', ');
-                throw new StdinValidationError(`Validation failed: ${errorDetails}`);
-            }
-            throw error;
-        }
+        return result.data;
     }
     /**
      * Safe parse that returns result instead of throwing
