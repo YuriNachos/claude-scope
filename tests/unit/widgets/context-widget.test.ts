@@ -50,7 +50,9 @@ describe('ContextWidget', () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include('50%');
+    // Calculation: (30000 + 10000 + 5000) / 100000 = 45%
+    // cache_read_input_tokens (15000) NOT counted - reading from cache doesn't use context space
+    expect(result).to.include('45%');
     expect(result).to.include('[');
     expect(result).to.include(']');
   });

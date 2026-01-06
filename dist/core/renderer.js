@@ -2,7 +2,7 @@
  * Unified rendering engine with error boundaries
  * Combines widget outputs into statusline
  */
-import { DEFAULTS } from '#constants.js';
+import { DEFAULTS } from '../constants.js';
 /**
  * Renderer for combining widget outputs with error boundaries
  *

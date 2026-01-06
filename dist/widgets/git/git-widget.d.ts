@@ -8,13 +8,13 @@
  * - Maintains internal state (currentCwd) for change detection
  * - Needs to reinitialize git instance when cwd changes
  */
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '#core/types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
 /**
  * Widget displaying git branch information
  */
 export declare class GitWidget implements IWidget {
     readonly id = "git";
-    readonly metadata: import("#core/types.js").IWidgetMetadata;
+    readonly metadata: import("../../core/types.js").IWidgetMetadata;
     private git;
     private enabled;
     private cwd;

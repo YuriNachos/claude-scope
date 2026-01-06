@@ -7,7 +7,7 @@
  * because it requires async git operations that don't fit the Template Method Pattern.
  */
 import { simpleGit } from 'simple-git';
-import { createWidgetMetadata } from '#core/widget-types.js';
+import { createWidgetMetadata } from '../../core/widget-types.js';
 export class GitChangesWidget {
     id = 'git-changes';
     metadata = createWidgetMetadata('Git Changes', 'Displays git diff statistics');

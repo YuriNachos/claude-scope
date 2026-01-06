@@ -22,9 +22,14 @@
       "#widgets/*": ["src/widgets/*"],
       "#data/*": ["src/data/*"],
       "#ui/*": ["src/ui/*"],
+      "#utils/*": ["src/utils/*"],
       "#schemas/*": ["src/schemas/*"]
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"]
+  "exclude": ["node_modules", "dist", "tests"],
+  "tsc-alias": {
+    "verbose": false,
+    "resolveFullPaths": true
+  }
 }
