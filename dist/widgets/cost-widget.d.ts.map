@@ -1,1 +1,0 @@
-{"version":3,"file":"cost-widget.d.ts","sourceRoot":"","sources":["../../src/widgets/cost-widget.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAEH,OAAO,EAAE,eAAe,EAAE,MAAM,8BAA8B,CAAC;AAG/D,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,kBAAkB,CAAC;AAEtD,qBAAa,UAAW,SAAQ,eAAe;IAC7C,QAAQ,CAAC,EAAE,UAAU;IACrB,QAAQ,CAAC,QAAQ,6CAGf;IAEI,MAAM,CAAC,OAAO,EAAE,aAAa,GAAG,OAAO,CAAC,MAAM,GAAG,IAAI,CAAC;CAI7D"}

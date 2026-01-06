@@ -1,1 +1,0 @@
-{"version":3,"file":"model-widget.d.ts","sourceRoot":"","sources":["../../src/widgets/model-widget.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAEH,OAAO,EAAE,eAAe,EAAE,MAAM,8BAA8B,CAAC;AAE/D,OAAO,KAAK,EAAE,aAAa,EAAE,MAAM,kBAAkB,CAAC;AAEtD,qBAAa,WAAY,SAAQ,eAAe;IAC9C,QAAQ,CAAC,EAAE,WAAW;IACtB,QAAQ,CAAC,QAAQ,6CAGf;IAEI,MAAM,CAAC,OAAO,EAAE,aAAa,GAAG,OAAO,CAAC,MAAM,GAAG,IAAI,CAAC;CAI7D"}
