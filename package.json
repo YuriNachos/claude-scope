@@ -20,7 +20,8 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "build": "tsc",
+    "prepack": "chmod +x dist/index.js",
+    "build": "tsc && chmod +x dist/index.js",
     "test": "tsx --test tests/e2e/stdin-flow.test.ts tests/integration/cli-flow.integration.test.ts tests/integration/five-widgets.integration.test.ts tests/unit/cli.test.ts tests/unit/types.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts",
     "test:unit": "tsx --test tests/unit/cli.test.ts tests/unit/types.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts",
     "test:integration": "tsx --test tests/e2e/stdin-flow.test.ts tests/integration/cli-flow.integration.test.ts tests/integration/five-widgets.integration.test.ts",
