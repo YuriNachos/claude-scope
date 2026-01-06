@@ -12,10 +12,10 @@
     }
   },
   "bin": {
-    "claude-scope": "dist/claude-scope.js"
+    "claude-scope": "dist/claude-scope.cjs"
   },
   "files": [
-    "dist/claude-scope.js",
+    "dist/claude-scope.cjs",
     "README.md",
     "LICENSE.md"
   ],
@@ -23,7 +23,7 @@
     "prepack": "npm run build",
     "build": "npm run build:tsc && npm run build:bundle",
     "build:tsc": "tsc",
-    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/claude-scope-bundle.js && chmod +x dist/claude-scope-bundle.js && sh -c 'mv dist/claude-scope-bundle.js dist/claude-scope.js'",
+    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node18 --outfile=dist/claude-scope.cjs && chmod +x dist/claude-scope.cjs",
     "prebuild:bundle": "npm run build:tsc",
     "test": "tsx --test tests/e2e/stdin-flow.test.ts tests/integration/cli-flow.integration.test.ts tests/integration/five-widgets.integration.test.ts tests/unit/cli.test.ts tests/unit/types.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts",
     "test:unit": "tsx --test tests/unit/cli.test.ts tests/unit/types.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts",
