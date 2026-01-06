@@ -20,8 +20,11 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "prepack": "chmod +x dist/index.js",
-    "build": "tsc && chmod +x dist/index.js",
+    "prepack": "npm run build",
+    "build": "npm run build:tsc && npm run build:bundle",
+    "build:tsc": "tsc",
+    "build:bundle": "esbuild src/index.ts --bundle --platform=node --target=node18 --format=esm --outfile=dist/claude-scope-bundle.js && chmod +x dist/claude-scope-bundle.js && sh -c 'mv dist/claude-scope-bundle.js dist/claude-scope.js'",
+    "prebuild:bundle": "npm run build:tsc",
     "test": "tsx --test tests/e2e/stdin-flow.test.ts tests/integration/cli-flow.integration.test.ts tests/integration/five-widgets.integration.test.ts tests/unit/cli.test.ts tests/unit/types.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts",
     "test:unit": "tsx --test tests/unit/cli.test.ts tests/unit/types.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts",
     "test:integration": "tsx --test tests/e2e/stdin-flow.test.ts tests/integration/cli-flow.integration.test.ts tests/integration/five-widgets.integration.test.ts",
@@ -30,11 +33,11 @@
     "test:snapshot:verify": "tsx --test tests/e2e/stdin-flow.test.ts tests/integration/cli-flow.integration.test.ts tests/integration/five-widgets.integration.test.ts tests/unit/cli.test.ts tests/unit/types.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts",
     "dev": "tsx src/index.ts"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^22.10.2",
     "c8": "^10.1.3",
     "chai": "^6.2.2",
+    "esbuild": "^0.24.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },
