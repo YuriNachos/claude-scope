@@ -51,7 +51,7 @@ export const OutputStyleSchema = object({
 });
 
 export const StdinDataSchema = object({
-  hook_event_name: literal('Status'),
+  hook_event_name: optional(literal('Status')),
   session_id: string(),
   transcript_path: string(),
   cwd: string(),

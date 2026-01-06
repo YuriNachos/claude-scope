@@ -29,6 +29,11 @@ export async function main() {
     try {
         // Read JSON from stdin
         const stdin = await readStdin();
+        // Debug: log stdin to file for troubleshooting
+        if (stdin && stdin.trim().length > 0) {
+            const fs = await import('node:fs');
+            fs.appendFileSync('/tmp/claude-scope-debug.log', `[${new Date().toISOString()}] Full stdin:\n${stdin}\n\n`);
+        }
         // If stdin is empty, still try to show git info
         if (!stdin || stdin.trim().length === 0) {
             const fallback = await tryGitFallback();

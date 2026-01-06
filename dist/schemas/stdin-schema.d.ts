@@ -39,7 +39,7 @@ export declare const OutputStyleSchema: import("../validation/core.js").Validato
     name: string;
 }>;
 export declare const StdinDataSchema: import("../validation/core.js").Validator<{
-    hook_event_name: "Status";
+    hook_event_name: "Status" | undefined;
     session_id: string;
     transcript_path: string;
     cwd: string;
