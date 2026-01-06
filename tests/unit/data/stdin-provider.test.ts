@@ -122,22 +122,43 @@ describe('StdinProvider', () => {
     it('should throw StdinParseError on empty input', async () => {
       const provider = new StdinProvider();
 
-      await expect(provider.parse(''))
-        .to.be.rejectedWith(StdinParseError, 'stdin data is empty');
+      let error: Error | null = null;
+      try {
+        await provider.parse('');
+      } catch (e) {
+        error = e as Error;
+      }
+
+      expect(error).to.be.instanceOf(StdinParseError);
+      expect(error?.message).to.include('stdin data is empty');
     });
 
     it('should throw StdinParseError on whitespace-only input', async () => {
       const provider = new StdinProvider();
 
-      await expect(provider.parse('   '))
-        .to.be.rejectedWith(StdinParseError, 'stdin data is empty');
+      let error: Error | null = null;
+      try {
+        await provider.parse('   ');
+      } catch (e) {
+        error = e as Error;
+      }
+
+      expect(error).to.be.instanceOf(StdinParseError);
+      expect(error?.message).to.include('stdin data is empty');
     });
 
     it('should throw StdinParseError on invalid JSON', async () => {
       const provider = new StdinProvider();
 
-      await expect(provider.parse('invalid json'))
-        .to.be.rejectedWith(StdinParseError, 'Invalid JSON');
+      let error: Error | null = null;
+      try {
+        await provider.parse('invalid json');
+      } catch (e) {
+        error = e as Error;
+      }
+
+      expect(error).to.be.instanceOf(StdinParseError);
+      expect(error?.message).to.include('Invalid JSON');
     });
 
     it('should throw StdinValidationError on missing required fields', async () => {
@@ -147,8 +168,15 @@ describe('StdinProvider', () => {
         // Missing: hook_event_name, cwd, model, etc.
       });
 
-      await expect(provider.parse(input))
-        .to.be.rejectedWith(StdinValidationError, 'Validation failed');
+      let error: Error | null = null;
+      try {
+        await provider.parse(input);
+      } catch (e) {
+        error = e as Error;
+      }
+
+      expect(error).to.be.instanceOf(StdinValidationError);
+      expect(error?.message).to.include('Validation failed');
     });
 
     it('should throw StdinValidationError with detailed path on missing field', async () => {
@@ -170,9 +198,15 @@ describe('StdinProvider', () => {
         }
       });
 
-      await expect(provider.parse(input))
-        .to.be.rejectedWith(StdinValidationError)
-        .and.to.eventually.include('cwd');
+      let error: Error | null = null;
+      try {
+        await provider.parse(input);
+      } catch (e) {
+        error = e as Error;
+      }
+
+      expect(error).to.be.instanceOf(StdinValidationError);
+      expect(error?.message).to.include('cwd');
     });
 
     it('should throw StdinValidationError on wrong hook_event_name literal', async () => {
@@ -194,8 +228,14 @@ describe('StdinProvider', () => {
         }
       });
 
-      await expect(provider.parse(input))
-        .to.be.rejectedWith(StdinValidationError);
+      let error: Error | null = null;
+      try {
+        await provider.parse(input);
+      } catch (e) {
+        error = e as Error;
+      }
+
+      expect(error).to.be.instanceOf(StdinValidationError);
     });
 
     it('should throw StdinValidationError on invalid model.id type', async () => {
@@ -217,8 +257,14 @@ describe('StdinProvider', () => {
         }
       });
 
-      await expect(provider.parse(input))
-        .to.be.rejectedWith(StdinValidationError);
+      let error: Error | null = null;
+      try {
+        await provider.parse(input);
+      } catch (e) {
+        error = e as Error;
+      }
+
+      expect(error).to.be.instanceOf(StdinValidationError);
     });
   });
 

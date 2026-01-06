@@ -55,6 +55,12 @@ export declare abstract class StdinDataWidget implements IWidget {
      */
     update(data: StdinData): Promise<void>;
     /**
+     * Get stored stdin data
+     * @returns Stored stdin data
+     * @throws Error if data has not been initialized (update not called)
+     */
+    getData(): StdinData;
+    /**
      * Check if widget is enabled
      * @returns true if widget should render
      */

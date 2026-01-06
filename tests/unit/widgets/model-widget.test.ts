@@ -58,17 +58,13 @@ describe('ModelWidget', () => {
       expect(result).to.equal('Claude-3.5-Sonnet (Beta)');
     });
 
-    it('should throw error when render called before update', async () => {
+    it('should return null when render called before update', async () => {
       const widget = new ModelWidget();
 
-      let threw = false;
-      try {
-        await widget.render({ width: 80, timestamp: 0 });
-      } catch (error) {
-        threw = true;
-        expect((error as Error).message).to.include('not initialized');
-      }
-      expect(threw).to.be.true;
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      // Defensive programming: returns null instead of throwing
+      expect(result).to.be.null;
     });
 
     it('should ignore render context width', async () => {
@@ -112,14 +108,15 @@ describe('ModelWidget', () => {
       expect(widget.isEnabled()).to.be.false;
     });
 
-    it('should render regardless of enabled state', async () => {
+    it('should return null when disabled', async () => {
       const widget = new ModelWidget();
       await widget.initialize({ config: { enabled: false } });
       await widget.update(createMockStdinData({ model: { id: 'test', display_name: 'Test' } }));
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.equal('Test');
+      // Disabled widgets should not render
+      expect(result).to.be.null;
     });
   });
 });

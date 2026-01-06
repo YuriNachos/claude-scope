@@ -49,6 +49,17 @@ export class StdinDataWidget {
         this.data = data;
     }
     /**
+     * Get stored stdin data
+     * @returns Stored stdin data
+     * @throws Error if data has not been initialized (update not called)
+     */
+    getData() {
+        if (!this.data) {
+            throw new Error(`Widget ${this.id} data not initialized. Call update() first.`);
+        }
+        return this.data;
+    }
+    /**
      * Check if widget is enabled
      * @returns true if widget should render
      */

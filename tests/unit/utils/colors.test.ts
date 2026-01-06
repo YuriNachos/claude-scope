@@ -24,7 +24,7 @@ import {
   underline,
   contextColors,
   colorize
-} from '../../../src/utils/colors.js';
+} from '../../../src/ui/utils/colors.js';
 
 describe('color utilities', () => {
   describe('reset', () => {
