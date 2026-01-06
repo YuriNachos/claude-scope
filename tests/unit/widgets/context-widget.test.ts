@@ -7,6 +7,7 @@ import { expect } from 'chai';
 import { ContextWidget } from '../../../src/widgets/context-widget.js';
 import { createMockStdinData } from '../../fixtures/mock-data.js';
 import type { ContextUsage } from '../../../src/types.js';
+import { matchSnapshot, stripAnsi } from '../../helpers/snapshot.js';
 
 describe('ContextWidget', () => {
   it('should have correct id and metadata', () => {
@@ -157,5 +158,70 @@ describe('ContextWidget', () => {
     const result = await widget.render({ width: 80, timestamp: 0 });
 
     expect(result).to.include('100%');
+  });
+
+  describe('snapshots', () => {
+    it('should snapshot low usage output (green)', async () => {
+      const widget = new ContextWidget();
+      await widget.update(createMockStdinData({
+        context_window: {
+          total_input_tokens: 1000,
+          total_output_tokens: 500,
+          context_window_size: 200000,
+          current_usage: {
+            input_tokens: 40000,
+            output_tokens: 10000,
+            cache_creation_input_tokens: 5000,
+            cache_read_input_tokens: 0
+          }
+        }
+      }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      await matchSnapshot('context-widget-low-usage', stripAnsi(result || ''));
+    });
+
+    it('should snapshot medium usage output (yellow)', async () => {
+      const widget = new ContextWidget();
+      await widget.update(createMockStdinData({
+        context_window: {
+          total_input_tokens: 1000,
+          total_output_tokens: 500,
+          context_window_size: 100000,
+          current_usage: {
+            input_tokens: 60000,
+            output_tokens: 10000,
+            cache_creation_input_tokens: 5000,
+            cache_read_input_tokens: 0
+          }
+        }
+      }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      await matchSnapshot('context-widget-medium-usage', stripAnsi(result || ''));
+    });
+
+    it('should snapshot high usage output (red)', async () => {
+      const widget = new ContextWidget();
+      await widget.update(createMockStdinData({
+        context_window: {
+          total_input_tokens: 1000,
+          total_output_tokens: 500,
+          context_window_size: 100000,
+          current_usage: {
+            input_tokens: 75000,
+            output_tokens: 10000,
+            cache_creation_input_tokens: 5000,
+            cache_read_input_tokens: 0
+          }
+        }
+      }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      await matchSnapshot('context-widget-high-usage', stripAnsi(result || ''));
+    });
   });
 });

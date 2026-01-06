@@ -8,6 +8,7 @@ import { GitWidget } from '../../../src/widgets/git/git-widget.js';
 import { mkdtemp, rm, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { simpleGit } from 'simple-git';
+import { matchSnapshot, stripAnsi } from '../../helpers/snapshot.js';
 
 describe('GitWidget', () => {
   let testDir: string;
@@ -143,10 +144,12 @@ describe('GitWidget', () => {
     });
 
     it('should return null when not in git repo', async () => {
+      // Use a subdirectory to ensure it's not a git repo
       const nonGitDir = await mkdtemp(join(process.cwd(), 'test-non-git-'));
+      const subdir = join(nonGitDir, 'subdir');
 
       const widget = new GitWidget();
-      await widget.update({ cwd: nonGitDir } as any);
+      await widget.update({ cwd: subdir } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
@@ -205,16 +208,19 @@ describe('GitWidget', () => {
 
   describe('error handling', () => {
     it('should handle git errors gracefully', async () => {
-      // Create invalid directory scenario
-      const invalidDir = '/root/nonexistent/path';
+      // Create an empty directory with no git repo
+      const emptyDir = await mkdtemp(join(process.cwd(), 'test-empty-'));
+      try {
+        const widget = new GitWidget();
+        await widget.update({ cwd: emptyDir } as any);
 
-      const widget = new GitWidget();
-      await widget.update({ cwd: invalidDir } as any);
+        const result = await widget.render({ width: 80, timestamp: 0 });
 
-      const result = await widget.render({ width: 80, timestamp: 0 });
-
-      // Should return null or handle gracefully
-      expect(result).to.not.throw;
+        // Should return null or handle gracefully when not in git repo
+        expect(result).to.not.throw;
+      } finally {
+        await rm(emptyDir, { recursive: true, force: true });
+      }
     });
   });
 
@@ -258,6 +264,42 @@ describe('GitWidget', () => {
 
       // Should handle gracefully
       expect(result).to.not.throw;
+    });
+  });
+
+  describe('snapshots', () => {
+    it('should snapshot main branch output', async () => {
+      // Create initial commit to establish main branch
+      const testFile = join(testDir, 'test.txt');
+      await writeFile(testFile, 'test content');
+      await simpleGit(testDir).add(testFile);
+      await simpleGit(testDir).commit('Initial commit');
+
+      const widget = new GitWidget();
+      await widget.update({ cwd: testDir } as any);
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      // Strip ANSI codes for consistent snapshots
+      await matchSnapshot('git-widget-main-branch', stripAnsi(result || ''));
+    });
+
+    it('should snapshot feature branch output', async () => {
+      // Create initial commit
+      const testFile = join(testDir, 'test.txt');
+      await writeFile(testFile, 'test content');
+      await simpleGit(testDir).add(testFile);
+      await simpleGit(testDir).commit('Initial commit');
+
+      // Create and checkout feature branch
+      await simpleGit(testDir).checkout(['-b', 'feature/snapshot-test']);
+
+      const widget = new GitWidget();
+      await widget.update({ cwd: testDir } as any);
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      await matchSnapshot('git-widget-feature-branch', stripAnsi(result || ''));
     });
   });
 });

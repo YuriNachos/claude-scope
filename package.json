@@ -25,6 +25,8 @@
     "test:unit": "tsx --test tests/unit/**/*.test.ts",
     "test:integration": "tsx --test tests/integration/**/*.test.ts",
     "test:coverage": "c8 --reporter=text --reporter=html --exclude='tests/**' --exclude='**/*.test.ts' tsx --test tests/**/*.test.ts",
+    "test:snapshot": "SNAPSHOT_UPDATE=true tsx --test tests/**/*.test.ts",
+    "test:snapshot:verify": "tsx --test tests/**/*.test.ts",
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
