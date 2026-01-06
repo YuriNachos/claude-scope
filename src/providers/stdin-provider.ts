@@ -1,9 +1,11 @@
 /**
  * Stdin provider for parsing JSON data from stdin
- * Parses and validates Claude Code session data
+ * Parses and validates Claude Code session data using Zod
  */
 
+import { z } from 'zod';
 import type { StdinData } from '../types.js';
+import { StdinDataSchema } from '../schemas/stdin-schema.js';
 
 /**
  * Error thrown when stdin parsing fails
@@ -26,15 +28,15 @@ export class StdinValidationError extends Error {
 }
 
 /**
- * Stdin provider for parsing JSON data
+ * Stdin provider for parsing and validating JSON data
  */
 export class StdinProvider {
   /**
-   * Parse JSON string from stdin
+   * Parse and validate JSON string from stdin
    * @param input JSON string to parse
-   * @returns Parsed StdinData object
+   * @returns Validated StdinData object
    * @throws StdinParseError if JSON is malformed
-   * @throws StdinValidationError if data is invalid
+   * @throws StdinValidationError if data doesn't match schema
    */
   async parse(input: string): Promise<StdinData> {
     // Check for empty input
@@ -46,93 +48,43 @@ export class StdinProvider {
     let data: unknown;
     try {
       data = JSON.parse(input);
-    } catch {
-      throw new StdinParseError('Failed to parse stdin data: Invalid JSON');
+    } catch (error) {
+      throw new StdinParseError(`Invalid JSON: ${(error as Error).message}`);
     }
 
-    // Validate data structure
-    if (!this.validate(data)) {
-      const error = this.getValidationError(data);
-      throw new StdinValidationError(`stdin data validation failed: ${error}`);
-    }
+    // Validate with Zod
+    try {
+      return StdinDataSchema.parse(data);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        // Format error messages nicely
+        const errorDetails = error.errors
+          .map(e => {
+            const path = e.path.length > 0 ? e.path.join('.') : 'root';
+            return `${path}: ${e.message}`;
+          })
+          .join(', ');
 
-    return data as StdinData;
+        throw new StdinValidationError(
+          `Validation failed: ${errorDetails}`
+        );
+      }
+      throw error;
+    }
   }
 
   /**
-   * Validate stdin data structure
-   * @param data Data to validate
-   * @returns true if valid, false otherwise
+   * Safe parse that returns result instead of throwing
+   * Useful for testing and optional validation
+   * @param input JSON string to parse
+   * @returns Result object with success flag
    */
-  validate(data: unknown): data is StdinData {
-    // Basic type check
-    if (typeof data !== 'object' || data === null) {
-      return false;
+  safeParse(input: string): { success: true; data: StdinData } | { success: false; error: string } {
+    try {
+      const data = this.parse(input);
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: (error as Error).message };
     }
-
-    const obj = data as Record<string, unknown>;
-
-    // Check required top-level fields
-    if (typeof obj.session_id !== 'string') {
-      return false;
-    }
-
-    if (typeof obj.cwd !== 'string') {
-      return false;
-    }
-
-    // Check model object
-    if (typeof obj.model !== 'object' || obj.model === null) {
-      return false;
-    }
-
-    const model = obj.model as Record<string, unknown>;
-
-    if (typeof model.id !== 'string') {
-      return false;
-    }
-
-    if (typeof model.display_name !== 'string') {
-      return false;
-    }
-
-    return true;
-  }
-
-  /**
-   * Validate stdin data and return detailed error message
-   * @param data Data to validate
-   * @returns Error message if invalid, null if valid
-   */
-  private getValidationError(data: unknown): string | null {
-    if (typeof data !== 'object' || data === null) {
-      return 'stdin data must be an object';
-    }
-
-    const obj = data as Record<string, unknown>;
-
-    if (typeof obj.session_id !== 'string') {
-      return 'missing session_id';
-    }
-
-    if (typeof obj.cwd !== 'string') {
-      return 'missing cwd';
-    }
-
-    if (typeof obj.model !== 'object' || obj.model === null) {
-      return 'missing model';
-    }
-
-    const model = obj.model as Record<string, unknown>;
-
-    if (typeof model.id !== 'string') {
-      return 'missing model.id';
-    }
-
-    if (typeof model.display_name !== 'string') {
-      return 'missing model.display_name';
-    }
-
-    return null;
   }
 }
