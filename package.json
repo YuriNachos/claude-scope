@@ -1,6 +1,6 @@
 {
   "name": "claude-scope",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Claude Code plugin for session status and analytics",
   "license": "MIT",
   "type": "module",
@@ -32,6 +32,7 @@
   "dependencies": {
     "zod": "^4.3.5"
   },
+  "bundleDependencies": true,
   "devDependencies": {
     "@types/node": "^22.10.2",
     "c8": "^10.1.3",
