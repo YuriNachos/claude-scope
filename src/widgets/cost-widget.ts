@@ -4,10 +4,10 @@
  * Displays total session cost
  */
 
-import { StdinDataWidget } from './core/stdin-data-widget.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
-import { formatCostUSD } from '../ui/utils/formatters.js';
-import type { RenderContext, StdinData } from '../types.js';
+import { StdinDataWidget } from '#widgets/core/stdin-data-widget.js';
+import { createWidgetMetadata } from '#core/widget-types.js';
+import { formatCostUSD } from '#ui/utils/formatters.js';
+import type { RenderContext, StdinData } from '#types.js';
 
 export class CostWidget extends StdinDataWidget {
   readonly id = 'cost';
