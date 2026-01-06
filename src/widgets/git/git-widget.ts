@@ -10,8 +10,8 @@
  */
 
 import { simpleGit, type SimpleGit } from 'simple-git';
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '../core/types.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
+import { createWidgetMetadata } from '../../core/widget-types.js';
 
 /**
  * Widget displaying git branch information

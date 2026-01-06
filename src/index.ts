@@ -6,12 +6,12 @@
 
 import { WidgetRegistry } from './core/widget-registry.js';
 import { Renderer } from './core/renderer.js';
-import { GitWidget } from './widgets/git-widget.js';
+import { GitWidget } from './widgets/git/git-widget.js';
 import { ModelWidget } from './widgets/model-widget.js';
 import { ContextWidget } from './widgets/context-widget.js';
 import { CostWidget } from './widgets/cost-widget.js';
 import { DurationWidget } from './widgets/duration-widget.js';
-import { GitChangesWidget } from './widgets/git-changes-widget.js';
+import { GitChangesWidget } from './widgets/git/git-changes-widget.js';
 import type { StdinData } from './types.js';
 
 /**

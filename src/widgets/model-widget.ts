@@ -4,7 +4,7 @@
  * Displays the current Claude model name
  */
 
-import { StdinDataWidget } from '../core/stdin-data-widget.js';
+import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
 import type { RenderContext, StdinData } from '../types.js';
 

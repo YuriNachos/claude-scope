@@ -1,6 +1,6 @@
 /**
  * Stdin provider for parsing JSON data from stdin
- * Parses and validates Claude Code session data
+ * Parses and validates Claude Code session data using Zod
  */
 import type { StdinData } from '../types.js';
 /**
@@ -16,28 +16,29 @@ export declare class StdinValidationError extends Error {
     constructor(message: string);
 }
 /**
- * Stdin provider for parsing JSON data
+ * Stdin provider for parsing and validating JSON data
  */
 export declare class StdinProvider {
     /**
-     * Parse JSON string from stdin
+     * Parse and validate JSON string from stdin
      * @param input JSON string to parse
-     * @returns Parsed StdinData object
+     * @returns Validated StdinData object
      * @throws StdinParseError if JSON is malformed
-     * @throws StdinValidationError if data is invalid
+     * @throws StdinValidationError if data doesn't match schema
      */
     parse(input: string): Promise<StdinData>;
     /**
-     * Validate stdin data structure
-     * @param data Data to validate
-     * @returns true if valid, false otherwise
+     * Safe parse that returns result instead of throwing
+     * Useful for testing and optional validation
+     * @param input JSON string to parse
+     * @returns Result object with success flag
      */
-    validate(data: unknown): data is StdinData;
-    /**
-     * Validate stdin data and return detailed error message
-     * @param data Data to validate
-     * @returns Error message if invalid, null if valid
-     */
-    private getValidationError;
+    safeParse(input: string): {
+        success: true;
+        data: StdinData;
+    } | {
+        success: false;
+        error: string;
+    };
 }
 //# sourceMappingURL=stdin-provider.d.ts.map

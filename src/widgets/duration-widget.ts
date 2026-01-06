@@ -4,7 +4,7 @@
  * Displays elapsed session time
  */
 
-import { StdinDataWidget } from '../core/stdin-data-widget.js';
+import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
 import { formatDuration } from '../utils/formatters.js';
 import type { RenderContext, StdinData } from '../types.js';

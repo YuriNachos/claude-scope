@@ -5,13 +5,12 @@
  */
 import { WidgetRegistry } from './core/widget-registry.js';
 import { Renderer } from './core/renderer.js';
-import { GitWidget } from './widgets/git-widget.js';
+import { GitWidget } from './widgets/git/git-widget.js';
 import { ModelWidget } from './widgets/model-widget.js';
 import { ContextWidget } from './widgets/context-widget.js';
 import { CostWidget } from './widgets/cost-widget.js';
 import { DurationWidget } from './widgets/duration-widget.js';
-import { GitChangesWidget } from './widgets/git-changes-widget.js';
-import { createGitAdapter } from './providers/git-provider.js';
+import { GitChangesWidget } from './widgets/git/git-changes-widget.js';
 /**
  * Create mock StdinData for development/testing
  */
@@ -57,20 +56,24 @@ function createMockStdinData() {
  * Main entry point
  */
 export async function main() {
-    // Initialize git adapter using factory method
-    const gitAdapter = createGitAdapter();
     // Create registry
     const registry = new WidgetRegistry();
-    // Register all widgets
+    // Register all widgets (no constructor args needed)
     await registry.register(new ModelWidget());
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
     await registry.register(new DurationWidget());
-    await registry.register(new GitWidget({ git: gitAdapter }));
-    await registry.register(new GitChangesWidget(gitAdapter));
-    // Create renderer with pipe separator
-    const renderer = new Renderer();
-    renderer.setSeparator(' │ ');
+    await registry.register(new GitWidget());
+    await registry.register(new GitChangesWidget());
+    // Create renderer with error handling configuration
+    const renderer = new Renderer({
+        separator: ' │ ',
+        onError: (error, widget) => {
+            // Log widget errors to stderr for visibility
+            console.error(`[${widget.id}] ${error.message}`);
+        },
+        showErrors: false // Set to true for debugging
+    });
     // Create mock data for dev (in real usage, comes from stdin)
     const mockData = createMockStdinData();
     // Update all widgets with data

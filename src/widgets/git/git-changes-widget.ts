@@ -3,15 +3,15 @@
  *
  * Displays git diff statistics (insertions/deletions)
  *
- * Uses simple-git directly for git operations.
+ * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
+ * because it requires async git operations that don't fit the Template Method Pattern.
  */
 
 import { simpleGit, type SimpleGit } from 'simple-git';
-import { StdinDataWidget } from '../core/stdin-data-widget.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
-import type { RenderContext } from '../core/types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
+import { createWidgetMetadata } from '../../core/widget-types.js';
 
-export class GitChangesWidget extends StdinDataWidget {
+export class GitChangesWidget implements IWidget {
   readonly id = 'git-changes';
   readonly metadata = createWidgetMetadata(
     'Git Changes',
@@ -19,24 +19,30 @@ export class GitChangesWidget extends StdinDataWidget {
   );
 
   private git: SimpleGit;
+  private enabled = true;
   private cwd: string | null = null;
 
   constructor() {
-    super();
     this.git = simpleGit();
   }
 
-  override async update(data: import('../types.js').StdinData): Promise<void> {
+  async initialize(context: WidgetContext): Promise<void> {
+    this.enabled = context.config?.enabled !== false;
+  }
+
+  async update(data: StdinData): Promise<void> {
     // Re-initialize git if cwd changed
     if (data.cwd !== this.cwd) {
       this.cwd = data.cwd;
       this.git = simpleGit(data.cwd);
     }
-    // Update parent with data
-    await super.update(data);
   }
 
   async render(context: RenderContext): Promise<string | null> {
+    if (!this.enabled || !this.cwd) {
+      return null;
+    }
+
     let changes;
     try {
       const summary = await this.git.diffSummary(['--shortstat']);
@@ -77,5 +83,13 @@ export class GitChangesWidget extends StdinDataWidget {
     if (changes.deletions > 0) parts.push(`-${changes.deletions}`);
 
     return parts.join(',');
+  }
+
+  isEnabled(): boolean {
+    return this.enabled;
+  }
+
+  async cleanup(): Promise<void> {
+    // simple-git doesn't need cleanup
   }
 }
