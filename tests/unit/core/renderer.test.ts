@@ -23,7 +23,8 @@ describe('Renderer', () => {
         isEnabled: () => true
       };
 
-      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const result = lines.join('\n');
 
       expect(result).to.equal('A B');
     });
@@ -49,7 +50,8 @@ describe('Renderer', () => {
         isEnabled: () => true
       };
 
-      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const result = lines.join('\n');
 
       expect(result).to.equal('A │ B');
     });
@@ -74,15 +76,18 @@ describe('Renderer', () => {
       };
 
       renderer.setSeparator(' | ');
-      let result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      let lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      let result = lines.join('\n');
       expect(result).to.equal('X | Y');
 
       renderer.setSeparator(' /// ');
-      result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      result = lines.join('\n');
       expect(result).to.equal('X /// Y');
 
       renderer.setSeparator('');
-      result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      result = lines.join('\n');
       expect(result).to.equal('XY');
     });
 
@@ -107,7 +112,8 @@ describe('Renderer', () => {
         isEnabled: () => true
       };
 
-      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const result = lines.join('\n');
 
       expect(result).to.equal('First *** Second');
     });
@@ -133,7 +139,8 @@ describe('Renderer', () => {
         isEnabled: () => true
       };
 
-      const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+      const result = lines.join('\n');
 
       expect(result).to.include('\u2503\u2503');
     });
@@ -151,7 +158,8 @@ describe('Renderer', () => {
       isEnabled: () => true
     };
 
-    const result = await renderer.render([mockWidget as any], { width: 80, timestamp: Date.now() });
+    const lines = await renderer.render([mockWidget as any], { width: 80, timestamp: Date.now() });
+    const result = lines.join('\n');
 
     expect(result).to.include('test output');
   });
@@ -175,7 +183,8 @@ describe('Renderer', () => {
       isEnabled: () => true
     };
 
-    const result = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+    const lines = await renderer.render([widget1 as any, widget2 as any], { width: 80, timestamp: Date.now() });
+    const result = lines.join('\n');
 
     expect(result).to.include('output1');
     expect(result).to.include('output2');
@@ -192,7 +201,8 @@ describe('Renderer', () => {
       isEnabled: () => false
     };
 
-    const result = await renderer.render([disabledWidget as any], { width: 80, timestamp: Date.now() });
+    const lines = await renderer.render([disabledWidget as any], { width: 80, timestamp: Date.now() });
+    const result = lines.join('\n');
 
     expect(result).to.not.include('should not see');
   });
@@ -208,9 +218,9 @@ describe('Renderer', () => {
       isEnabled: () => true
     };
 
-    const result = await renderer.render([nullWidget as any], { width: 80, timestamp: Date.now() });
+    const lines = await renderer.render([nullWidget as any], { width: 80, timestamp: Date.now() });
 
-    expect(result).to.equal('');
+    expect(lines).to.deep.equal([]);
   });
   });
 });
