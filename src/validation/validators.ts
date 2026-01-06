@@ -1,5 +1,5 @@
-import type { Validator } from './core';
-import { success, failure } from './result';
+import type { Validator } from './core.js';
+import { success, failure } from './result.js';
 
 export function string(): Validator<string> {
   return {
