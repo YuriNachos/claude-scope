@@ -1,11 +1,11 @@
 /**
  * Stdin provider for parsing JSON data from stdin
- * Parses and validates Claude Code session data using Zod
+ * Parses and validates Claude Code session data
  */
 
-import { z } from 'zod';
 import type { StdinData } from '../types.js';
 import { StdinDataSchema } from '../schemas/stdin-schema.js';
+import { formatError } from '../validation/result.js';
 
 /**
  * Error thrown when stdin parsing fails
@@ -52,25 +52,16 @@ export class StdinProvider {
       throw new StdinParseError(`Invalid JSON: ${(error as Error).message}`);
     }
 
-    // Validate with Zod
-    try {
-      return StdinDataSchema.parse(data);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        // Format error messages nicely
-        const errorDetails = error.issues
-          .map((e: z.ZodIssue) => {
-            const path = e.path.length > 0 ? e.path.join('.') : 'root';
-            return `${path}: ${e.message}`;
-          })
-          .join(', ');
+    // Validate with schema
+    const result = StdinDataSchema.validate(data);
 
-        throw new StdinValidationError(
-          `Validation failed: ${errorDetails}`
-        );
-      }
-      throw error;
+    if (!result.success) {
+      throw new StdinValidationError(
+        `Validation failed: ${formatError(result.error)}`
+      );
     }
+
+    return result.data;
   }
 
   /**
@@ -79,7 +70,9 @@ export class StdinProvider {
    * @param input JSON string to parse
    * @returns Result object with success flag
    */
-  async safeParse(input: string): Promise<{ success: true; data: StdinData } | { success: false; error: string }> {
+  async safeParse(
+    input: string
+  ): Promise<{ success: true; data: StdinData } | { success: false; error: string }> {
     try {
       const data = await this.parse(input);
       return { success: true, data };
