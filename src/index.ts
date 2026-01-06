@@ -75,9 +75,15 @@ export async function main(): Promise<string> {
   await registry.register(new GitWidget({ git: gitAdapter }));
   await registry.register(new GitChangesWidget(gitAdapter));
 
-  // Create renderer with pipe separator
-  const renderer = new Renderer();
-  renderer.setSeparator(' │ ');
+  // Create renderer with error handling configuration
+  const renderer = new Renderer({
+    separator: ' │ ',
+    onError: (error, widget) => {
+      // Log widget errors to stderr for visibility
+      console.error(`[${widget.id}] ${error.message}`);
+    },
+    showErrors: false  // Set to true for debugging
+  });
 
   // Create mock data for dev (in real usage, comes from stdin)
   const mockData = createMockStdinData();
