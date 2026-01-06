@@ -1,0 +1,35 @@
+{
+  "session_id": "adc905ec-20be-42e0-ae40-7eab6e329593",
+  "transcript_path": "/Users/user/.claude/projects/-Users-user-project/session.jsonl",
+  "cwd": "/Users/user/project",
+  "model": {
+    "id": "glm-4.7",
+    "display_name": "glm-4.7"
+  },
+  "workspace": {
+    "current_dir": "/Users/user/project",
+    "project_dir": "/Users/user/project"
+  },
+  "version": "2.0.76",
+  "output_style": {
+    "name": "default"
+  },
+  "cost": {
+    "total_cost_usd": 24.200420399999974,
+    "total_duration_ms": 12035825,
+    "total_api_duration_ms": 8497747,
+    "total_lines_added": 1383,
+    "total_lines_removed": 190
+  },
+  "context_window": {
+    "total_input_tokens": 1643325,
+    "total_output_tokens": 229658,
+    "context_window_size": 200000,
+    "current_usage": {
+      "input_tokens": 175,
+      "output_tokens": 126,
+      "cache_creation_input_tokens": 0,
+      "cache_read_input_tokens": 114304
+    }
+  }
+}
