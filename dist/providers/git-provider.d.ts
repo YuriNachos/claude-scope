@@ -1,64 +1,71 @@
 /**
- * Git operations provider
- * Wraps simple-git for dependency injection
+ * Git provider interface and implementation
+ *
+ * Uses native Node.js child_process to execute git commands,
+ * avoiding external dependencies like simple-git.
  */
-import { type SimpleGit } from 'simple-git';
-import type { GitInfo, GitChanges } from '../types.js';
 /**
- * Git interface for dependency injection
+ * Result of git status operation
+ */
+export interface GitStatusResult {
+    /** Current branch name (null if no branch or detached HEAD) */
+    current: string | null;
+}
+/**
+ * Single file diff statistics
+ */
+export interface GitDiffFile {
+    /** File path relative to repo root */
+    file: string;
+    /** Number of lines added */
+    insertions: number;
+    /** Number of lines deleted */
+    deletions: number;
+}
+/**
+ * Result of git diff --shortstat operation
+ */
+export interface GitDiffSummary {
+    /** Array of changed files with statistics */
+    files: GitDiffFile[];
+}
+/**
+ * Interface for git operations
+ *
+ * Abstraction over git commands to enable:
+ * - Easy testing with mocks
+ * - Swapping implementations
+ * - No tight coupling to specific git library
  */
 export interface IGit {
-    checkIsRepo(): Promise<boolean>;
-    branch(): Promise<{
-        current: string | null;
-        all: string[];
-    }>;
-    diffStats(): Promise<{
-        insertions: number;
-        deletions: number;
-    } | null>;
+    /**
+     * Get current git status (branch name)
+     * @returns Promise resolving to status info
+     */
+    status(): Promise<GitStatusResult>;
+    /**
+     * Get diff statistics (insertions/deletions)
+     * @returns Promise resolving to diff summary
+     */
+    diffSummary(options?: string[]): Promise<GitDiffSummary>;
 }
 /**
- * Dependencies for GitProvider
+ * Native git implementation using child_process
+ *
+ * Executes real git commands on the system.
+ * Requires git to be installed and available in PATH.
  */
-export interface GitProviderDeps {
-    git: IGit;
+export declare class NativeGit implements IGit {
+    private cwd;
+    constructor(cwd: string);
+    status(): Promise<GitStatusResult>;
+    diffSummary(options?: string[]): Promise<GitDiffSummary>;
 }
 /**
- * Git provider for repository operations
+ * Factory function to create NativeGit instance
+ *
+ * @param cwd - Working directory for git operations
+ * @returns IGit instance
  */
-export declare class GitProvider {
-    private git;
-    private repoPath;
-    private _isRepo;
-    constructor(deps: GitProviderDeps);
-    /**
-     * Initialize provider with repository path
-     */
-    init(path: string): Promise<void>;
-    /**
-     * Get current branch name
-     * @returns Branch name or null if not in repo
-     */
-    getBranch(): Promise<string | null>;
-    /**
-     * Get git diff statistics
-     * @returns Changes with insertions and deletions, or null if not a repo
-     */
-    getChanges(): Promise<GitChanges | null>;
-    /**
-     * Check if current path is a git repository
-     */
-    isRepo(): boolean;
-    /**
-     * Get complete git info
-     */
-    getInfo(): Promise<GitInfo>;
-}
-/**
- * Factory method to create an IGit instance from simple-git
- * @param gitInstance - Optional simple-git instance (creates default if not provided)
- * @returns IGit implementation
- */
-export declare function createGitAdapter(gitInstance?: SimpleGit): IGit;
+export declare function createGit(cwd: string): IGit;
 //# sourceMappingURL=git-provider.d.ts.map

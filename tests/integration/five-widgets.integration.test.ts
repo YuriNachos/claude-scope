@@ -4,12 +4,12 @@
 
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { WidgetRegistry } from '#/core/widget-registry.js';
-import { Renderer } from '#/core/renderer.js';
-import { ModelWidget } from '#/widgets/model-widget.js';
-import { ContextWidget } from '#/widgets/context-widget.js';
-import { CostWidget } from '#/widgets/cost-widget.js';
-import { DurationWidget } from '#/widgets/duration-widget.js';
+import { WidgetRegistry } from '../../src/core/widget-registry.js';
+import { Renderer } from '../../src/core/renderer.js';
+import { ModelWidget } from '../../src/widgets/model-widget.js';
+import { ContextWidget } from '../../src/widgets/context-widget.js';
+import { CostWidget } from '../../src/widgets/cost-widget.js';
+import { DurationWidget } from '../../src/widgets/duration-widget.js';
 import { createMockStdinData } from '../fixtures/mock-data.js';
 
 describe('Core Widgets Integration', () => {

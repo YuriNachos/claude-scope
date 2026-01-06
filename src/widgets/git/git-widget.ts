@@ -3,18 +3,21 @@
  * Displays current git branch
  *
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
- * because it has different lifecycle requirements:
- * - Uses simple-git directly for git operations
- * - Maintains internal state (currentCwd) for change detection
- * - Needs to reinitialize git instance when cwd changes
+ * because it requires async git operations with custom lifecycle management.
  */
 
-import { simpleGit, type SimpleGit } from 'simple-git';
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '#core/types.js';
-import { createWidgetMetadata } from '#core/widget-types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
+import { createWidgetMetadata } from '../../core/widget-types.js';
+import type { IGit } from '../../providers/git-provider.js';
+import { createGit } from '../../providers/git-provider.js';
 
 /**
  * Widget displaying git branch information
+ *
+ * Uses Dependency Injection for IGit to enable:
+ * - Easy testing with MockGit
+ * - No tight coupling to git implementation
+ * - Clean separation of concerns
  */
 export class GitWidget implements IWidget {
   readonly id = 'git';
@@ -23,12 +26,18 @@ export class GitWidget implements IWidget {
     'Displays current git branch'
   );
 
-  private git: SimpleGit;
+  private gitFactory: (cwd: string) => IGit;
+  private git: IGit | null = null;
   private enabled = true;
   private cwd: string | null = null;
 
-  constructor() {
-    this.git = simpleGit();
+  /**
+   * @param gitFactory - Optional factory function for creating IGit instances
+   *                     If not provided, uses default createGit (production)
+   *                     Tests can inject MockGit factory here
+   */
+  constructor(gitFactory?: (cwd: string) => IGit) {
+    this.gitFactory = gitFactory || createGit;
   }
 
   async initialize(context: WidgetContext): Promise<void> {
@@ -36,7 +45,7 @@ export class GitWidget implements IWidget {
   }
 
   async render(context: RenderContext): Promise<string | null> {
-    if (!this.enabled || !this.cwd) {
+    if (!this.enabled || !this.git || !this.cwd) {
       return null;
     }
 
@@ -49,9 +58,8 @@ export class GitWidget implements IWidget {
       }
 
       return ` ${branch}`;
-    } catch (error) {
+    } catch {
       // Log specific error for debugging but return null (graceful degradation)
-      console.debug(`[GitWidget] Failed to get status: ${(error as Error).message}`);
       return null;
     }
   }
@@ -60,7 +68,7 @@ export class GitWidget implements IWidget {
     // Re-initialize git if cwd changed
     if (data.cwd !== this.cwd) {
       this.cwd = data.cwd;
-      this.git = simpleGit(data.cwd);
+      this.git = this.gitFactory(data.cwd);
     }
   }
 
@@ -69,6 +77,6 @@ export class GitWidget implements IWidget {
   }
 
   async cleanup(): Promise<void> {
-    // simple-git doesn't need cleanup
+    // No cleanup needed for native git implementation
   }
 }

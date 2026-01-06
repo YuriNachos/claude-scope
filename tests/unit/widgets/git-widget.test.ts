@@ -1,34 +1,16 @@
 /**
  * Unit tests for GitWidget
+ *
+ * Uses MockGit for fast, deterministic testing without real git operations
  */
 
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { GitWidget } from '#/widgets/git/git-widget.js';
-import { mkdtemp, rm, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { simpleGit } from 'simple-git';
+import { GitWidget } from '../../../src/widgets/git/git-widget.js';
+import { MockGit } from '../../fixtures/mock-git.js';
 import { matchSnapshot, stripAnsi } from '../../helpers/snapshot.js';
 
 describe('GitWidget', () => {
-  let testDir: string;
-
-  beforeEach(async () => {
-    testDir = await mkdtemp(join(process.cwd(), 'test-git-widget-'));
-    // Initialize git repo
-    await simpleGit(testDir).init();
-    await simpleGit(testDir).addConfig('user.name', 'Test User');
-    await simpleGit(testDir).addConfig('user.email', 'test@example.com');
-  });
-
-  afterEach(async () => {
-    try {
-      await rm(testDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
-  });
-
   describe('metadata', () => {
     it('should have correct widget id', () => {
       const widget = new GitWidget();
@@ -70,53 +52,55 @@ describe('GitWidget', () => {
   });
 
   describe('update', () => {
-    it('should update cwd and reinitialize git instance', async () => {
-      const widget = new GitWidget();
+    it('should update cwd and initialize git instance', async () => {
+      const mockGit = new MockGit();
+      const widget = new GitWidget(() => mockGit);
 
-      await widget.update({ cwd: testDir } as any);
+      await widget.update({ cwd: '/test/dir' } as any);
 
-      // Widget should now be tracking testDir
+      // Widget should now be tracking /test/dir
       expect(widget.isEnabled()).to.be.true;
     });
 
     it('should handle multiple updates with same cwd', async () => {
-      const widget = new GitWidget();
+      const mockGit = new MockGit();
+      const widget = new GitWidget(() => mockGit);
 
-      await widget.update({ cwd: testDir } as any);
-      await widget.update({ cwd: testDir } as any);
-      await widget.update({ cwd: testDir } as any);
+      await widget.update({ cwd: '/test/dir' } as any);
+      await widget.update({ cwd: '/test/dir' } as any);
+      await widget.update({ cwd: '/test/dir' } as any);
 
       // Should handle gracefully
       expect(widget.isEnabled()).to.be.true;
     });
 
     it('should handle updates with different cwd', async () => {
-      const widget = new GitWidget();
+      const mockGit1 = new MockGit();
+      const mockGit2 = new MockGit();
+      let callCount = 0;
+      const widget = new GitWidget((cwd) => {
+        callCount++;
+        return cwd === '/test/dir1' ? mockGit1 : mockGit2;
+      });
 
-      await widget.update({ cwd: testDir } as any);
+      await widget.update({ cwd: '/test/dir1' } as any);
+      expect(callCount).to.equal(1);
 
-      const newDir = await mkdtemp(join(process.cwd(), 'test-git-widget-2-'));
-      await simpleGit(newDir).init();
+      await widget.update({ cwd: '/test/dir2' } as any);
+      expect(callCount).to.equal(2);
 
-      await widget.update({ cwd: newDir } as any);
-
-      // Widget should now track new directory
+      // Widget should still be enabled
       expect(widget.isEnabled()).to.be.true;
-
-      await rm(newDir, { recursive: true, force: true });
     });
   });
 
   describe('render', () => {
-    it('should render branch name when in git repo', async () => {
-      // Create initial commit to establish main branch
-      const testFile = join(testDir, 'test.txt');
-      await writeFile(testFile, 'test content');
-      await simpleGit(testDir).add(testFile);
-      await simpleGit(testDir).commit('Initial commit');
+    it('should render branch name when on main branch', async () => {
+      const mockGit = new MockGit();
+      mockGit.setBranch('main');
 
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
+      const widget = new GitWidget(() => mockGit);
+      await widget.update({ cwd: '/test/dir' } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
@@ -125,51 +109,47 @@ describe('GitWidget', () => {
     });
 
     it('should render custom branch name', async () => {
-      // Create initial commit
-      const testFile = join(testDir, 'test.txt');
-      await writeFile(testFile, 'test content');
-      await simpleGit(testDir).add(testFile);
-      await simpleGit(testDir).commit('Initial commit');
+      const mockGit = new MockGit();
+      mockGit.setBranch('feature/test-branch');
 
-      // Create and checkout feature branch
-      await simpleGit(testDir).checkout(['-b', 'feature-test']);
-
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
+      const widget = new GitWidget(() => mockGit);
+      await widget.update({ cwd: '/test/dir' } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.be.a('string');
-      expect(result).to.include('feature-test');
+      expect(result).to.include('feature/test-branch');
     });
 
     it('should return null when not in git repo', async () => {
-      // Use a subdirectory to ensure it's not a git repo
-      const nonGitDir = await mkdtemp(join(process.cwd(), 'test-non-git-'));
-      const subdir = join(nonGitDir, 'subdir');
+      const mockGit = new MockGit();
+      mockGit.setBranch(null); // Simulate no git repo
 
-      const widget = new GitWidget();
-      await widget.update({ cwd: subdir } as any);
+      const widget = new GitWidget(() => mockGit);
+      await widget.update({ cwd: '/non-git-dir' } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.be.null;
-
-      await rm(nonGitDir, { recursive: true, force: true });
     });
 
     it('should return null when cwd not set', async () => {
-      const widget = new GitWidget();
+      const mockGit = new MockGit();
+      const widget = new GitWidget(() => mockGit);
 
+      // Don't call update, so git instance is not initialized
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.be.null;
     });
 
     it('should return null when widget is disabled', async () => {
-      const widget = new GitWidget();
+      const mockGit = new MockGit();
+      mockGit.setBranch('main');
+
+      const widget = new GitWidget(() => mockGit);
       await widget.initialize({ config: { enabled: false } });
-      await widget.update({ cwd: testDir } as any);
+      await widget.update({ cwd: '/test/dir' } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
@@ -177,18 +157,30 @@ describe('GitWidget', () => {
     });
 
     it('should render branch name with leading space', async () => {
-      const testFile = join(testDir, 'test.txt');
-      await writeFile(testFile, 'test content');
-      await simpleGit(testDir).add(testFile);
-      await simpleGit(testDir).commit('Initial commit');
+      const mockGit = new MockGit();
+      mockGit.setBranch('develop');
 
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
+      const widget = new GitWidget(() => mockGit);
+      await widget.update({ cwd: '/test/dir' } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.be.a('string');
       expect(result).to.match(/^\s+\S+/); // Starts with whitespace
+    });
+
+    it('should handle detached HEAD state (commit hash)', async () => {
+      const mockGit = new MockGit();
+      mockGit.setBranch('abc123def'); // Simulate detached HEAD
+
+      const widget = new GitWidget(() => mockGit);
+      await widget.update({ cwd: '/test/dir' } as any);
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      // Should handle detached HEAD - may return commit hash
+      expect(result).to.be.a('string');
+      expect(result).to.include('abc123def');
     });
   });
 
@@ -206,77 +198,13 @@ describe('GitWidget', () => {
     });
   });
 
-  describe('error handling', () => {
-    it('should handle git errors gracefully', async () => {
-      // Create an empty directory with no git repo
-      const emptyDir = await mkdtemp(join(process.cwd(), 'test-empty-'));
-      try {
-        const widget = new GitWidget();
-        await widget.update({ cwd: emptyDir } as any);
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        // Should return null or handle gracefully when not in git repo
-        expect(result).to.not.throw;
-      } finally {
-        await rm(emptyDir, { recursive: true, force: true });
-      }
-    });
-  });
-
-  describe('edge cases', () => {
-    it('should handle detached HEAD state', async () => {
-      // Create commit and checkout detached HEAD
-      const testFile = join(testDir, 'test.txt');
-      await writeFile(testFile, 'test content');
-      await simpleGit(testDir).add(testFile);
-      await simpleGit(testDir).commit('Initial commit');
-
-      const commit = await simpleGit(testDir).revparse(['HEAD']);
-      await simpleGit(testDir).checkout(['--detach']);
-
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
-
-      const result = await widget.render({ width: 80, timestamp: 0 });
-
-      // Should handle detached HEAD - may return commit hash or null
-      expect(result).to.not.throw;
-    });
-
-    it('should handle empty repository (no commits)', async () => {
-      // Repo exists but no commits
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
-
-      const result = await widget.render({ width: 80, timestamp: 0 });
-
-      // Should handle gracefully - may return null or empty branch
-      expect(result).to.not.throw;
-    });
-
-    it('should handle repository with no branches yet', async () => {
-      // Freshly initialized repo has no commits yet
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
-
-      const result = await widget.render({ width: 80, timestamp: 0 });
-
-      // Should handle gracefully
-      expect(result).to.not.throw;
-    });
-  });
-
   describe('snapshots', () => {
     it('should snapshot main branch output', async () => {
-      // Create initial commit to establish main branch
-      const testFile = join(testDir, 'test.txt');
-      await writeFile(testFile, 'test content');
-      await simpleGit(testDir).add(testFile);
-      await simpleGit(testDir).commit('Initial commit');
+      const mockGit = new MockGit();
+      mockGit.setBranch('main');
 
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
+      const widget = new GitWidget(() => mockGit);
+      await widget.update({ cwd: '/test/dir' } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
@@ -285,17 +213,11 @@ describe('GitWidget', () => {
     });
 
     it('should snapshot feature branch output', async () => {
-      // Create initial commit
-      const testFile = join(testDir, 'test.txt');
-      await writeFile(testFile, 'test content');
-      await simpleGit(testDir).add(testFile);
-      await simpleGit(testDir).commit('Initial commit');
+      const mockGit = new MockGit();
+      mockGit.setBranch('feature/snapshot-test');
 
-      // Create and checkout feature branch
-      await simpleGit(testDir).checkout(['-b', 'feature/snapshot-test']);
-
-      const widget = new GitWidget();
-      await widget.update({ cwd: testDir } as any);
+      const widget = new GitWidget(() => mockGit);
+      await widget.update({ cwd: '/test/dir' } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 

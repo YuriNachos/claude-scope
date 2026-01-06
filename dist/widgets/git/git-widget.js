@@ -3,30 +3,38 @@
  * Displays current git branch
  *
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
- * because it has different lifecycle requirements:
- * - Uses simple-git directly for git operations
- * - Maintains internal state (currentCwd) for change detection
- * - Needs to reinitialize git instance when cwd changes
+ * because it requires async git operations with custom lifecycle management.
  */
-import { simpleGit } from 'simple-git';
 import { createWidgetMetadata } from '../../core/widget-types.js';
+import { createGit } from '../../providers/git-provider.js';
 /**
  * Widget displaying git branch information
+ *
+ * Uses Dependency Injection for IGit to enable:
+ * - Easy testing with MockGit
+ * - No tight coupling to git implementation
+ * - Clean separation of concerns
  */
 export class GitWidget {
     id = 'git';
     metadata = createWidgetMetadata('Git Widget', 'Displays current git branch');
-    git;
+    gitFactory;
+    git = null;
     enabled = true;
     cwd = null;
-    constructor() {
-        this.git = simpleGit();
+    /**
+     * @param gitFactory - Optional factory function for creating IGit instances
+     *                     If not provided, uses default createGit (production)
+     *                     Tests can inject MockGit factory here
+     */
+    constructor(gitFactory) {
+        this.gitFactory = gitFactory || createGit;
     }
     async initialize(context) {
         this.enabled = context.config?.enabled !== false;
     }
     async render(context) {
-        if (!this.enabled || !this.cwd) {
+        if (!this.enabled || !this.git || !this.cwd) {
             return null;
         }
         try {
@@ -37,9 +45,8 @@ export class GitWidget {
             }
             return ` ${branch}`;
         }
-        catch (error) {
+        catch {
             // Log specific error for debugging but return null (graceful degradation)
-            console.debug(`[GitWidget] Failed to get status: ${error.message}`);
             return null;
         }
     }
@@ -47,14 +54,14 @@ export class GitWidget {
         // Re-initialize git if cwd changed
         if (data.cwd !== this.cwd) {
             this.cwd = data.cwd;
-            this.git = simpleGit(data.cwd);
+            this.git = this.gitFactory(data.cwd);
         }
     }
     isEnabled() {
         return this.enabled;
     }
     async cleanup() {
-        // simple-git doesn't need cleanup
+        // No cleanup needed for native git implementation
     }
 }
 //# sourceMappingURL=git-widget.js.map

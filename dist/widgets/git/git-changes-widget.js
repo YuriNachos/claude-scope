@@ -4,18 +4,32 @@
  * Displays git diff statistics (insertions/deletions)
  *
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
- * because it requires async git operations that don't fit the Template Method Pattern.
+ * because it requires async git operations with custom lifecycle management.
  */
-import { simpleGit } from 'simple-git';
 import { createWidgetMetadata } from '../../core/widget-types.js';
+import { createGit } from '../../providers/git-provider.js';
+/**
+ * Widget displaying git diff statistics
+ *
+ * Uses Dependency Injection for IGit to enable:
+ * - Easy testing with MockGit
+ * - No tight coupling to git implementation
+ * - Clean separation of concerns
+ */
 export class GitChangesWidget {
     id = 'git-changes';
     metadata = createWidgetMetadata('Git Changes', 'Displays git diff statistics');
-    git;
+    gitFactory;
+    git = null;
     enabled = true;
     cwd = null;
-    constructor() {
-        this.git = simpleGit();
+    /**
+     * @param gitFactory - Optional factory function for creating IGit instances
+     *                     If not provided, uses default createGit (production)
+     *                     Tests can inject MockGit factory here
+     */
+    constructor(gitFactory) {
+        this.gitFactory = gitFactory || createGit;
     }
     async initialize(context) {
         this.enabled = context.config?.enabled !== false;
@@ -24,11 +38,11 @@ export class GitChangesWidget {
         // Re-initialize git if cwd changed
         if (data.cwd !== this.cwd) {
             this.cwd = data.cwd;
-            this.git = simpleGit(data.cwd);
+            this.git = this.gitFactory(data.cwd);
         }
     }
     async render(context) {
-        if (!this.enabled || !this.cwd) {
+        if (!this.enabled || !this.git || !this.cwd) {
             return null;
         }
         let changes;
@@ -38,10 +52,10 @@ export class GitChangesWidget {
             let deletions = 0;
             if (summary.files && summary.files.length > 0) {
                 for (const file of summary.files) {
-                    if ('insertions' in file && typeof file.insertions === 'number') {
+                    if (typeof file.insertions === 'number') {
                         insertions += file.insertions;
                     }
-                    if ('deletions' in file && typeof file.deletions === 'number') {
+                    if (typeof file.deletions === 'number') {
                         deletions += file.deletions;
                     }
                 }
@@ -51,9 +65,8 @@ export class GitChangesWidget {
             }
             changes = { insertions, deletions };
         }
-        catch (error) {
+        catch {
             // Log specific error for debugging but return null (graceful degradation)
-            console.debug(`[GitChangesWidget] Failed to get diff stats: ${error.message}`);
             return null;
         }
         if (!changes)
@@ -72,7 +85,7 @@ export class GitChangesWidget {
         return this.enabled;
     }
     async cleanup() {
-        // simple-git doesn't need cleanup
+        // No cleanup needed for native git implementation
     }
 }
 //# sourceMappingURL=git-changes-widget.js.map

@@ -1,127 +1,73 @@
 /**
- * Git operations provider
- * Wraps simple-git for dependency injection
+ * Git provider interface and implementation
+ *
+ * Uses native Node.js child_process to execute git commands,
+ * avoiding external dependencies like simple-git.
  */
-import { simpleGit } from 'simple-git';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+const execFileAsync = promisify(execFile);
 /**
- * Git provider for repository operations
+ * Native git implementation using child_process
+ *
+ * Executes real git commands on the system.
+ * Requires git to be installed and available in PATH.
  */
-export class GitProvider {
-    git;
-    repoPath;
-    _isRepo = false;
-    constructor(deps) {
-        this.git = deps.git;
-        this.repoPath = '';
+export class NativeGit {
+    cwd;
+    constructor(cwd) {
+        this.cwd = cwd;
     }
-    /**
-     * Initialize provider with repository path
-     */
-    async init(path) {
-        this.repoPath = path;
-        this._isRepo = await this.git.checkIsRepo();
-    }
-    /**
-     * Get current branch name
-     * @returns Branch name or null if not in repo
-     */
-    async getBranch() {
-        if (!this._isRepo) {
-            return null;
-        }
-        const result = await this.git.branch();
-        return result.current;
-    }
-    /**
-     * Get git diff statistics
-     * @returns Changes with insertions and deletions, or null if not a repo
-     */
-    async getChanges() {
-        if (!this._isRepo) {
-            return null;
-        }
-        const stats = await this.git.diffStats();
-        if (!stats) {
-            return null;
-        }
-        return {
-            insertions: stats.insertions,
-            deletions: stats.deletions
-        };
-    }
-    /**
-     * Check if current path is a git repository
-     */
-    isRepo() {
-        return this._isRepo;
-    }
-    /**
-     * Get complete git info
-     */
-    async getInfo() {
-        return {
-            branch: await this.getBranch(),
-            isRepo: this.isRepo()
-        };
-    }
-}
-/**
- * Adapter to wrap simple-git with our IGit interface
- */
-class SimpleGitAdapter {
-    git;
-    constructor(git) {
-        this.git = git;
-    }
-    async checkIsRepo() {
+    async status() {
         try {
-            await this.git.status();
-            return true;
+            const { stdout } = await execFileAsync('git', ['status', '--branch', '--short'], {
+                cwd: this.cwd,
+            });
+            // Parse output like: "## main" or "## feature-branch"
+            const match = stdout.match(/^##\s+(\S+)/m);
+            const current = match ? match[1] : null;
+            return { current };
         }
         catch {
-            return false;
+            // Not in a git repo or git not available
+            return { current: null };
         }
     }
-    async branch() {
-        const branches = await this.git.branch();
-        return {
-            current: branches.current || null,
-            all: branches.all
-        };
-    }
-    async diffStats() {
+    async diffSummary(options) {
+        const args = ['diff', '--shortstat'];
+        if (options) {
+            args.push(...options);
+        }
         try {
-            const summary = await this.git.diffSummary(['--shortstat']);
-            // Parse the summary object
-            let insertions = 0;
-            let deletions = 0;
-            if (summary.files && summary.files.length > 0) {
-                for (const file of summary.files) {
-                    if ('insertions' in file && typeof file.insertions === 'number') {
-                        insertions += file.insertions;
-                    }
-                    if ('deletions' in file && typeof file.deletions === 'number') {
-                        deletions += file.deletions;
-                    }
-                }
-            }
-            if (insertions === 0 && deletions === 0) {
-                return null;
-            }
-            return { insertions, deletions };
+            const { stdout } = await execFileAsync('git', args, {
+                cwd: this.cwd,
+            });
+            // Parse output like: " 5 file(s) changed, 12 insertions(+), 3 deletions(-)"
+            // or: " 2 insertions(+), 1 deletion(-)"
+            const insertionMatch = stdout.match(/(\d+)\s+insertion/);
+            const deletionMatch = stdout.match(/(\d+)\s+deletion/);
+            const insertions = insertionMatch ? parseInt(insertionMatch[1], 10) : 0;
+            const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
+            // Return a single "file" entry representing total changes
+            // This matches the simple-git behavior we had before
+            const files = insertions > 0 || deletions > 0
+                ? [{ file: '(total)', insertions, deletions }]
+                : [];
+            return { files };
         }
         catch {
-            return null;
+            // Not in a git repo or git not available
+            return { files: [] };
         }
     }
 }
 /**
- * Factory method to create an IGit instance from simple-git
- * @param gitInstance - Optional simple-git instance (creates default if not provided)
- * @returns IGit implementation
+ * Factory function to create NativeGit instance
+ *
+ * @param cwd - Working directory for git operations
+ * @returns IGit instance
  */
-export function createGitAdapter(gitInstance) {
-    const git = gitInstance ?? simpleGit();
-    return new SimpleGitAdapter(git);
+export function createGit(cwd) {
+    return new NativeGit(cwd);
 }
 //# sourceMappingURL=git-provider.js.map

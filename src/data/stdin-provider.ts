@@ -4,8 +4,8 @@
  */
 
 import { z } from 'zod';
-import type { StdinData } from '#types.js';
-import { StdinDataSchema } from '#schemas/stdin-schema.js';
+import type { StdinData } from '../types.js';
+import { StdinDataSchema } from '../schemas/stdin-schema.js';
 
 /**
  * Error thrown when stdin parsing fails

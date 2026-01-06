@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { IWidget, IWidgetMetadata, WidgetContext } from '#/core/types.js';
+import { IWidget, IWidgetMetadata, WidgetContext } from '../../../src/core/types.js';
 
 describe('IWidget', () => {
   it('should define required interface methods', () => {

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { WidgetRegistry } from '#/core/widget-registry.js';
-import { GitWidget } from '#/widgets/git/git-widget.js';
+import { WidgetRegistry } from '../../../src/core/widget-registry.js';
+import { GitWidget } from '../../../src/widgets/git/git-widget.js';
 
 describe('WidgetRegistry', () => {
   it('should register a widget', async () => {

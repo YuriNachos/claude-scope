@@ -14,22 +14,8 @@
     "declarationMap": true,
     "sourceMap": true,
     "resolveJsonModule": true,
-    "allowSyntheticDefaultImports": true,
-    "baseUrl": ".",
-    "paths": {
-      "#*": ["src/*"],
-      "#core/*": ["src/core/*"],
-      "#widgets/*": ["src/widgets/*"],
-      "#data/*": ["src/data/*"],
-      "#ui/*": ["src/ui/*"],
-      "#utils/*": ["src/utils/*"],
-      "#schemas/*": ["src/schemas/*"]
-    }
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "tests"],
-  "tsc-alias": {
-    "verbose": false,
-    "resolveFullPaths": true
-  }
+  "exclude": ["node_modules", "dist", "tests"]
 }

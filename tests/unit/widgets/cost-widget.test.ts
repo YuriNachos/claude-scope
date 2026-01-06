@@ -4,7 +4,7 @@
 
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { CostWidget } from '#/widgets/cost-widget.js';
+import { CostWidget } from '../../../src/widgets/cost-widget.js';
 import { createMockStdinData } from '../../fixtures/mock-data.js';
 
 describe('CostWidget', () => {

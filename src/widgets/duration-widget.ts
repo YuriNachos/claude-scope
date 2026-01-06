@@ -4,10 +4,10 @@
  * Displays elapsed session time
  */
 
-import { StdinDataWidget } from '#widgets/core/stdin-data-widget.js';
-import { createWidgetMetadata } from '#core/widget-types.js';
-import { formatDuration } from '#ui/utils/formatters.js';
-import type { RenderContext, StdinData } from '#types.js';
+import { StdinDataWidget } from './core/stdin-data-widget.js';
+import { createWidgetMetadata } from '../core/widget-types.js';
+import { formatDuration } from '../ui/utils/formatters.js';
+import type { RenderContext, StdinData } from '../types.js';
 
 export class DurationWidget extends StdinDataWidget {
   readonly id = 'duration';

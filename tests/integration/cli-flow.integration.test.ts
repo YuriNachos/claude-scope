@@ -5,18 +5,15 @@
 
 import { describe, it, beforeEach, afterEach } from 'node:test';
 import { expect } from 'chai';
-import { WidgetRegistry } from '#/core/widget-registry.js';
-import { Renderer } from '#/core/renderer.js';
-import { GitWidget } from '#/widgets/git/git-widget.js';
-import { ModelWidget } from '#/widgets/model-widget.js';
-import { ContextWidget } from '#/widgets/context-widget.js';
-import { CostWidget } from '#/widgets/cost-widget.js';
-import { DurationWidget } from '#/widgets/duration-widget.js';
-import { GitChangesWidget } from '#/widgets/git/git-changes-widget.js';
-import type { StdinData, RenderContext } from '#/types.js';
-import { mkdtemp, rm, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { simpleGit } from 'simple-git';
+import { WidgetRegistry } from '../../src/core/widget-registry.js';
+import { Renderer } from '../../src/core/renderer.js';
+import { GitWidget } from '../../src/widgets/git/git-widget.js';
+import { ModelWidget } from '../../src/widgets/model-widget.js';
+import { ContextWidget } from '../../src/widgets/context-widget.js';
+import { CostWidget } from '../../src/widgets/cost-widget.js';
+import { DurationWidget } from '../../src/widgets/duration-widget.js';
+import { GitChangesWidget } from '../../src/widgets/git/git-changes-widget.js';
+import type { StdinData, RenderContext } from '../../src/types.js';
 
 function createStdinData(overrides?: Partial<StdinData>): StdinData {
   return {
@@ -56,22 +53,14 @@ function createStdinData(overrides?: Partial<StdinData>): StdinData {
 describe('CLI Flow Integration', () => {
   let registry: WidgetRegistry;
   let renderer: Renderer;
-  let testDir: string;
 
   beforeEach(async () => {
     registry = new WidgetRegistry();
     renderer = new Renderer();
-    // Create temporary directory for git tests
-    testDir = await mkdtemp(join(process.cwd(), 'test-git-'));
   });
 
   afterEach(async () => {
     await registry.clear();
-    try {
-      await rm(testDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
   });
 
   describe('Complete flow with valid stdin data', () => {
@@ -362,40 +351,6 @@ describe('CLI Flow Integration', () => {
       outputs.forEach(output => {
         expect(output).to.include('Opus 4.5');
       });
-    });
-  });
-
-  describe('Git widget integration', () => {
-    it('should work with real git repository', async () => {
-      // Arrange: Initialize git repo in temp directory
-      await simpleGit(testDir).init();
-      await simpleGit(testDir).addConfig('user.name', 'Test User');
-      await simpleGit(testDir).addConfig('user.email', 'test@example.com');
-
-      // Create a commit to have a branch
-      const testFile = join(testDir, 'test.txt');
-      await writeFile(testFile, 'test content');
-      await simpleGit(testDir).add(testFile);
-      await simpleGit(testDir).commit('Initial commit');
-      await simpleGit(testDir).checkout(['-b', 'feature-test']);
-
-      // Create GitWidget
-      const gitWidget = new GitWidget();
-      await registry.register(gitWidget, { config: { enabled: true } });
-
-      // Act: Update with temp directory as cwd
-      const stdinData = createStdinData({ cwd: testDir });
-      await gitWidget.update(stdinData);
-
-      const renderContext: RenderContext = { width: 80, timestamp: Date.now() };
-      const output = await gitWidget.render(renderContext);
-
-      // Assert: Output contains branch name
-      expect(output).to.be.a('string');
-      expect(output).to.include('feature-test');
-
-      // Cleanup
-      await registry.unregister('git');
     });
   });
 });

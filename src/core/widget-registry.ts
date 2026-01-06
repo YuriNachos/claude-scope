@@ -3,7 +3,7 @@
  * Manages widget lifecycle and retrieval
  */
 
-import type { IWidget, WidgetContext } from '#core/types.js';
+import type { IWidget, WidgetContext } from './types.js';
 
 /**
  * Registry for managing widgets

@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { StdinData, ModelInfo, GitInfo, RenderContext } from '#/types.js';
+import { StdinData, ModelInfo, GitInfo, RenderContext } from '../../src/types.js';
 
 describe('StdinData', () => {
   it('should accept valid stdin data structure', () => {

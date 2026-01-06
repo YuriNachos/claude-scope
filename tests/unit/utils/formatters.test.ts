@@ -9,7 +9,7 @@ import {
   formatCostUSD,
   progressBar,
   getContextColor
-} from '#/utils/formatters.js';
+} from '../../../src/utils/formatters.js';
 
 describe('formatDuration', () => {
   describe('seconds only', () => {

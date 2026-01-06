@@ -4,13 +4,22 @@
  * Displays git diff statistics (insertions/deletions)
  *
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
- * because it requires async git operations that don't fit the Template Method Pattern.
+ * because it requires async git operations with custom lifecycle management.
  */
 
-import { simpleGit, type SimpleGit } from 'simple-git';
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '#core/types.js';
-import { createWidgetMetadata } from '#core/widget-types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
+import { createWidgetMetadata } from '../../core/widget-types.js';
+import type { IGit } from '../../providers/git-provider.js';
+import { createGit } from '../../providers/git-provider.js';
 
+/**
+ * Widget displaying git diff statistics
+ *
+ * Uses Dependency Injection for IGit to enable:
+ * - Easy testing with MockGit
+ * - No tight coupling to git implementation
+ * - Clean separation of concerns
+ */
 export class GitChangesWidget implements IWidget {
   readonly id = 'git-changes';
   readonly metadata = createWidgetMetadata(
@@ -18,12 +27,18 @@ export class GitChangesWidget implements IWidget {
     'Displays git diff statistics'
   );
 
-  private git: SimpleGit;
+  private gitFactory: (cwd: string) => IGit;
+  private git: IGit | null = null;
   private enabled = true;
   private cwd: string | null = null;
 
-  constructor() {
-    this.git = simpleGit();
+  /**
+   * @param gitFactory - Optional factory function for creating IGit instances
+   *                     If not provided, uses default createGit (production)
+   *                     Tests can inject MockGit factory here
+   */
+  constructor(gitFactory?: (cwd: string) => IGit) {
+    this.gitFactory = gitFactory || createGit;
   }
 
   async initialize(context: WidgetContext): Promise<void> {
@@ -34,12 +49,12 @@ export class GitChangesWidget implements IWidget {
     // Re-initialize git if cwd changed
     if (data.cwd !== this.cwd) {
       this.cwd = data.cwd;
-      this.git = simpleGit(data.cwd);
+      this.git = this.gitFactory(data.cwd);
     }
   }
 
   async render(context: RenderContext): Promise<string | null> {
-    if (!this.enabled || !this.cwd) {
+    if (!this.enabled || !this.git || !this.cwd) {
       return null;
     }
 
@@ -52,10 +67,10 @@ export class GitChangesWidget implements IWidget {
 
       if (summary.files && summary.files.length > 0) {
         for (const file of summary.files) {
-          if ('insertions' in file && typeof file.insertions === 'number') {
+          if (typeof file.insertions === 'number') {
             insertions += file.insertions;
           }
-          if ('deletions' in file && typeof file.deletions === 'number') {
+          if (typeof file.deletions === 'number') {
             deletions += file.deletions;
           }
         }
@@ -66,9 +81,8 @@ export class GitChangesWidget implements IWidget {
       }
 
       changes = { insertions, deletions };
-    } catch (error) {
+    } catch {
       // Log specific error for debugging but return null (graceful degradation)
-      console.debug(`[GitChangesWidget] Failed to get diff stats: ${(error as Error).message}`);
       return null;
     }
 
@@ -90,6 +104,6 @@ export class GitChangesWidget implements IWidget {
   }
 
   async cleanup(): Promise<void> {
-    // simple-git doesn't need cleanup
+    // No cleanup needed for native git implementation
   }
 }

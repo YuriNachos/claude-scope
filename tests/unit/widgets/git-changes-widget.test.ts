@@ -1,34 +1,16 @@
 /**
  * Unit tests for GitChangesWidget
+ *
+ * Uses MockGit for fast, deterministic testing without real git operations
  */
 
-import { describe, it, beforeEach, afterEach } from 'node:test';
+import { describe, it } from 'node:test';
 import { expect } from 'chai';
-import { GitChangesWidget } from '#/widgets/git/git-changes-widget.js';
+import { GitChangesWidget } from '../../../src/widgets/git/git-changes-widget.js';
+import { MockGit } from '../../fixtures/mock-git.js';
 import { createMockStdinData } from '../../fixtures/mock-data.js';
-import { mkdtemp, rm, writeFile } from 'fs/promises';
-import { join } from 'path';
-import { simpleGit } from 'simple-git';
 
 describe('GitChangesWidget', () => {
-  let testDir: string;
-
-  beforeEach(async () => {
-    testDir = await mkdtemp(join(process.cwd(), 'test-git-changes-'));
-    // Initialize git repo
-    await simpleGit(testDir).init();
-    await simpleGit(testDir).addConfig('user.name', 'Test User');
-    await simpleGit(testDir).addConfig('user.email', 'test@example.com');
-  });
-
-  afterEach(async () => {
-    try {
-      await rm(testDir, { recursive: true, force: true });
-    } catch {
-      // Ignore cleanup errors
-    }
-  });
-
   it('should have correct id and metadata', () => {
     const widget = new GitChangesWidget();
     expect(widget.id).to.equal('git-changes');
@@ -36,30 +18,82 @@ describe('GitChangesWidget', () => {
   });
 
   it('should display both additions and deletions', async () => {
-    // Create a file with changes
-    const testFile = join(testDir, 'test.txt');
-    await writeFile(testFile, 'line1\nline2\nline3\n');
-    await simpleGit(testDir).add(testFile);
-    await simpleGit(testDir).commit('Initial commit');
+    const mockGit = new MockGit();
+    mockGit.setDiff([
+      { file: 'test.txt', insertions: 5, deletions: 3 },
+    ]);
 
-    // Modify file
-    await writeFile(testFile, 'line1\nline2\nline3\nline4\nline5\n');
-    await simpleGit(testDir).add(testFile);
-    await simpleGit(testDir).commit('Add more lines');
-
-    const widget = new GitChangesWidget();
-    await widget.update(createMockStdinData({ cwd: testDir }));
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
     expect(result).to.be.a('string');
-    expect(result).to.include('+');
+    expect(result).to.include('+5');
+    expect(result).to.include('-3');
+  });
+
+  it('should display only additions', async () => {
+    const mockGit = new MockGit();
+    mockGit.setDiff([
+      { file: 'test.txt', insertions: 10, deletions: 0 },
+    ]);
+
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
+
+    const result = await widget.render({ width: 80, timestamp: 0 });
+
+    expect(result).to.be.a('string');
+    expect(result).to.include('+10');
+    expect(result).to.not.include('-');
+  });
+
+  it('should display only deletions', async () => {
+    const mockGit = new MockGit();
+    mockGit.setDiff([
+      { file: 'test.txt', insertions: 0, deletions: 7 },
+    ]);
+
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
+
+    const result = await widget.render({ width: 80, timestamp: 0 });
+
+    expect(result).to.be.a('string');
+    expect(result).to.include('-7');
+    expect(result).to.not.include('+');
   });
 
   it('should return null when no changes', async () => {
-    // Clean working directory (no changes)
-    const widget = new GitChangesWidget();
-    await widget.update(createMockStdinData({ cwd: testDir }));
+    const mockGit = new MockGit();
+    mockGit.setDiff([]); // No changes
+
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
+
+    const result = await widget.render({ width: 80, timestamp: 0 });
+
+    expect(result).to.be.null;
+  });
+
+  it('should return null when cwd not set', async () => {
+    const mockGit = new MockGit();
+    const widget = new GitChangesWidget(() => mockGit);
+
+    // Don't call update, so git instance is not initialized
+    const result = await widget.render({ width: 80, timestamp: 0 });
+
+    expect(result).to.be.null;
+  });
+
+  it('should return null when widget is disabled', async () => {
+    const mockGit = new MockGit();
+    mockGit.setDiff([{ file: 'test.txt', insertions: 5, deletions: 3 }]);
+
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.initialize({ config: { enabled: false } });
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
@@ -67,16 +101,66 @@ describe('GitChangesWidget', () => {
   });
 
   it('should handle non-git directory gracefully', async () => {
-    // Use temp directory which is not a git repo
-    const nonGitDir = await mkdtemp(join(process.cwd(), 'test-non-git-'));
+    const mockGit = new MockGit();
+    mockGit.setDiff([]); // Simulate no git repo (no changes)
 
-    const widget = new GitChangesWidget();
-    await widget.update(createMockStdinData({ cwd: nonGitDir }));
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.update(createMockStdinData({ cwd: '/non-git-dir' }));
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
     expect(result).to.be.null;
+  });
 
-    await rm(nonGitDir, { recursive: true, force: true });
+  it('should aggregate changes from multiple files', async () => {
+    const mockGit = new MockGit();
+    mockGit.setDiff([
+      { file: 'file1.txt', insertions: 5, deletions: 2 },
+      { file: 'file2.txt', insertions: 3, deletions: 1 },
+      { file: 'file3.ts', insertions: 10, deletions: 0 },
+    ]);
+
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
+
+    const result = await widget.render({ width: 80, timestamp: 0 });
+
+    expect(result).to.be.a('string');
+    expect(result).to.include('+18'); // 5 + 3 + 10
+    expect(result).to.include('-3'); // 2 + 1
+  });
+
+  it('should handle zero insertions with deletions', async () => {
+    const mockGit = new MockGit();
+    mockGit.setDiff([
+      { file: 'test.txt', insertions: 0, deletions: 5 },
+    ]);
+
+    const widget = new GitChangesWidget(() => mockGit);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
+
+    const result = await widget.render({ width: 80, timestamp: 0 });
+
+    expect(result).to.equal('-5');
+  });
+
+  it('should handle multiple updates', async () => {
+    const mockGit = new MockGit();
+    const widget = new GitChangesWidget(() => mockGit);
+
+    // First update with changes
+    mockGit.setDiff([{ file: 'test.txt', insertions: 5, deletions: 3 }]);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
+
+    let result = await widget.render({ width: 80, timestamp: 0 });
+    expect(result).to.include('+5');
+    expect(result).to.include('-3');
+
+    // Second update with no changes
+    mockGit.setDiff([]);
+    await widget.update(createMockStdinData({ cwd: '/test/dir' }));
+
+    result = await widget.render({ width: 80, timestamp: 0 });
+    expect(result).to.be.null;
   });
 });
