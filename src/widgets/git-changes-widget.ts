@@ -24,7 +24,9 @@ export class GitChangesWidget extends StdinDataWidget {
     let changes;
     try {
       changes = await this.gitProvider.diffStats();
-    } catch {
+    } catch (error) {
+      // Log specific error for debugging but return null (graceful degradation)
+      console.debug(`[GitChangesWidget] Failed to get diff stats: ${(error as Error).message}`);
       return null;
     }
 
