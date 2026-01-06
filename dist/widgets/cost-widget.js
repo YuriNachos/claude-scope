@@ -10,7 +10,7 @@ export class CostWidget extends StdinDataWidget {
     id = 'cost';
     metadata = createWidgetMetadata('Cost', 'Displays session cost in USD');
     renderWithData(data, context) {
-        if (!data.cost)
+        if (!data.cost || data.cost.total_cost_usd === undefined)
             return null;
         return formatCostUSD(data.cost.total_cost_usd);
     }

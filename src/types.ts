@@ -5,8 +5,8 @@
  * and defines additional types not related to stdin data validation.
  */
 
-// Re-export types from Zod schema (single source of truth for stdin data)
-export type {
+// Import types from Zod schema (single source of truth for stdin data)
+import type {
   StdinData,
   ModelInfo,
   Workspace,
@@ -15,6 +15,17 @@ export type {
   ContextWindow,
   ContextUsage
 } from './schemas/stdin-schema.js';
+
+// Re-export for convenience
+export type {
+  StdinData,
+  ModelInfo,
+  Workspace,
+  OutputStyle,
+  CostInfo,
+  ContextWindow,
+  ContextUsage
+};
 
 // Workspace alias for backwards compatibility
 export type WorkspaceInfo = Workspace;

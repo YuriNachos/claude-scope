@@ -33,12 +33,12 @@ export declare class StdinProvider {
      * @param input JSON string to parse
      * @returns Result object with success flag
      */
-    safeParse(input: string): {
+    safeParse(input: string): Promise<{
         success: true;
         data: StdinData;
     } | {
         success: false;
         error: string;
-    };
+    }>;
 }
 //# sourceMappingURL=stdin-provider.d.ts.map

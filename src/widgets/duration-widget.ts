@@ -17,7 +17,7 @@ export class DurationWidget extends StdinDataWidget {
   );
 
   protected renderWithData(data: StdinData, context: RenderContext): string | null {
-    if (!data.cost) return null;
+    if (!data.cost || data.cost.total_duration_ms === undefined) return null;
     return formatDuration(data.cost.total_duration_ms);
   }
 }

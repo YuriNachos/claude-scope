@@ -17,7 +17,7 @@ export class CostWidget extends StdinDataWidget {
   );
 
   protected renderWithData(data: StdinData, context: RenderContext): string | null {
-    if (!data.cost) return null;
+    if (!data.cost || data.cost.total_cost_usd === undefined) return null;
     return formatCostUSD(data.cost.total_cost_usd);
   }
 }

@@ -53,8 +53,8 @@ export class StdinProvider {
         catch (error) {
             if (error instanceof z.ZodError) {
                 // Format error messages nicely
-                const errorDetails = error.errors
-                    .map(e => {
+                const errorDetails = error.issues
+                    .map((e) => {
                     const path = e.path.length > 0 ? e.path.join('.') : 'root';
                     return `${path}: ${e.message}`;
                 })
@@ -70,9 +70,9 @@ export class StdinProvider {
      * @param input JSON string to parse
      * @returns Result object with success flag
      */
-    safeParse(input) {
+    async safeParse(input) {
         try {
-            const data = this.parse(input);
+            const data = await this.parse(input);
             return { success: true, data };
         }
         catch (error) {

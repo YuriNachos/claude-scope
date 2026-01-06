@@ -10,7 +10,7 @@ export class DurationWidget extends StdinDataWidget {
     id = 'duration';
     metadata = createWidgetMetadata('Duration', 'Displays elapsed session time');
     renderWithData(data, context) {
-        if (!data.cost)
+        if (!data.cost || data.cost.total_duration_ms === undefined)
             return null;
         return formatDuration(data.cost.total_duration_ms);
     }
