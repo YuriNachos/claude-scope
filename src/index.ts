@@ -12,7 +12,6 @@ import { ContextWidget } from './widgets/context-widget.js';
 import { CostWidget } from './widgets/cost-widget.js';
 import { DurationWidget } from './widgets/duration-widget.js';
 import { GitChangesWidget } from './widgets/git-changes-widget.js';
-import { createGitAdapter } from './providers/git-provider.js';
 import type { StdinData } from './types.js';
 
 /**
@@ -61,19 +60,16 @@ function createMockStdinData(): StdinData {
  * Main entry point
  */
 export async function main(): Promise<string> {
-  // Initialize git adapter using factory method
-  const gitAdapter = createGitAdapter();
-
   // Create registry
   const registry = new WidgetRegistry();
 
-  // Register all widgets
+  // Register all widgets (no constructor args needed)
   await registry.register(new ModelWidget());
   await registry.register(new ContextWidget());
   await registry.register(new CostWidget());
   await registry.register(new DurationWidget());
-  await registry.register(new GitWidget({ git: gitAdapter }));
-  await registry.register(new GitChangesWidget(gitAdapter));
+  await registry.register(new GitWidget());
+  await registry.register(new GitChangesWidget());
 
   // Create renderer with error handling configuration
   const renderer = new Renderer({
