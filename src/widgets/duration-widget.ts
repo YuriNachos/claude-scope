@@ -13,7 +13,10 @@ export class DurationWidget extends StdinDataWidget {
   readonly id = 'duration';
   readonly metadata = createWidgetMetadata(
     'Duration',
-    'Displays elapsed session time'
+    'Displays elapsed session time',
+    '1.0.0',
+    'claude-scope',
+    0  // First line
   );
 
   protected renderWithData(data: StdinData, context: RenderContext): string | null {

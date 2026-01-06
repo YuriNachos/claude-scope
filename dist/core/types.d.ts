@@ -10,6 +10,8 @@ export interface IWidgetMetadata {
     description: string;
     version: string;
     author: string;
+    /** Which statusline line this widget appears on (0-indexed) */
+    line?: number;
 }
 /**
  * Initialization context passed to widgets

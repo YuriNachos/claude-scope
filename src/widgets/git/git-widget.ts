@@ -23,7 +23,10 @@ export class GitWidget implements IWidget {
   readonly id = 'git';
   readonly metadata = createWidgetMetadata(
     'Git Widget',
-    'Displays current git branch'
+    'Displays current git branch',
+    '1.0.0',
+    'claude-scope',
+    0  // First line
   );
 
   private gitFactory: (cwd: string) => IGit;

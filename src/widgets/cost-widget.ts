@@ -13,7 +13,10 @@ export class CostWidget extends StdinDataWidget {
   readonly id = 'cost';
   readonly metadata = createWidgetMetadata(
     'Cost',
-    'Displays session cost in USD'
+    'Displays session cost in USD',
+    '1.0.0',
+    'claude-scope',
+    0  // First line
   );
 
   protected renderWithData(data: StdinData, context: RenderContext): string | null {

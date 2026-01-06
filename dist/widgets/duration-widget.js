@@ -8,7 +8,8 @@ import { createWidgetMetadata } from '../core/widget-types.js';
 import { formatDuration } from '../ui/utils/formatters.js';
 export class DurationWidget extends StdinDataWidget {
     id = 'duration';
-    metadata = createWidgetMetadata('Duration', 'Displays elapsed session time');
+    metadata = createWidgetMetadata('Duration', 'Displays elapsed session time', '1.0.0', 'claude-scope', 0 // First line
+    );
     renderWithData(data, context) {
         if (!data.cost || data.cost.total_duration_ms === undefined)
             return null;

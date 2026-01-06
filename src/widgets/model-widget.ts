@@ -12,7 +12,10 @@ export class ModelWidget extends StdinDataWidget {
   readonly id = 'model';
   readonly metadata = createWidgetMetadata(
     'Model',
-    'Displays the current Claude model name'
+    'Displays the current Claude model name',
+    '1.0.0',
+    'claude-scope',
+    0  // First line
   );
 
   protected renderWithData(data: StdinData, context: RenderContext): string | null {

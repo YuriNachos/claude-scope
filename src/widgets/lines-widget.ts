@@ -21,7 +21,10 @@ export class LinesWidget extends StdinDataWidget {
   readonly id = 'lines';
   readonly metadata = createWidgetMetadata(
     'Lines',
-    'Displays lines added/removed in session'
+    'Displays lines added/removed in session',
+    '1.0.0',
+    'claude-scope',
+    0  // First line
   );
 
   protected renderWithData(

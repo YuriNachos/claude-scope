@@ -18,7 +18,8 @@ import { createGit } from '../../providers/git-provider.js';
  */
 export class GitChangesWidget {
     id = 'git-changes';
-    metadata = createWidgetMetadata('Git Changes', 'Displays git diff statistics');
+    metadata = createWidgetMetadata('Git Changes', 'Displays git diff statistics', '1.0.0', 'claude-scope', 0 // First line
+    );
     gitFactory;
     git = null;
     enabled = true;

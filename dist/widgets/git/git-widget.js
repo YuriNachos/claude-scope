@@ -17,7 +17,8 @@ import { createGit } from '../../providers/git-provider.js';
  */
 export class GitWidget {
     id = 'git';
-    metadata = createWidgetMetadata('Git Widget', 'Displays current git branch');
+    metadata = createWidgetMetadata('Git Widget', 'Displays current git branch', '1.0.0', 'claude-scope', 0 // First line
+    );
     gitFactory;
     git = null;
     enabled = true;

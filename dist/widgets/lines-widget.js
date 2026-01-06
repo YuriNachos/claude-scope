@@ -16,7 +16,8 @@ import { ANSI_COLORS } from '../constants.js';
  */
 export class LinesWidget extends StdinDataWidget {
     id = 'lines';
-    metadata = createWidgetMetadata('Lines', 'Displays lines added/removed in session');
+    metadata = createWidgetMetadata('Lines', 'Displays lines added/removed in session', '1.0.0', 'claude-scope', 0 // First line
+    );
     renderWithData(data, context) {
         const added = data.cost?.total_lines_added ?? 0;
         const removed = data.cost?.total_lines_removed ?? 0;

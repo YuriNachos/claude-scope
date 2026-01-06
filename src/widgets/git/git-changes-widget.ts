@@ -24,7 +24,10 @@ export class GitChangesWidget implements IWidget {
   readonly id = 'git-changes';
   readonly metadata = createWidgetMetadata(
     'Git Changes',
-    'Displays git diff statistics'
+    'Displays git diff statistics',
+    '1.0.0',
+    'claude-scope',
+    0  // First line
   );
 
   private gitFactory: (cwd: string) => IGit;

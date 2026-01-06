@@ -9,7 +9,8 @@ import { progressBar, getContextColor, colorize } from '../ui/utils/formatters.j
 import { DEFAULTS } from '../constants.js';
 export class ContextWidget extends StdinDataWidget {
     id = 'context';
-    metadata = createWidgetMetadata('Context', 'Displays context window usage with progress bar');
+    metadata = createWidgetMetadata('Context', 'Displays context window usage with progress bar', '1.0.0', 'claude-scope', 0 // First line
+    );
     renderWithData(data, context) {
         const { current_usage, context_window_size } = data.context_window;
         if (!current_usage)

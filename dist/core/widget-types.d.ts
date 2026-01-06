@@ -9,9 +9,10 @@ import type { IWidgetMetadata, IWidget } from './types.js';
  * @param description - Widget description
  * @param version - Widget version (default: '1.0.0')
  * @param author - Widget author (default: 'claude-scope')
+ * @param line - Which statusline line this widget appears on (default: 0)
  * @returns Widget metadata object
  */
-export declare function createWidgetMetadata(name: string, description: string, version?: string, author?: string): IWidgetMetadata;
+export declare function createWidgetMetadata(name: string, description: string, version?: string, author?: string, line?: number): IWidgetMetadata;
 /**
  * Type for widget constructor
  * Can be used with dependency injection

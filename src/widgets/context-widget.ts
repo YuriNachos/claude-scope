@@ -14,7 +14,10 @@ export class ContextWidget extends StdinDataWidget {
   readonly id = 'context';
   readonly metadata = createWidgetMetadata(
     'Context',
-    'Displays context window usage with progress bar'
+    'Displays context window usage with progress bar',
+    '1.0.0',
+    'claude-scope',
+    0  // First line
   );
 
   protected renderWithData(data: StdinData, context: RenderContext): string | null {
