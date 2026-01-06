@@ -6,10 +6,10 @@
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
  * because it requires async git operations that don't fit the Template Method Pattern.
  */
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from '#core/types.js';
 export declare class GitChangesWidget implements IWidget {
     readonly id = "git-changes";
-    readonly metadata: import("../../core/types.js").IWidgetMetadata;
+    readonly metadata: import("#core/types.js").IWidgetMetadata;
     private git;
     private enabled;
     private cwd;

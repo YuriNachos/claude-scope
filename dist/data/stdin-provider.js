@@ -3,7 +3,7 @@
  * Parses and validates Claude Code session data using Zod
  */
 import { z } from 'zod';
-import { StdinDataSchema } from '../schemas/stdin-schema.js';
+import { StdinDataSchema } from '#schemas/stdin-schema.js';
 /**
  * Error thrown when stdin parsing fails
  */

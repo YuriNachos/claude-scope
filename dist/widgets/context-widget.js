@@ -3,10 +3,10 @@
  *
  * Displays context window usage with progress bar
  */
-import { StdinDataWidget } from './core/stdin-data-widget.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
-import { progressBar, getContextColor, colorize } from '../ui/utils/formatters.js';
-import { DEFAULTS } from '../constants.js';
+import { StdinDataWidget } from '#widgets/core/stdin-data-widget.js';
+import { createWidgetMetadata } from '#core/widget-types.js';
+import { progressBar, getContextColor, colorize } from '#ui/utils/formatters.js';
+import { DEFAULTS } from '#constants.js';
 export class ContextWidget extends StdinDataWidget {
     id = 'context';
     metadata = createWidgetMetadata('Context', 'Displays context window usage with progress bar');

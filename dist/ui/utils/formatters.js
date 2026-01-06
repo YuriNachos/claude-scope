@@ -1,7 +1,7 @@
 /**
  * Formatter utilities for displaying data in human-readable formats
  */
-import { TIME, COST_THRESHOLDS, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from '../../constants.js';
+import { TIME, COST_THRESHOLDS, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from '#constants.js';
 /**
  * Format milliseconds to human-readable duration
  *

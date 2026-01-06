@@ -2,7 +2,7 @@
  * Central widget registry
  * Manages widget lifecycle and retrieval
  */
-import type { IWidget, WidgetContext } from './types.js';
+import type { IWidget, WidgetContext } from '#core/types.js';
 /**
  * Registry for managing widgets
  */

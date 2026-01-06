@@ -3,14 +3,14 @@
  * Claude Scope - Claude Code statusline plugin
  * Entry point
  */
-import { WidgetRegistry } from './core/widget-registry.js';
-import { Renderer } from './core/renderer.js';
-import { GitWidget } from './widgets/git/git-widget.js';
-import { ModelWidget } from './widgets/model-widget.js';
-import { ContextWidget } from './widgets/context-widget.js';
-import { CostWidget } from './widgets/cost-widget.js';
-import { DurationWidget } from './widgets/duration-widget.js';
-import { GitChangesWidget } from './widgets/git/git-changes-widget.js';
+import { WidgetRegistry } from '#core/widget-registry.js';
+import { Renderer } from '#core/renderer.js';
+import { GitWidget } from '#widgets/git/git-widget.js';
+import { ModelWidget } from '#widgets/model-widget.js';
+import { ContextWidget } from '#widgets/context-widget.js';
+import { CostWidget } from '#widgets/cost-widget.js';
+import { DurationWidget } from '#widgets/duration-widget.js';
+import { GitChangesWidget } from '#widgets/git/git-changes-widget.js';
 /**
  * Create mock StdinData for development/testing
  */

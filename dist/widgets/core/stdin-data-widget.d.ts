@@ -6,8 +6,8 @@
  * Extending widgets only need to implement renderWithData() method.
  * The base class handles data storage, update logic, and enables checking.
  */
-import type { IWidget, IWidgetMetadata, WidgetContext, RenderContext } from '../../core/types.js';
-import type { StdinData } from '../../types.js';
+import type { IWidget, IWidgetMetadata, WidgetContext, RenderContext } from '#core/types.js';
+import type { StdinData } from '#types.js';
 /**
  * Abstract base class for widgets working with StdinData
  *

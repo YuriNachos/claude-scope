@@ -1,7 +1,7 @@
 /**
  * Core types for the widget system
  */
-import type { StdinData, RenderContext } from '../types.js';
+import type { StdinData, RenderContext } from '#types.js';
 /**
  * Widget metadata describing the widget
  */

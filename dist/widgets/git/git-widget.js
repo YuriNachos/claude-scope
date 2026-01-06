@@ -9,7 +9,7 @@
  * - Needs to reinitialize git instance when cwd changes
  */
 import { simpleGit } from 'simple-git';
-import { createWidgetMetadata } from '../../core/widget-types.js';
+import { createWidgetMetadata } from '#core/widget-types.js';
 /**
  * Widget displaying git branch information
  */
