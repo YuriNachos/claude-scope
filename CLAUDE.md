@@ -6,9 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.1.0 - Minimal working version with git widget only.
+**Current version**: v0.2.4
 
-**Planned features**: Context usage, active tools, running agents, todo progress, token/cost monitoring, session analytics.
+**Implemented features**:
+- Git branch and changes display
+- Model information display
+- Context usage with progress bar
+- Session duration tracking
+- Cost estimation display
+
+**Planned features**: Active tools, running agents, todo progress, session analytics, configuration system.
 
 ## Architecture
 
@@ -16,22 +23,43 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 
 This project uses a **modular widget architecture** with a central registry, following Dependency Inversion Principle and modern TypeScript plugin best practices.
 
-**Current Implementation** (v0.1.0):
+**Current Implementation** (v0.2.4):
 ```
 src/
 ├── core/
 │   ├── types.ts              # Core types (IWidget, IWidgetMetadata, etc.)
 │   ├── widget-registry.ts    # Central registry for widget management
-│   └── renderer.ts           # Unified rendering engine
+│   ├── widget-types.ts       # Helper utilities for widget metadata
+│   └── renderer.ts           # Unified rendering engine with error boundaries
+├── data/
+│   └── stdin-provider.ts     # Stdin JSON parser and validation
 ├── providers/
-│   ├── stdin-provider.ts     # Stdin data parser
-│   └── git-provider.ts       # Git operations wrapper
+│   └── git-provider.ts       # Git operations wrapper (IGit interface)
 ├── widgets/
-│   └── git-widget.ts         # Git branch widget ✓
-├── utils/
-│   └── colors.ts             # ANSI color utilities
-├── index.ts                  # CLI entry point
-└── types.ts                  # Shared types
+│   ├── core/
+│   │   └── stdin-data-widget.ts  # Base class for widgets receiving StdinData
+│   ├── git/
+│   │   ├── git-widget.ts         # Git branch widget
+│   │   └── git-changes-widget.ts # Git diff statistics widget
+│   ├── context-widget.ts     # Context usage with progress bar
+│   ├── cost-widget.ts        # Cost display widget
+│   ├── duration-widget.ts    # Session duration formatter
+│   └── model-widget.ts       # Model display widget
+├── ui/
+│   └── utils/
+│       ├── colors.ts         # ANSI color utilities
+│       └── formatters.ts     # Human-readable formatters (duration, cost, progress)
+├── validation/
+│   ├── core.ts               # Result type and Validator interface
+│   ├── validators.ts         # Type validators (string, number, literal, etc.)
+│   ├── combinators.ts        # Validator composition utilities
+│   ├── result.ts             # Error formatting helpers
+│   └── index.ts              # Validation entry point
+├── schemas/
+│   └── stdin-schema.ts       # Zod-like schema definitions for stdin data
+├── constants.ts              # Default values and constants
+├── types.ts                  # Shared types (re-exports from schemas)
+└── index.ts                  # CLI entry point
 ```
 
 **Planned Architecture** (future versions):
@@ -44,28 +72,34 @@ src/
 │   └── renderer.ts
 ├── providers/
 │   ├── stdin-provider.ts
-│   ├── transcript-provider.ts # TODO: Transcript parser
 │   └── git-provider.ts
 ├── storage/                  # TODO: SQLite-based persistence
 │   ├── session-store.ts      # PLANNED
 │   └── analytics-store.ts    # PLANNED
 ├── widgets/
-│   ├── git-widget.ts         # ✓ Implemented
+│   ├── core/
+│   │   └── stdin-data-widget.ts
+│   ├── git/
+│   │   ├── git-widget.ts     # ✓ Implemented
+│   │   └── git-changes-widget.ts  # ✓ Implemented
+│   ├── context-widget.ts     # ✓ Implemented
+│   ├── cost-widget.ts        # ✓ Implemented
+│   ├── duration-widget.ts    # ✓ Implemented
+│   ├── model-widget.ts       # ✓ Implemented
 │   ├── session-widget.ts     # PLANNED
 │   ├── tools-widget.ts       # PLANNED
 │   ├── agents-widget.ts      # PLANNED
 │   ├── todos-widget.ts       # PLANNED
-│   ├── context-widget.ts     # PLANNED
-│   ├── cost-widget.ts        # PLANNED
 │   └── analytics-widget.ts   # PLANNED
-├── utils/
-│   ├── colors.ts
-│   └── formatters.ts         # PLANNED
+├── ui/utils/
+├── validation/
+├── schemas/
 ├── config/                   # TODO: Configuration system
 │   ├── default.config.json
 │   └── presets/              # PLANNED: compact, detailed, minimal
-├── index.ts
-└── types.ts
+├── constants.ts
+├── types.ts
+└── index.ts
 ```
 
 ### Widget Interface
@@ -78,10 +112,23 @@ interface IWidget {
   readonly metadata: IWidgetMetadata;
 
   initialize(context: WidgetContext): Promise<void>;
-  render(context: RenderContext): string | null;
+  render(context: RenderContext): Promise<string | null>;
   update(data: StdinData): Promise<void>;
   isEnabled(): boolean;
   cleanup?(): Promise<void>;
+}
+```
+
+### Widget Base Class
+
+For widgets that receive `StdinData`, use the `StdinDataWidget` base class (Template Method Pattern):
+
+```typescript
+abstract class StdinDataWidget implements IWidget {
+  protected data?: StdinData;
+
+  abstract render(context: RenderContext): Promise<string | null>;
+  // update(), isEnabled(), initialize() provided
 }
 ```
 
@@ -97,6 +144,50 @@ interface StdinData {
     id: string;
     display_name: string;
   };
+  workspace?: Workspace;          // Workspace info
+  cost?: CostInfo;                // Token usage and cost
+  context_window?: ContextWindow; // Context limits
+  context_usage?: ContextUsage;   // Current context usage
+  output_style?: OutputStyle;     // Output format preferences
+}
+
+interface Workspace {
+  name: string;
+  branch?: string;
+  is_repo: boolean;
+}
+
+interface CostInfo {
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  cache_write_tokens: number;
+  total_cost: number;
+}
+
+interface ContextWindow {
+  max_tokens: number;
+  max_output_tokens: number;
+}
+
+interface ContextUsage {
+  input_tokens: number;
+  output_tokens: number;
+  cache_read_tokens: number;
+  total_tokens: number;
+  percentage: number;
+}
+```
+
+### Git Provider Abstraction
+
+Git operations use the `IGit` interface with dependency injection:
+
+```typescript
+interface IGit {
+  checkIsRepo(): Promise<boolean>;
+  branch(): Promise<{ current: string | null; all: string[] }>;
+  changes?: () => Promise<{ insertions: number; deletions: number }>;
 }
 ```
 
@@ -111,7 +202,7 @@ Widget behavior will be configured via JSON (`~/.config/claude-scope/config.json
     "enabled": true,
     "path": "~/.config/claude-scope/sessions.db"
   },
-  "widgets": ["session", "context", "tools", "agents", "todos", "cost", "analytics"],
+  "widgets": ["session", "context", "git", "tools", "agents", "todos", "cost", "analytics"],
   "widgetConfig": {
     "cost": { "showEstimated": true, "currency": "USD" },
     "analytics": { "historyDays": 7 }
@@ -122,7 +213,7 @@ Widget behavior will be configured via JSON (`~/.config/claude-scope/config.json
 ### Presets (PLANNED)
 
 Predefined configurations will be available in `config/presets/`:
-- `compact.json` - Minimal display (session, context, todos)
+- `compact.json` - Minimal display (session, context, git)
 - `detailed.json` - Full display with all widgets
 - `minimal.json` - Essential info only
 
@@ -141,23 +232,32 @@ This project follows a **test-driven approach** with comprehensive coverage.
 
 ```
 tests/
-├── unit/
+├── e2e/                         # End-to-end CLI flow tests
+│   └── stdin-flow.test.ts
+├── integration/                 # Cross-widget integration tests
+│   ├── cli-flow.integration.test.ts
+│   └── five-widgets.integration.test.ts
+├── unit/                        # Unit tests by module
+│   ├── cli.test.ts
+│   ├── types.test.ts
 │   ├── core/
 │   │   ├── widget-registry.test.ts
 │   │   └── renderer.test.ts
-│   ├── providers/
-│   │   ├── stdin-provider.test.ts
-│   │   └── git-provider.test.ts
-│   ├── widgets/
-│   │   └── git-widget.test.ts
-│   └── utils/
-│       └── colors.test.ts
-├── integration/
-│   ├── cli-flow.integration.test.ts
-│   └── entry-point.integration.test.ts
-└── fixtures/
-    ├── stdin-sample.json
-    └── git-data.json
+│   ├── data/
+│   │   └── stdin-provider.test.ts
+│   ├── utils/
+│   │   ├── colors.test.ts
+│   │   └── formatters.test.ts
+│   └── widgets/
+│       ├── git-widget.test.ts
+│       ├── context-widget.test.ts
+│       └── ...
+├── fixtures/                    # Reusable test data
+│   ├── stdin-sample.json
+│   └── git-data.json
+├── helpers/                     # Test utility functions
+├── snapshots/                   # Widget output snapshots
+└── setup.ts                     # Test configuration
 ```
 
 ### Test Guidelines
@@ -187,12 +287,21 @@ function createMockGit(overrides?: Partial<IGit>): IGit {
 // Create stdin data with optional overrides
 function createStdinData(overrides?: Partial<StdinData>): StdinData {
   return {
-    session_id: 'session_20250105_123045',
+    session_id: 'session_20250106_123045',
     cwd: '/Users/user/project',
     model: { id: 'claude-opus-4-5-20251101', display_name: 'Claude Opus 4.5' },
     ...overrides
   };
 };
+```
+
+### Snapshot Testing
+
+Widget outputs use snapshot testing for visual regression:
+
+```typescript
+// Update snapshots: SNAPSHOT_UPDATE=true npm test
+// Verify snapshots: npm test
 ```
 
 ### Key Architectural Principles
@@ -201,7 +310,8 @@ function createStdinData(overrides?: Partial<StdinData>): StdinData {
 2. **Single Responsibility** - Each module has one clear purpose
 3. **Testability** - DI allows mocking all dependencies
 4. **Extensibility** - Add new widgets without modifying core code
-5. **Configuration-Driven** - Widget order and behavior controlled by JSON config (PLANNED)
+5. **Error Resilience** - Renderer uses error boundaries; widget failures don't break the statusline
+6. **Configuration-Driven** - Widget order and behavior controlled by JSON config (PLANNED)
 
 ## Development Rules
 
@@ -209,6 +319,7 @@ function createStdinData(overrides?: Partial<StdinData>): StdinData {
 - **Type Safety**: Use proper TypeScript types, avoid `any` in production code
 - **Test Quality**: Use helper functions to reduce duplication, flexible assertions for maintainability
 - **Error Handling**: Widgets should handle errors gracefully and return `null` on failure
+- **Zero Runtime Dependencies**: No external runtime dependencies - use native Node.js modules only
 
 ## GitHub CLI
 
