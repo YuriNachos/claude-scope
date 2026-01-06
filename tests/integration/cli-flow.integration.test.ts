@@ -13,6 +13,7 @@ import { ContextWidget } from '../../src/widgets/context-widget.js';
 import { CostWidget } from '../../src/widgets/cost-widget.js';
 import { DurationWidget } from '../../src/widgets/duration-widget.js';
 import { GitChangesWidget } from '../../src/widgets/git/git-changes-widget.js';
+import { ConfigCountWidget } from '../../src/widgets/config-count-widget.js';
 import type { StdinData, RenderContext } from '../../src/types.js';
 
 function createStdinData(overrides?: Partial<StdinData>): StdinData {
@@ -70,12 +71,14 @@ describe('CLI Flow Integration', () => {
       const contextWidget = new ContextWidget();
       const costWidget = new CostWidget();
       const durationWidget = new DurationWidget();
+      const configCountWidget = new ConfigCountWidget();
 
       // Register widgets
       await registry.register(modelWidget);
       await registry.register(contextWidget);
       await registry.register(costWidget);
       await registry.register(durationWidget);
+      await registry.register(configCountWidget);
 
       // Act: Simulate stdin data flow
       const stdinData = createStdinData();
