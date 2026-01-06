@@ -78,8 +78,8 @@ describe('E2E: CLI stdin → stdout flow', () => {
     expect(stdout).to.match(/main|master|origin|HEAD/);
   });
 
-  it('should correctly calculate context percentage without cache_read tokens', async () => {
-    // This test verifies the fix for the 129% bug
+  it('should correctly calculate context percentage with cache_read tokens', async () => {
+    // This test verifies context calculation includes cache_read tokens
     const input = JSON.stringify({
       hook_event_name: 'Status',
       session_id: 'test-context-calc',
@@ -107,7 +107,7 @@ describe('E2E: CLI stdin → stdout flow', () => {
           input_tokens: 40000,
           output_tokens: 10000,
           cache_creation_input_tokens: 5000,
-          cache_read_input_tokens: 15000  // Should NOT be counted
+          cache_read_input_tokens: 15000  // Should be counted (occupies context space)
         }
       }
     });
@@ -116,8 +116,8 @@ describe('E2E: CLI stdin → stdout flow', () => {
       cwd: process.cwd()
     });
 
-    // Calculation: (40000 + 10000 + 5000) / 100000 = 55%
-    // cache_read_input_tokens (15000) should NOT be counted
-    expect(stdout).to.include('55%');
+    // Calculation: (40000 + 10000 + 5000 + 15000) / 100000 = 70%
+    // cache_read_input_tokens (15000) IS counted - they occupy context space
+    expect(stdout).to.include('70%');
   });
 });
