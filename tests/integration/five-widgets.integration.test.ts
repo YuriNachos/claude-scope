@@ -10,6 +10,7 @@ import { ModelWidget } from '../../src/widgets/model-widget.js';
 import { ContextWidget } from '../../src/widgets/context-widget.js';
 import { CostWidget } from '../../src/widgets/cost-widget.js';
 import { DurationWidget } from '../../src/widgets/duration-widget.js';
+import { LinesWidget } from '../../src/widgets/lines-widget.js';
 import { createMockStdinData } from '../fixtures/mock-data.js';
 
 describe('Core Widgets Integration', () => {
@@ -20,6 +21,7 @@ describe('Core Widgets Integration', () => {
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
     await registry.register(new DurationWidget());
+    await registry.register(new LinesWidget());
 
     const renderer = new Renderer();
     renderer.setSeparator(' │ ');
@@ -49,6 +51,8 @@ describe('Core Widgets Integration', () => {
     expect(output).to.include(']');
     expect(output).to.include('$0.01');
     expect(output).to.include('5m 30s');
+    expect(output).to.include('+42');
+    expect(output).to.include('-10');
     expect(output).to.include(' │ ');
   });
 
@@ -82,10 +86,11 @@ describe('Core Widgets Integration', () => {
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
     await registry.register(new DurationWidget());
+    await registry.register(new LinesWidget());
 
     const enabledWidgets = registry.getEnabledWidgets();
 
-    expect(enabledWidgets).to.have.lengthOf(4);
+    expect(enabledWidgets).to.have.lengthOf(5);
   });
 
   it('should respect widget disabled config', async () => {
@@ -107,12 +112,20 @@ describe('Core Widgets Integration', () => {
     await registry.register(new ModelWidget());
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
+    await registry.register(new LinesWidget());
 
     const renderer = new Renderer();
     renderer.setSeparator(' │ ');
 
     const mockData = createMockStdinData({
-      model: { id: 'claude-opus-4-5', display_name: 'Opus 4.5' }
+      model: { id: 'claude-opus-4-5', display_name: 'Opus 4.5' },
+      cost: {
+        total_cost_usd: 0.01,
+        total_duration_ms: 0,
+        total_api_duration_ms: 0,
+        total_lines_added: 42,
+        total_lines_removed: 10
+      }
     });
     for (const widget of registry.getAll()) {
       await widget.update(mockData);
@@ -127,9 +140,11 @@ describe('Core Widgets Integration', () => {
     const modelPos = output.indexOf('Opus 4.5');
     const contextPos = output.indexOf('[');
     const costPos = output.indexOf('$0.01');
+    const linesPos = output.indexOf('+42');
 
     expect(modelPos).to.be.lessThan(contextPos);
     expect(contextPos).to.be.lessThan(costPos);
+    expect(costPos).to.be.lessThan(linesPos);
   });
 
   it('should handle updates to all widgets', async () => {
