@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.2.4
+**Current version**: v0.2.5
 
 **Implemented features**:
 - Git branch and changes display
@@ -14,6 +14,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - Context usage with progress bar
 - Session duration tracking
 - Cost estimation display
+- Lines added/removed display
 
 **Planned features**: Active tools, running agents, todo progress, session analytics, configuration system.
 
@@ -23,7 +24,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 
 This project uses a **modular widget architecture** with a central registry, following Dependency Inversion Principle and modern TypeScript plugin best practices.
 
-**Current Implementation** (v0.2.4):
+**Current Implementation** (v0.2.5):
 ```
 src/
 ├── core/
@@ -43,6 +44,7 @@ src/
 │   │   └── git-changes-widget.ts # Git diff statistics widget
 │   ├── context-widget.ts     # Context usage with progress bar
 │   ├── cost-widget.ts        # Cost display widget
+│   ├── lines-widget.ts       # Lines added/removed widget
 │   ├── duration-widget.ts    # Session duration formatter
 │   └── model-widget.ts       # Model display widget
 ├── ui/
