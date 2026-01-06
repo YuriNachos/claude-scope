@@ -25,10 +25,11 @@ export class ContextWidget extends StdinDataWidget {
     // Calculate actual context usage:
     // - input_tokens: new tokens added to context
     // - cache_creation_input_tokens: tokens spent creating cache (also in context)
-    // - cache_read_input_tokens: NOT counted (reading from cache doesn't use context space)
+    // - cache_read_input_tokens: tokens read from cache (still occupy context space)
     // - output_tokens: tokens in the response (also part of context)
     const used = current_usage.input_tokens +
                  current_usage.cache_creation_input_tokens +
+                 current_usage.cache_read_input_tokens +
                  current_usage.output_tokens;
 
     const percent = Math.round((used / context_window_size) * 100);
