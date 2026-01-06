@@ -40,5 +40,13 @@
   },
   "engines": {
     "node": ">=18.0.0"
+  },
+  "imports": {
+    "#*": "./src/*.js",
+    "#core/*": "./src/core/*.js",
+    "#widgets/*": "./src/widgets/*.js",
+    "#data/*": "./src/data/*.js",
+    "#ui/*": "./src/ui/*.js",
+    "#schemas/*": "./src/schemas/*.js"
   }
 }
