@@ -12,10 +12,10 @@
     }
   },
   "bin": {
-    "claude-scope": "dist/index.js"
+    "claude-scope": "dist/claude-scope.js"
   },
   "files": [
-    "dist/",
+    "dist/claude-scope.js",
     "README.md",
     "LICENSE.md"
   ],
