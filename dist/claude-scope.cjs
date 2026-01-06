@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 "use strict";
+var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
+var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __export = (target, all) => {
   for (var name in all)
@@ -16,6 +18,14 @@ var __copyProps = (to, from, except, desc) => {
   }
   return to;
 };
+var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
+  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
+  mod
+));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // src/index.ts
@@ -595,16 +605,214 @@ var GitChangesWidget = class {
   }
 };
 
+// src/providers/config-provider.ts
+var fs = __toESM(require("fs/promises"), 1);
+var path = __toESM(require("path"), 1);
+var os = __toESM(require("os"), 1);
+var ConfigProvider = class {
+  cachedCounts;
+  lastScan = 0;
+  cacheInterval = 5e3;
+  // 5 seconds
+  /**
+   * Get config counts with hybrid caching
+   * Scans filesystem if cache is stale (>5 seconds)
+   */
+  async getConfigs(options = {}) {
+    const now = Date.now();
+    if (this.cachedCounts && now - this.lastScan < this.cacheInterval) {
+      return this.cachedCounts;
+    }
+    this.cachedCounts = await this.scanConfigs(options);
+    this.lastScan = now;
+    return this.cachedCounts;
+  }
+  /**
+   * Scan filesystem for Claude Code configurations
+   */
+  async scanConfigs(options) {
+    let claudeMdCount = 0;
+    let rulesCount = 0;
+    let mcpCount = 0;
+    let hooksCount = 0;
+    const homeDir = os.homedir();
+    const claudeDir = path.join(homeDir, ".claude");
+    const cwd = options.cwd;
+    if (await this.fileExists(path.join(claudeDir, "CLAUDE.md"))) {
+      claudeMdCount++;
+    }
+    rulesCount += await this.countRulesInDir(path.join(claudeDir, "rules"));
+    const userSettings = path.join(claudeDir, "settings.json");
+    const userSettingsData = await this.readJsonFile(userSettings);
+    if (userSettingsData) {
+      mcpCount += this.countMcpServers(userSettingsData);
+      hooksCount += this.countHooks(userSettingsData);
+    }
+    const userClaudeJson = path.join(homeDir, ".claude.json");
+    const userClaudeData = await this.readJsonFile(userClaudeJson);
+    if (userClaudeData) {
+      const userMcpCount = this.countMcpServers(userClaudeData);
+      mcpCount += Math.max(0, userMcpCount - this.countMcpServers(userSettingsData || {}));
+    }
+    if (cwd) {
+      if (await this.fileExists(path.join(cwd, "CLAUDE.md"))) {
+        claudeMdCount++;
+      }
+      if (await this.fileExists(path.join(cwd, "CLAUDE.local.md"))) {
+        claudeMdCount++;
+      }
+      if (await this.fileExists(path.join(cwd, ".claude", "CLAUDE.md"))) {
+        claudeMdCount++;
+      }
+      if (await this.fileExists(path.join(cwd, ".claude", "CLAUDE.local.md"))) {
+        claudeMdCount++;
+      }
+      rulesCount += await this.countRulesInDir(path.join(cwd, ".claude", "rules"));
+      const mcpJson = path.join(cwd, ".mcp.json");
+      const mcpData = await this.readJsonFile(mcpJson);
+      if (mcpData) {
+        mcpCount += this.countMcpServers(mcpData);
+      }
+      const projectSettings = path.join(cwd, ".claude", "settings.json");
+      const projectSettingsData = await this.readJsonFile(projectSettings);
+      if (projectSettingsData) {
+        mcpCount += this.countMcpServers(projectSettingsData);
+        hooksCount += this.countHooks(projectSettingsData);
+      }
+      const localSettings = path.join(cwd, ".claude", "settings.local.json");
+      const localSettingsData = await this.readJsonFile(localSettings);
+      if (localSettingsData) {
+        mcpCount += this.countMcpServers(localSettingsData);
+        hooksCount += this.countHooks(localSettingsData);
+      }
+    }
+    return { claudeMdCount, rulesCount, mcpCount, hooksCount };
+  }
+  /**
+   * Check if file exists
+   */
+  async fileExists(filePath) {
+    try {
+      await fs.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  /**
+   * Read and parse JSON file
+   */
+  async readJsonFile(filePath) {
+    try {
+      const content = await fs.readFile(filePath, "utf8");
+      return JSON.parse(content);
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * Count MCP servers in config object
+   */
+  countMcpServers(config) {
+    if (!config || !config.mcpServers || typeof config.mcpServers !== "object") {
+      return 0;
+    }
+    return Object.keys(config.mcpServers).length;
+  }
+  /**
+   * Count hooks in config object
+   */
+  countHooks(config) {
+    if (!config || !config.hooks || typeof config.hooks !== "object") {
+      return 0;
+    }
+    return Object.keys(config.hooks).length;
+  }
+  /**
+   * Recursively count .md files in directory
+   */
+  async countRulesInDir(rulesDir) {
+    const exists = await this.fileExists(rulesDir);
+    if (!exists) return 0;
+    try {
+      let count = 0;
+      const entries = await fs.readdir(rulesDir, { withFileTypes: true });
+      for (const entry of entries) {
+        const fullPath = path.join(rulesDir, entry.name);
+        if (entry.isDirectory()) {
+          count += await this.countRulesInDir(fullPath);
+        } else if (entry.isFile() && entry.name.endsWith(".md")) {
+          count++;
+        }
+      }
+      return count;
+    } catch {
+      return 0;
+    }
+  }
+};
+
+// src/widgets/config-count-widget.ts
+var ConfigCountWidget = class {
+  id = "config-count";
+  metadata = createWidgetMetadata(
+    "Config Count",
+    "Displays Claude Code configuration counts",
+    "1.0.0",
+    "claude-scope",
+    1
+    // Second line
+  );
+  configProvider = new ConfigProvider();
+  configs;
+  cwd;
+  async initialize() {
+  }
+  async update(data) {
+    this.cwd = data.cwd;
+    this.configs = await this.configProvider.getConfigs({ cwd: data.cwd });
+  }
+  isEnabled() {
+    if (!this.configs) {
+      return false;
+    }
+    const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
+    return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
+  }
+  async render(context) {
+    if (!this.configs) {
+      return null;
+    }
+    const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
+    const parts = [];
+    if (claudeMdCount > 0) {
+      parts.push(`\u{1F4C4} ${claudeMdCount} CLAUDE.md`);
+    }
+    if (rulesCount > 0) {
+      parts.push(`\u{1F4DC} ${rulesCount} rules`);
+    }
+    if (mcpCount > 0) {
+      parts.push(`\u{1F50C} ${mcpCount} MCPs`);
+    }
+    if (hooksCount > 0) {
+      parts.push(`\u{1FA9D} ${hooksCount} hooks`);
+    }
+    return parts.join(" \u2502 ") || null;
+  }
+  async cleanup() {
+  }
+};
+
 // src/validation/result.ts
 function success(data) {
   return { success: true, data };
 }
-function failure(path, message, value) {
-  return { success: false, error: { path, message, value } };
+function failure(path2, message, value) {
+  return { success: false, error: { path: path2, message, value } };
 }
 function formatError(error) {
-  const path = error.path.length > 0 ? error.path.join(".") : "root";
-  return `${path}: ${error.message}`;
+  const path2 = error.path.length > 0 ? error.path.join(".") : "root";
+  return `${path2}: ${error.message}`;
 }
 
 // src/validation/validators.ts
@@ -797,6 +1005,7 @@ async function main() {
     await registry.register(new DurationWidget());
     await registry.register(new GitWidget());
     await registry.register(new GitChangesWidget());
+    await registry.register(new ConfigCountWidget());
     const renderer = new Renderer({
       separator: " \u2502 ",
       onError: (error, widget) => {
