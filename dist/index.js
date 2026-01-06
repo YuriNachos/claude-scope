@@ -9,6 +9,7 @@ import { GitWidget } from './widgets/git/git-widget.js';
 import { ModelWidget } from './widgets/model-widget.js';
 import { ContextWidget } from './widgets/context-widget.js';
 import { CostWidget } from './widgets/cost-widget.js';
+import { LinesWidget } from './widgets/lines-widget.js';
 import { DurationWidget } from './widgets/duration-widget.js';
 import { GitChangesWidget } from './widgets/git/git-changes-widget.js';
 import { StdinProvider } from './data/stdin-provider.js';
@@ -43,6 +44,7 @@ export async function main() {
         await registry.register(new ModelWidget());
         await registry.register(new ContextWidget());
         await registry.register(new CostWidget());
+        await registry.register(new LinesWidget());
         await registry.register(new DurationWidget());
         await registry.register(new GitWidget());
         await registry.register(new GitChangesWidget());

@@ -450,6 +450,22 @@ var CostWidget = class extends StdinDataWidget {
   }
 };
 
+// src/widgets/lines-widget.ts
+var LinesWidget = class extends StdinDataWidget {
+  id = "lines";
+  metadata = createWidgetMetadata(
+    "Lines",
+    "Displays lines added/removed in session"
+  );
+  renderWithData(data, context) {
+    const added = data.cost?.total_lines_added ?? 0;
+    const removed = data.cost?.total_lines_removed ?? 0;
+    const addedStr = colorize(`+${added}`, ANSI_COLORS.GREEN);
+    const removedStr = colorize(`-${removed}`, ANSI_COLORS.RED);
+    return `${addedStr}/${removedStr}`;
+  }
+};
+
 // src/widgets/duration-widget.ts
 var DurationWidget = class extends StdinDataWidget {
   id = "duration";
@@ -731,6 +747,7 @@ async function main() {
     await registry.register(new ModelWidget());
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
+    await registry.register(new LinesWidget());
     await registry.register(new DurationWidget());
     await registry.register(new GitWidget());
     await registry.register(new GitChangesWidget());
