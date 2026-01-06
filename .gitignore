@@ -43,3 +43,6 @@ yarn-error.log*
 .cache/
 temp/
 tmp/
+
+# Documentation (local working files)
+docs/*.md
