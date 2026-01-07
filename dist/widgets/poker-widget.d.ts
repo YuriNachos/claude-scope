@@ -8,7 +8,6 @@ import type { RenderContext, StdinData } from '../types.js';
 export declare class PokerWidget extends StdinDataWidget {
     readonly id = "poker";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
-    private deck;
     private holeCards;
     private boardCards;
     private handResult;
@@ -21,6 +20,12 @@ export declare class PokerWidget extends StdinDataWidget {
      * Format card with appropriate color (red for ♥♦, gray for ♠♣)
      */
     private formatCardColor;
+    /**
+     * Format card based on participation in best hand
+     * Participating cards: [K♠] (with brackets)
+     * Non-participating cards:  K♠  (spaces instead of brackets)
+     */
+    private formatCardByParticipation;
     protected renderWithData(_data: StdinData, _context: RenderContext): string | null;
 }
 //# sourceMappingURL=poker-widget.d.ts.map

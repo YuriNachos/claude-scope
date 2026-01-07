@@ -82,5 +82,7 @@ export interface PokerHand {
     rank: HandRank;
     name: string;
     emoji: string;
+    /** Indices of cards (from all 7 cards) that form the hand */
+    participatingCards: number[];
 }
 //# sourceMappingURL=types.d.ts.map
