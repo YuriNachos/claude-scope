@@ -1395,11 +1395,11 @@ var EmptyLineWidget = class extends StdinDataWidget {
     // Fourth line (0-indexed)
   );
   /**
-   * Return empty string regardless of data state.
-   * The empty line widget doesn't need stdin data to render.
+   * Return a single space to create a blank separator line.
+   * Using a space character instead of empty string ensures the line is visible.
    */
   renderWithData(_data, _context) {
-    return "";
+    return " ";
   }
 };
 

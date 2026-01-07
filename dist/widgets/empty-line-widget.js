@@ -10,11 +10,11 @@ export class EmptyLineWidget extends StdinDataWidget {
     metadata = createWidgetMetadata('Empty Line', 'Empty line separator', '1.0.0', 'claude-scope', 3 // Fourth line (0-indexed)
     );
     /**
-     * Return empty string regardless of data state.
-     * The empty line widget doesn't need stdin data to render.
+     * Return a single space to create a blank separator line.
+     * Using a space character instead of empty string ensures the line is visible.
      */
     renderWithData(_data, _context) {
-        return '';
+        return ' ';
     }
 }
 //# sourceMappingURL=empty-line-widget.js.map
