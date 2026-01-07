@@ -312,14 +312,17 @@ describe('PokerWidget', () => {
       const widget = new PokerWidget() as any;
       const mockData = createMockStdinData({});
 
-      // First update
+      // First update - will set lastUpdateTimestamp
       await widget.update(mockData);
       const firstRender = await widget.render({ width: 80, timestamp: 0 });
       const firstCards = stripAnsi(firstRender || '').match(/[A-Z0-9]+[♠♥♦♣]/g) || [];
 
-      // Second update immediately (should be throttled)
+      // Manually set timestamp to simulate time passed but less than throttle
+      widget.lastUpdateTimestamp = Date.now() - 2000; // 2 seconds ago
+
+      // Second update should be throttled (same cards)
       await widget.update(mockData);
-      const secondRender = await widget.render({ width: 80, timestamp: 1000 });
+      const secondRender = await widget.render({ width: 80, timestamp: 0 });
       const secondCards = stripAnsi(secondRender || '').match(/[A-Z0-9]+[♠♥♦♣]/g) || [];
 
       // Cards should be the same (throttled)
