@@ -53,9 +53,9 @@ src/
 │   └── model-widget.ts       # Model display widget
 ├── ui/
 │   ├── theme/                # Theme system and color configuration
-│   │   ├── index.ts          # Theme types and DEFAULT_THEME
-│   │   ├── theme-types.ts    # Color configuration interfaces
-│   │   └── context.ts        # ContextWidget color defaults
+│   │   ├── index.ts          # Theme exports
+│   │   ├── types.ts          # Color configuration interfaces
+│   │   └── default-theme.ts  # Default gray theme
 │   └── utils/
 │       ├── colors.ts         # ANSI color utilities
 │       └── formatters.ts     # Human-readable formatters (duration, cost, progress)
