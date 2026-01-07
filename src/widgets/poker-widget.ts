@@ -87,15 +87,11 @@ export class PokerWidget extends StdinDataWidget {
     isParticipating: boolean
   ): string {
     if (isParticipating) {
-      return cardData.formatted; // [K♠]
+      return cardData.formatted; // [K♠] with colors
     } else {
-      // Extract card text from brackets and wrap with spaces
-      const inner = cardData.formatted.match(/\[(.+)\]/)?.[1] || cardData.formatted;
-      // Preserve color codes if present
-      const colorMatch = cardData.formatted.match(/^(\x1b\[\d+m)/);
-      const color = colorMatch ? colorMatch[1] : '';
-      const reset = cardData.formatted.match(/\x1b\[0m$/) ? '\x1b[0m' : '';
-      return ` ${color}${inner}${reset} `;
+      // Use formatCard() directly to get plain text without ANSI codes
+      const plainText = formatCard(cardData.card); // Returns "6♣"
+      return ` ${plainText} `;
     }
   }
 
