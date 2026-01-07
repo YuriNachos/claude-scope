@@ -20,6 +20,7 @@ import type {
 export class MockGit implements IGit {
   private _currentBranch: string | null = 'main';
   private _diffFiles: GitDiffFile[] = [];
+  private _latestTag: string | null = null;
 
   /**
    * Set the current branch name
@@ -38,11 +39,20 @@ export class MockGit implements IGit {
   }
 
   /**
+   * Set the latest tag
+   * @param tag - Tag name or null if no tags exist
+   */
+  setLatestTag(tag: string | null): void {
+    this._latestTag = tag;
+  }
+
+  /**
    * Clear all mock data (reset to defaults)
    */
   reset(): void {
     this._currentBranch = 'main';
     this._diffFiles = [];
+    this._latestTag = null;
   }
 
   async status(): Promise<GitStatusResult> {
@@ -53,6 +63,10 @@ export class MockGit implements IGit {
 
   async diffSummary(): Promise<GitDiffSummary> {
     return { files: this._diffFiles };
+  }
+
+  async latestTag(): Promise<string | null> {
+    return this._latestTag;
   }
 }
 

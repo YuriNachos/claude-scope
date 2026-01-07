@@ -58,6 +58,12 @@ export interface IGit {
    * @returns Promise resolving to diff summary
    */
   diffSummary(options?: string[]): Promise<GitDiffSummary>;
+
+  /**
+   * Get the latest git tag
+   * @returns Promise resolving to tag name or null if no tags exist
+   */
+  latestTag?(): Promise<string | null>;
 }
 
 /**
@@ -120,6 +126,22 @@ export class NativeGit implements IGit {
     } catch {
       // Not in a git repo or git not available
       return { files: [] };
+    }
+  }
+
+  async latestTag(): Promise<string | null> {
+    try {
+      const { stdout } = await execFileAsync(
+        'git',
+        ['describe', '--tags', '--abbrev=0'],
+        {
+          cwd: this.cwd,
+        }
+      );
+      return stdout.trim();
+    } catch {
+      // No tags found or not in a git repo
+      return null;
     }
   }
 }

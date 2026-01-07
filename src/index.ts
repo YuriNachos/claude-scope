@@ -7,6 +7,7 @@
 import { WidgetRegistry } from './core/widget-registry.js';
 import { Renderer } from './core/renderer.js';
 import { GitWidget } from './widgets/git/git-widget.js';
+import { GitTagWidget } from './widgets/git/git-tag-widget.js';
 import { ModelWidget } from './widgets/model-widget.js';
 import { ContextWidget } from './widgets/context-widget.js';
 import { CostWidget } from './widgets/cost-widget.js';
@@ -59,6 +60,7 @@ export async function main(): Promise<string> {
     await registry.register(new LinesWidget());
     await registry.register(new DurationWidget());
     await registry.register(new GitWidget());
+    await registry.register(new GitTagWidget());
     await registry.register(new GitChangesWidget());
     await registry.register(new ConfigCountWidget());
     await registry.register(new PokerWidget());
