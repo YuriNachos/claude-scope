@@ -144,7 +144,7 @@ function getStraightFlushHighCard(cards: Card[], suit: string): number | null {
  */
 function getStraightFlushIndices(cards: Card[], highCard: number, suit: string): number[] {
   const suitCards = cards.filter(c => c.suit === suit);
-  const suitCardIndices: number[] = [];
+  const suitCardIndices: Card[] = [];
 
   // Map filtered cards back to original indices
   const indexMap = new Map<number, number>();
