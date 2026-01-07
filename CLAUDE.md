@@ -488,16 +488,16 @@ Before releasing, ensure:
 
 ### Step 1: Version Bump
 
-**Default: Minor version increment** (e.g., 0.3.0 → 0.4.0)
+**Default: Patch version increment** (e.g., 0.4.0 → 0.4.1)
 
 Unless user explicitly requests a different version:
-- **Patch** (0.3.0 → 0.3.1): Bug fixes only
-- **Minor** (0.3.0 → 0.4.0): New features, backward compatible
-- **Major** (0.3.0 → 1.0.0): Breaking changes
+- **Patch** (0.4.0 → 0.4.1): Bug fixes only (default)
+- **Minor** (0.4.0 → 0.5.0): New features, backward compatible
+- **Major** (0.4.0 → 1.0.0): Breaking changes
 
 Bump version:
 ```bash
-npm version minor  # or patch/major as requested
+npm version patch  # or minor/major as requested
 ```
 
 This updates `package.json` and creates a git tag automatically.
