@@ -22,8 +22,8 @@ export declare class PokerWidget extends StdinDataWidget {
     private formatCardColor;
     /**
      * Format card based on participation in best hand
-     * Participating cards: [K♠] (with brackets)
-     * Non-participating cards:  K♠  (spaces instead of brackets)
+     * Participating cards: (K♠) with color + BOLD
+     * Non-participating cards: K♠ with color, no brackets
      */
     private formatCardByParticipation;
     protected renderWithData(_data: StdinData, _context: RenderContext): string | null;

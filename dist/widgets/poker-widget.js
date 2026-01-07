@@ -9,7 +9,7 @@ import { Deck } from './poker/deck.js';
 import { evaluateHand } from './poker/hand-evaluator.js';
 import { formatCard, isRedSuit } from './poker/types.js';
 import { colorize } from '../ui/utils/formatters.js';
-import { gray, red } from '../ui/utils/colors.js';
+import { bold, gray, red, reset } from '../ui/utils/colors.js';
 export class PokerWidget extends StdinDataWidget {
     id = 'poker';
     metadata = createWidgetMetadata('Poker', 'Displays random Texas Hold\'em hands for entertainment', '1.0.0', 'claude-scope', 2 // Third line (0-indexed)
@@ -62,21 +62,20 @@ export class PokerWidget extends StdinDataWidget {
     }
     /**
      * Format card based on participation in best hand
-     * Participating cards: [K♠] (with brackets)
-     * Non-participating cards:  K♠  (spaces instead of brackets)
+     * Participating cards: (K♠) with color + BOLD
+     * Non-participating cards: K♠ with color, no brackets
      */
     formatCardByParticipation(cardData, isParticipating) {
+        // Get the card color based on suit (red for ♥♦, gray for ♠♣)
+        const color = isRedSuit(cardData.card.suit) ? red : gray;
+        const cardText = formatCard(cardData.card); // "K♠"
         if (isParticipating) {
-            return cardData.formatted; // [K♠]
+            // Participating: (K♠) with color + BOLD
+            return `${color}${bold}(${cardText})${reset}`;
         }
         else {
-            // Extract card text from brackets and wrap with spaces
-            const inner = cardData.formatted.match(/\[(.+)\]/)?.[1] || cardData.formatted;
-            // Preserve color codes if present
-            const colorMatch = cardData.formatted.match(/^(\x1b\[\d+m)/);
-            const color = colorMatch ? colorMatch[1] : '';
-            const reset = cardData.formatted.match(/\x1b\[0m$/) ? '\x1b[0m' : '';
-            return ` ${color}${inner}${reset} `;
+            // Non-participating: K♠ with color, no brackets, with space padding
+            return `${color}${cardText}${reset} `;
         }
     }
     renderWithData(_data, _context) {

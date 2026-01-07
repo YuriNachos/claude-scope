@@ -440,8 +440,10 @@ function colorize(text, color) {
 }
 
 // src/ui/utils/colors.ts
+var reset = "\x1B[0m";
 var red = "\x1B[31m";
 var gray = "\x1B[90m";
+var bold = "\x1B[1m";
 
 // src/ui/theme/default-theme.ts
 var DEFAULT_THEME = {
@@ -1280,18 +1282,16 @@ var PokerWidget = class extends StdinDataWidget {
   }
   /**
    * Format card based on participation in best hand
-   * Participating cards: [K♠] (with brackets)
-   * Non-participating cards:  K♠  (spaces instead of brackets)
+   * Participating cards: (K♠) with color + BOLD
+   * Non-participating cards: K♠ with color, no brackets
    */
   formatCardByParticipation(cardData, isParticipating) {
+    const color = isRedSuit(cardData.card.suit) ? red : gray;
+    const cardText = formatCard(cardData.card);
     if (isParticipating) {
-      return cardData.formatted;
+      return `${color}${bold}(${cardText})${reset}`;
     } else {
-      const inner = cardData.formatted.match(/\[(.+)\]/)?.[1] || cardData.formatted;
-      const colorMatch = cardData.formatted.match(/^(\x1b\[\d+m)/);
-      const color = colorMatch ? colorMatch[1] : "";
-      const reset = cardData.formatted.match(/\x1b\[0m$/) ? "\x1B[0m" : "";
-      return ` ${color}${inner}${reset} `;
+      return `${color}${cardText}${reset} `;
     }
   }
   renderWithData(_data, _context) {
