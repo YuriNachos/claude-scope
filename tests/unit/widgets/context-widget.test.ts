@@ -57,7 +57,7 @@ describe('ContextWidget', () => {
     expect(result).to.include(']');
   });
 
-  it('should use green color for low usage (< 50%)', async () => {
+  it('should use default gray color for low usage (< 50%)', async () => {
     const widget = new ContextWidget();
     await widget.update(createMockStdinData({
       context_window: {
@@ -75,10 +75,10 @@ describe('ContextWidget', () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include('\x1b[32m'); // Green ANSI code
+    expect(result).to.include('\x1b[90m'); // Gray ANSI code (default)
   });
 
-  it('should use yellow color for medium usage (50-79%)', async () => {
+  it('should use default gray color for medium usage (50-79%)', async () => {
     const widget = new ContextWidget();
     await widget.update(createMockStdinData({
       context_window: {
@@ -96,10 +96,10 @@ describe('ContextWidget', () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include('\x1b[33m'); // Yellow ANSI code
+    expect(result).to.include('\x1b[90m'); // Gray ANSI code (default)
   });
 
-  it('should use red color for high usage (>= 80%)', async () => {
+  it('should use default gray color for high usage (>= 80%)', async () => {
     const widget = new ContextWidget();
     await widget.update(createMockStdinData({
       context_window: {
@@ -117,7 +117,7 @@ describe('ContextWidget', () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include('\x1b[31m'); // Red ANSI code
+    expect(result).to.include('\x1b[90m'); // Gray ANSI code (default)
   });
 
   it('should handle 0% usage', async () => {
@@ -163,7 +163,7 @@ describe('ContextWidget', () => {
   });
 
   describe('snapshots', () => {
-    it('should snapshot low usage output (green)', async () => {
+    it('should snapshot low usage output (gray)', async () => {
       const widget = new ContextWidget();
       await widget.update(createMockStdinData({
         context_window: {
@@ -184,7 +184,7 @@ describe('ContextWidget', () => {
       await matchSnapshot('context-widget-low-usage', stripAnsi(result || ''));
     });
 
-    it('should snapshot medium usage output (yellow)', async () => {
+    it('should snapshot medium usage output (gray)', async () => {
       const widget = new ContextWidget();
       await widget.update(createMockStdinData({
         context_window: {
@@ -205,7 +205,7 @@ describe('ContextWidget', () => {
       await matchSnapshot('context-widget-medium-usage', stripAnsi(result || ''));
     });
 
-    it('should snapshot high usage output (red)', async () => {
+    it('should snapshot high usage output (gray)', async () => {
       const widget = new ContextWidget();
       await widget.update(createMockStdinData({
         context_window: {
@@ -224,6 +224,51 @@ describe('ContextWidget', () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       await matchSnapshot('context-widget-high-usage', stripAnsi(result || ''));
+    });
+  });
+
+  describe('with custom colors', () => {
+    it('should use custom low color when provided', async () => {
+      const customColors = { low: '\x1b[36m', medium: '\x1b[33m', high: '\x1b[31m' };
+      const widget = new ContextWidget(customColors);
+      await widget.update(createMockStdinData({
+        context_window: {
+          total_input_tokens: 1000,
+          total_output_tokens: 500,
+          context_window_size: 200000,
+          current_usage: {
+            input_tokens: 40000,
+            output_tokens: 10000,
+            cache_creation_input_tokens: 5000,
+            cache_read_input_tokens: 0
+          }
+        }
+      }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.include('\x1b[36m'); // Cyan (custom low color)
+    });
+
+    it('should use default gray color when no colors provided', async () => {
+      const widget = new ContextWidget();
+      await widget.update(createMockStdinData({
+        context_window: {
+          total_input_tokens: 1000,
+          total_output_tokens: 500,
+          context_window_size: 200000,
+          current_usage: {
+            input_tokens: 40000,
+            output_tokens: 10000,
+            cache_creation_input_tokens: 5000,
+            cache_read_input_tokens: 0
+          }
+        }
+      }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.include('\x1b[90m'); // Gray (default)
     });
   });
 });

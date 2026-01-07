@@ -6,8 +6,10 @@
 
 import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
-import { progressBar, getContextColor, colorize } from '../ui/utils/formatters.js';
+import { progressBar, colorize } from '../ui/utils/formatters.js';
 import { DEFAULTS } from '../constants.js';
+import type { IContextColors } from '../ui/theme/types.js';
+import { DEFAULT_THEME } from '../ui/theme/default-theme.js';
 import type { RenderContext, StdinData } from '../types.js';
 
 export class ContextWidget extends StdinDataWidget {
@@ -19,6 +21,13 @@ export class ContextWidget extends StdinDataWidget {
     'claude-scope',
     0  // First line
   );
+
+  private colors: IContextColors;
+
+  constructor(colors?: IContextColors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME.context!;
+  }
 
   protected renderWithData(data: StdinData, context: RenderContext): string | null {
     const { current_usage, context_window_size } = data.context_window;
@@ -38,8 +47,20 @@ export class ContextWidget extends StdinDataWidget {
     const percent = Math.round((used / context_window_size) * 100);
 
     const bar = progressBar(percent, DEFAULTS.PROGRESS_BAR_WIDTH);
-    const color = getContextColor(percent);
+    const color = this.getContextColor(percent);
 
     return colorize(`[${bar}] ${percent}%`, color);
+  }
+
+  private getContextColor(percent: number): string {
+    const clampedPercent = Math.max(0, Math.min(100, percent));
+
+    if (clampedPercent < 50) {
+      return this.colors.low;
+    } else if (clampedPercent < 80) {
+      return this.colors.medium;
+    } else {
+      return this.colors.high;
+    }
   }
 }
