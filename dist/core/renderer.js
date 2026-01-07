@@ -62,7 +62,8 @@ export class Renderer {
                 }
             }
             const line = outputs.join(this.separator);
-            if (line) {
+            // Include line if there are outputs (even if empty string for separator widgets)
+            if (outputs.length > 0) {
                 lines.push(line);
             }
         }

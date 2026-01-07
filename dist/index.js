@@ -15,6 +15,7 @@ import { DurationWidget } from './widgets/duration-widget.js';
 import { GitChangesWidget } from './widgets/git/git-changes-widget.js';
 import { ConfigCountWidget } from './widgets/config-count-widget.js';
 import { PokerWidget } from './widgets/poker-widget.js';
+import { EmptyLineWidget } from './widgets/empty-line-widget.js';
 import { StdinProvider } from './data/stdin-provider.js';
 /**
  * Read stdin as string
@@ -54,6 +55,7 @@ export async function main() {
         await registry.register(new GitChangesWidget());
         await registry.register(new ConfigCountWidget());
         await registry.register(new PokerWidget());
+        await registry.register(new EmptyLineWidget());
         // Create renderer with error handling configuration
         const renderer = new Renderer({
             separator: ' │ ',

@@ -187,7 +187,7 @@ var Renderer = class {
         }
       }
       const line = outputs.join(this.separator);
-      if (line) {
+      if (outputs.length > 0) {
         lines.push(line);
       }
     }
@@ -1383,6 +1383,26 @@ var PokerWidget = class extends StdinDataWidget {
   }
 };
 
+// src/widgets/empty-line-widget.ts
+var EmptyLineWidget = class extends StdinDataWidget {
+  id = "empty-line";
+  metadata = createWidgetMetadata(
+    "Empty Line",
+    "Empty line separator",
+    "1.0.0",
+    "claude-scope",
+    3
+    // Fourth line (0-indexed)
+  );
+  /**
+   * Return empty string regardless of data state.
+   * The empty line widget doesn't need stdin data to render.
+   */
+  renderWithData(_data, _context) {
+    return "";
+  }
+};
+
 // src/validation/result.ts
 function success(data) {
   return { success: true, data };
@@ -1588,6 +1608,7 @@ async function main() {
     await registry.register(new GitChangesWidget());
     await registry.register(new ConfigCountWidget());
     await registry.register(new PokerWidget());
+    await registry.register(new EmptyLineWidget());
     const renderer = new Renderer({
       separator: " \u2502 ",
       onError: (error, widget) => {
