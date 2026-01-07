@@ -440,6 +440,7 @@ function colorize(text, color) {
 }
 
 // src/ui/utils/colors.ts
+var red = "\x1B[31m";
 var gray = "\x1B[90m";
 
 // src/ui/theme/default-theme.ts
@@ -823,6 +824,289 @@ var ConfigCountWidget = class {
   }
 };
 
+// src/widgets/poker/deck.ts
+var import_node_crypto = require("node:crypto");
+
+// src/widgets/poker/types.ts
+var Suit = {
+  Spades: "spades",
+  Hearts: "hearts",
+  Diamonds: "diamonds",
+  Clubs: "clubs"
+};
+var SUIT_SYMBOLS = {
+  spades: "\u2660",
+  hearts: "\u2665",
+  diamonds: "\u2666",
+  clubs: "\u2663"
+};
+function isRedSuit(suit) {
+  return suit === "hearts" || suit === "diamonds";
+}
+var Rank = {
+  Two: "2",
+  Three: "3",
+  Four: "4",
+  Five: "5",
+  Six: "6",
+  Seven: "7",
+  Eight: "8",
+  Nine: "9",
+  Ten: "10",
+  Jack: "J",
+  Queen: "Q",
+  King: "K",
+  Ace: "A"
+};
+function getRankValue(rank) {
+  const values = {
+    "2": 2,
+    "3": 3,
+    "4": 4,
+    "5": 5,
+    "6": 6,
+    "7": 7,
+    "8": 8,
+    "9": 9,
+    "10": 10,
+    "J": 11,
+    "Q": 12,
+    "K": 13,
+    "A": 14
+  };
+  return values[rank];
+}
+function formatCard(card) {
+  return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+}
+
+// src/widgets/poker/deck.ts
+var ALL_SUITS = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs];
+var ALL_RANKS = [
+  Rank.Two,
+  Rank.Three,
+  Rank.Four,
+  Rank.Five,
+  Rank.Six,
+  Rank.Seven,
+  Rank.Eight,
+  Rank.Nine,
+  Rank.Ten,
+  Rank.Jack,
+  Rank.Queen,
+  Rank.King,
+  Rank.Ace
+];
+var Deck = class {
+  cards = [];
+  constructor() {
+    this.initialize();
+    this.shuffle();
+  }
+  /**
+   * Create a standard 52-card deck
+   */
+  initialize() {
+    this.cards = [];
+    for (const suit of ALL_SUITS) {
+      for (const rank of ALL_RANKS) {
+        this.cards.push({ rank, suit });
+      }
+    }
+  }
+  /**
+   * Shuffle deck using Fisher-Yates algorithm with crypto.random
+   */
+  shuffle() {
+    for (let i = this.cards.length - 1; i > 0; i--) {
+      const j = (0, import_node_crypto.randomInt)(0, i + 1);
+      [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+    }
+  }
+  /**
+   * Deal one card from the top of the deck
+   * @throws Error if deck is empty
+   */
+  deal() {
+    if (this.cards.length === 0) {
+      throw new Error("Deck is empty");
+    }
+    return this.cards.pop();
+  }
+  /**
+   * Get number of remaining cards in deck
+   */
+  remaining() {
+    return this.cards.length;
+  }
+};
+
+// src/widgets/poker/hand-evaluator.ts
+var HAND_DISPLAY = {
+  [10 /* RoyalFlush */]: { name: "Royal Flush", emoji: "\u{1F3C6}" },
+  [9 /* StraightFlush */]: { name: "Straight Flush", emoji: "\u{1F525}" },
+  [8 /* FourOfAKind */]: { name: "Four of a Kind", emoji: "\u{1F48E}" },
+  [7 /* FullHouse */]: { name: "Full House", emoji: "\u{1F3E0}" },
+  [6 /* Flush */]: { name: "Flush", emoji: "\u{1F4A7}" },
+  [5 /* Straight */]: { name: "Straight", emoji: "\u{1F4C8}" },
+  [4 /* ThreeOfAKind */]: { name: "Three of a Kind", emoji: "\u{1F3AF}" },
+  [3 /* TwoPair */]: { name: "Two Pair", emoji: "\u270C\uFE0F" },
+  [2 /* OnePair */]: { name: "One Pair", emoji: "\u{1F44D}" },
+  [1 /* HighCard */]: { name: "High Card", emoji: "\u{1F0CF}" }
+};
+function countRanks(cards) {
+  const counts = /* @__PURE__ */ new Map();
+  for (const card of cards) {
+    const value = getRankValue(card.rank);
+    counts.set(value, (counts.get(value) || 0) + 1);
+  }
+  return counts;
+}
+function countSuits(cards) {
+  const counts = /* @__PURE__ */ new Map();
+  for (const card of cards) {
+    counts.set(card.suit, (counts.get(card.suit) || 0) + 1);
+  }
+  return counts;
+}
+function isFlush(cards) {
+  const suitCounts = countSuits(cards);
+  for (const count of suitCounts.values()) {
+    if (count >= 5) return true;
+  }
+  return false;
+}
+function getStraightHighCard(cards) {
+  const uniqueValues = /* @__PURE__ */ new Set();
+  for (const card of cards) {
+    uniqueValues.add(getRankValue(card.rank));
+  }
+  const sortedValues = Array.from(uniqueValues).sort((a, b) => b - a);
+  if (sortedValues.includes(14)) {
+    sortedValues.push(1);
+  }
+  for (let i = 0; i <= sortedValues.length - 5; i++) {
+    const current = sortedValues[i];
+    const next1 = sortedValues[i + 1];
+    const next2 = sortedValues[i + 2];
+    const next3 = sortedValues[i + 3];
+    const next4 = sortedValues[i + 4];
+    if (current - next1 === 1 && current - next2 === 2 && current - next3 === 3 && current - next4 === 4) {
+      return current;
+    }
+  }
+  return null;
+}
+function getMaxCount(cards) {
+  const rankCounts = countRanks(cards);
+  let maxCount = 0;
+  for (const count of rankCounts.values()) {
+    if (count > maxCount) {
+      maxCount = count;
+    }
+  }
+  return maxCount;
+}
+function getPairCount(cards) {
+  const rankCounts = countRanks(cards);
+  let pairCount = 0;
+  for (const count of rankCounts.values()) {
+    if (count === 2) {
+      pairCount++;
+    }
+  }
+  return pairCount;
+}
+function evaluateHand(hole, board) {
+  const allCards = [...hole, ...board];
+  const flush = isFlush(allCards);
+  const straightHighCard = getStraightHighCard(allCards);
+  const maxCount = getMaxCount(allCards);
+  const pairCount = getPairCount(allCards);
+  if (flush && straightHighCard === 14) {
+    return { rank: 10 /* RoyalFlush */, ...HAND_DISPLAY[10 /* RoyalFlush */] };
+  }
+  if (flush && straightHighCard !== null) {
+    return { rank: 9 /* StraightFlush */, ...HAND_DISPLAY[9 /* StraightFlush */] };
+  }
+  if (maxCount === 4) {
+    return { rank: 8 /* FourOfAKind */, ...HAND_DISPLAY[8 /* FourOfAKind */] };
+  }
+  if (maxCount === 3 && pairCount >= 1) {
+    return { rank: 7 /* FullHouse */, ...HAND_DISPLAY[7 /* FullHouse */] };
+  }
+  if (flush) {
+    return { rank: 6 /* Flush */, ...HAND_DISPLAY[6 /* Flush */] };
+  }
+  if (straightHighCard !== null) {
+    return { rank: 5 /* Straight */, ...HAND_DISPLAY[5 /* Straight */] };
+  }
+  if (maxCount === 3) {
+    return { rank: 4 /* ThreeOfAKind */, ...HAND_DISPLAY[4 /* ThreeOfAKind */] };
+  }
+  if (pairCount >= 2) {
+    return { rank: 3 /* TwoPair */, ...HAND_DISPLAY[3 /* TwoPair */] };
+  }
+  if (pairCount === 1) {
+    return { rank: 2 /* OnePair */, ...HAND_DISPLAY[2 /* OnePair */] };
+  }
+  return { rank: 1 /* HighCard */, ...HAND_DISPLAY[1 /* HighCard */] };
+}
+
+// src/widgets/poker-widget.ts
+var PokerWidget = class extends StdinDataWidget {
+  id = "poker";
+  metadata = createWidgetMetadata(
+    "Poker",
+    "Displays random Texas Hold'em hands for entertainment",
+    "1.0.0",
+    "claude-scope",
+    2
+    // Third line (0-indexed)
+  );
+  deck = null;
+  holeCards = [];
+  boardCards = [];
+  handResult = "";
+  constructor() {
+    super();
+  }
+  /**
+   * Generate new poker hand on each update
+   */
+  async update(data) {
+    await super.update(data);
+    this.deck = new Deck();
+    const hole = [
+      this.deck.deal(),
+      this.deck.deal()
+    ];
+    const board = [
+      this.deck.deal(),
+      this.deck.deal(),
+      this.deck.deal(),
+      this.deck.deal(),
+      this.deck.deal()
+    ];
+    const result = evaluateHand(hole, board);
+    this.holeCards = hole.map((card) => this.formatCardColor(card));
+    this.boardCards = board.map((card) => this.formatCardColor(card));
+    this.handResult = `${result.name}! ${result.emoji}`;
+  }
+  /**
+   * Format card with appropriate color (red for ♥♦, gray for ♠♣)
+   */
+  formatCardColor(card) {
+    const color = isRedSuit(card.suit) ? red : gray;
+    return colorize(`[${formatCard(card)}]`, color);
+  }
+  renderWithData(_data, _context) {
+    const handStr = this.holeCards.join(" ");
+    const boardStr = this.boardCards.join(" ");
+    return `Hand: ${handStr} | Board: ${boardStr} \u2192 ${this.handResult}`;
+  }
+};
+
 // src/validation/result.ts
 function success(data) {
   return { success: true, data };
@@ -1026,6 +1310,7 @@ async function main() {
     await registry.register(new GitWidget());
     await registry.register(new GitChangesWidget());
     await registry.register(new ConfigCountWidget());
+    await registry.register(new PokerWidget());
     const renderer = new Renderer({
       separator: " \u2502 ",
       onError: (error, widget) => {
