@@ -26,6 +26,8 @@ export class PokerWidget extends StdinDataWidget {
   private holeCards: { card: Card; formatted: string }[] = [];
   private boardCards: { card: Card; formatted: string }[] = [];
   private handResult: { text: string; participatingIndices: number[] } | null = null;
+  private lastUpdateTimestamp = 0;
+  private readonly THROTTLE_MS = 5000;  // 5 seconds
 
   constructor() {
     super();
@@ -37,12 +39,20 @@ export class PokerWidget extends StdinDataWidget {
   async update(data: StdinData): Promise<void> {
     await super.update(data);
 
+    const now = Date.now();
+
+    // Check if enough time has passed since last update
+    if (now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
+      // Skip update - keep current hand
+      return;
+    }
+
+    // Generate new hand
     const deck = new Deck();
     const hole = [deck.deal(), deck.deal()];
     const board = [deck.deal(), deck.deal(), deck.deal(), deck.deal(), deck.deal()];
     const result = evaluateHand(hole, board);
 
-    // Store cards with formatted versions
     this.holeCards = hole.map(card => ({
       card,
       formatted: this.formatCardColor(card)
@@ -53,7 +63,6 @@ export class PokerWidget extends StdinDataWidget {
       formatted: this.formatCardColor(card)
     }));
 
-    // Check if player participates (indices 0 or 1 in participatingCards)
     const playerParticipates = result.participatingCards.some(idx => idx < 2);
 
     if (!playerParticipates) {
@@ -67,6 +76,8 @@ export class PokerWidget extends StdinDataWidget {
         participatingIndices: result.participatingCards
       };
     }
+
+    this.lastUpdateTimestamp = now;
   }
 
   /**

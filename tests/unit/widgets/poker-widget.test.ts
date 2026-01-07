@@ -74,11 +74,14 @@ describe('PokerWidget', () => {
     assert.ok(hasEmoji);
   });
 
-  it('should generate new hand on each update', async () => {
-    const widget = new PokerWidget();
+  it('should generate new hand on each update (after throttle period)', async () => {
+    const widget = new PokerWidget() as any;
 
     await widget.update(createMockStdinData({}));
     const result1 = await widget.render({ width: 80, timestamp: 0 });
+
+    // Advance time past throttle period (5 seconds)
+    widget.lastUpdateTimestamp = Date.now() - 6000;
 
     await widget.update(createMockStdinData({}));
     const result2 = await widget.render({ width: 80, timestamp: 0 });
@@ -301,6 +304,34 @@ describe('PokerWidget', () => {
       // Use a regex that looks for [digit(s)m NOT preceded by \x1b
       const hasMalformedBrackets = /(?:[^\x1b]|^)\[\d+m/.test(result);
       assert.strictEqual(hasMalformedBrackets, false, 'Output should not contain malformed ANSI brackets like [90m without ESC');
+    });
+  });
+
+  describe('update throttling', () => {
+    it('should not update hand within 5 seconds of last update', async () => {
+      const widget = new PokerWidget() as any;
+      const mockData = createMockStdinData({});
+
+      // First update
+      await widget.update(mockData);
+      const firstRender = await widget.render({ width: 80, timestamp: 0 });
+      const firstCards = stripAnsi(firstRender || '').match(/[A-Z0-9]+[♠♥♦♣]/g) || [];
+
+      // Second update immediately (should be throttled)
+      await widget.update(mockData);
+      const secondRender = await widget.render({ width: 80, timestamp: 1000 });
+      const secondCards = stripAnsi(secondRender || '').match(/[A-Z0-9]+[♠♥♦♣]/g) || [];
+
+      // Cards should be the same (throttled)
+      assert.deepStrictEqual(secondCards, firstCards);
+    });
+
+    it('should track last update timestamp', async () => {
+      const widget = new PokerWidget() as any;
+      const mockData = createMockStdinData({});
+
+      await widget.update(mockData);
+      assert.ok(widget.lastUpdateTimestamp > 0);
     });
   });
 });
