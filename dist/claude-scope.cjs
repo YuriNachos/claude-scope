@@ -264,6 +264,20 @@ var NativeGit = class {
       return { files: [] };
     }
   }
+  async latestTag() {
+    try {
+      const { stdout } = await execFileAsync(
+        "git",
+        ["describe", "--tags", "--abbrev=0"],
+        {
+          cwd: this.cwd
+        }
+      );
+      return stdout.trim();
+    } catch {
+      return null;
+    }
+  }
 };
 function createGit(cwd) {
   return new NativeGit(cwd);
@@ -306,6 +320,69 @@ var GitWidget = class {
         return null;
       }
       return branch;
+    } catch {
+      return null;
+    }
+  }
+  async update(data) {
+    if (data.cwd !== this.cwd) {
+      this.cwd = data.cwd;
+      this.git = this.gitFactory(data.cwd);
+    }
+  }
+  isEnabled() {
+    return this.enabled;
+  }
+  async cleanup() {
+  }
+};
+
+// src/ui/utils/colors.ts
+var reset = "\x1B[0m";
+var red = "\x1B[31m";
+var green = "\x1B[32m";
+var gray = "\x1B[90m";
+var lightGray = "\x1B[37m";
+var bold = "\x1B[1m";
+
+// src/widgets/git/git-tag-widget.ts
+var GitTagWidget = class {
+  id = "git-tag";
+  metadata = createWidgetMetadata(
+    "Git Tag Widget",
+    "Displays the latest git tag",
+    "1.0.0",
+    "claude-scope",
+    1
+    // Second line
+  );
+  gitFactory;
+  git = null;
+  enabled = true;
+  cwd = null;
+  latestTag = null;
+  /**
+   * @param gitFactory - Optional factory function for creating IGit instances
+   *                     If not provided, uses default createGit (production)
+   *                     Tests can inject MockGit factory here
+   */
+  constructor(gitFactory) {
+    this.gitFactory = gitFactory || createGit;
+  }
+  async initialize(context) {
+    this.enabled = context.config?.enabled !== false;
+  }
+  async render(context) {
+    if (!this.enabled || !this.git || !this.cwd) {
+      return null;
+    }
+    try {
+      this.latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
+      if (!this.latestTag) {
+        return `${gray}Tag:${reset} no tag`;
+      }
+      const tagValue = `${green}${this.latestTag}${reset}`;
+      return `${gray}Tag:${reset} ${tagValue}`;
     } catch {
       return null;
     }
@@ -438,12 +515,6 @@ function progressBar(percent, width = DEFAULTS.PROGRESS_BAR_WIDTH) {
 function colorize(text, color) {
   return `${color}${text}${ANSI_COLORS.RESET}`;
 }
-
-// src/ui/utils/colors.ts
-var reset = "\x1B[0m";
-var red = "\x1B[31m";
-var gray = "\x1B[90m";
-var bold = "\x1B[1m";
 
 // src/ui/theme/default-theme.ts
 var DEFAULT_THEME = {
@@ -1240,6 +1311,9 @@ var PokerWidget = class extends StdinDataWidget {
   holeCards = [];
   boardCards = [];
   handResult = null;
+  lastUpdateTimestamp = 0;
+  THROTTLE_MS = 5e3;
+  // 5 seconds
   constructor() {
     super();
   }
@@ -1248,6 +1322,10 @@ var PokerWidget = class extends StdinDataWidget {
    */
   async update(data) {
     await super.update(data);
+    const now = Date.now();
+    if (now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
+      return;
+    }
     const deck = new Deck();
     const hole = [deck.deal(), deck.deal()];
     const board = [deck.deal(), deck.deal(), deck.deal(), deck.deal(), deck.deal()];
@@ -1272,6 +1350,7 @@ var PokerWidget = class extends StdinDataWidget {
         participatingIndices: result.participatingCards
       };
     }
+    this.lastUpdateTimestamp = now;
   }
   /**
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
@@ -1289,7 +1368,7 @@ var PokerWidget = class extends StdinDataWidget {
     const color = isRedSuit(cardData.card.suit) ? red : gray;
     const cardText = formatCard(cardData.card);
     if (isParticipating) {
-      return `${color}${bold}(${cardText})${reset}`;
+      return `${color}${bold}(${cardText})${reset} `;
     } else {
       return `${color}${cardText}${reset} `;
     }
@@ -1298,8 +1377,8 @@ var PokerWidget = class extends StdinDataWidget {
     const participatingSet = new Set(this.handResult?.participatingIndices || []);
     const handStr = this.holeCards.map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx))).join("");
     const boardStr = this.boardCards.map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const handLabel = colorize("Hand:", gray);
-    const boardLabel = colorize("Board:", gray);
+    const handLabel = colorize("Hand:", lightGray);
+    const boardLabel = colorize("Board:", lightGray);
     return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} \u2192 ${this.handResult?.text}`;
   }
 };
@@ -1505,6 +1584,7 @@ async function main() {
     await registry.register(new LinesWidget());
     await registry.register(new DurationWidget());
     await registry.register(new GitWidget());
+    await registry.register(new GitTagWidget());
     await registry.register(new GitChangesWidget());
     await registry.register(new ConfigCountWidget());
     await registry.register(new PokerWidget());

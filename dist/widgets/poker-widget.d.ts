@@ -11,6 +11,8 @@ export declare class PokerWidget extends StdinDataWidget {
     private holeCards;
     private boardCards;
     private handResult;
+    private lastUpdateTimestamp;
+    private readonly THROTTLE_MS;
     constructor();
     /**
      * Generate new poker hand on each update

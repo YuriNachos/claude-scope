@@ -9,7 +9,7 @@ import { Deck } from './poker/deck.js';
 import { evaluateHand } from './poker/hand-evaluator.js';
 import { formatCard, isRedSuit } from './poker/types.js';
 import { colorize } from '../ui/utils/formatters.js';
-import { bold, gray, red, reset } from '../ui/utils/colors.js';
+import { bold, gray, lightGray, red, reset } from '../ui/utils/colors.js';
 export class PokerWidget extends StdinDataWidget {
     id = 'poker';
     metadata = createWidgetMetadata('Poker', 'Displays random Texas Hold\'em hands for entertainment', '1.0.0', 'claude-scope', 2 // Third line (0-indexed)
@@ -17,6 +17,8 @@ export class PokerWidget extends StdinDataWidget {
     holeCards = [];
     boardCards = [];
     handResult = null;
+    lastUpdateTimestamp = 0;
+    THROTTLE_MS = 5000; // 5 seconds
     constructor() {
         super();
     }
@@ -25,11 +27,17 @@ export class PokerWidget extends StdinDataWidget {
      */
     async update(data) {
         await super.update(data);
+        const now = Date.now();
+        // Check if enough time has passed since last update
+        if (now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
+            // Skip update - keep current hand
+            return;
+        }
+        // Generate new hand
         const deck = new Deck();
         const hole = [deck.deal(), deck.deal()];
         const board = [deck.deal(), deck.deal(), deck.deal(), deck.deal(), deck.deal()];
         const result = evaluateHand(hole, board);
-        // Store cards with formatted versions
         this.holeCards = hole.map(card => ({
             card,
             formatted: this.formatCardColor(card)
@@ -38,7 +46,6 @@ export class PokerWidget extends StdinDataWidget {
             card,
             formatted: this.formatCardColor(card)
         }));
-        // Check if player participates (indices 0 or 1 in participatingCards)
         const playerParticipates = result.participatingCards.some(idx => idx < 2);
         if (!playerParticipates) {
             this.handResult = {
@@ -52,6 +59,7 @@ export class PokerWidget extends StdinDataWidget {
                 participatingIndices: result.participatingCards
             };
         }
+        this.lastUpdateTimestamp = now;
     }
     /**
      * Format card with appropriate color (red for ♥♦, gray for ♠♣)
@@ -70,8 +78,8 @@ export class PokerWidget extends StdinDataWidget {
         const color = isRedSuit(cardData.card.suit) ? red : gray;
         const cardText = formatCard(cardData.card); // "K♠"
         if (isParticipating) {
-            // Participating: (K♠) with color + BOLD
-            return `${color}${bold}(${cardText})${reset}`;
+            // Participating: (K♠) with color + BOLD, followed by space
+            return `${color}${bold}(${cardText})${reset} `;
         }
         else {
             // Non-participating: K♠ with color, no brackets, with space padding
@@ -86,8 +94,8 @@ export class PokerWidget extends StdinDataWidget {
         const boardStr = this.boardCards
             .map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2)))
             .join('');
-        const handLabel = colorize('Hand:', gray);
-        const boardLabel = colorize('Board:', gray);
+        const handLabel = colorize('Hand:', lightGray);
+        const boardLabel = colorize('Board:', lightGray);
         return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} → ${this.handResult?.text}`;
     }
 }

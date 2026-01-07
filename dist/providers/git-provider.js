@@ -60,6 +60,18 @@ export class NativeGit {
             return { files: [] };
         }
     }
+    async latestTag() {
+        try {
+            const { stdout } = await execFileAsync('git', ['describe', '--tags', '--abbrev=0'], {
+                cwd: this.cwd,
+            });
+            return stdout.trim();
+        }
+        catch {
+            // No tags found or not in a git repo
+            return null;
+        }
+    }
 }
 /**
  * Factory function to create NativeGit instance

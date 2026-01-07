@@ -48,6 +48,11 @@ export interface IGit {
      * @returns Promise resolving to diff summary
      */
     diffSummary(options?: string[]): Promise<GitDiffSummary>;
+    /**
+     * Get the latest git tag
+     * @returns Promise resolving to tag name or null if no tags exist
+     */
+    latestTag?(): Promise<string | null>;
 }
 /**
  * Native git implementation using child_process
@@ -60,6 +65,7 @@ export declare class NativeGit implements IGit {
     constructor(cwd: string);
     status(): Promise<GitStatusResult>;
     diffSummary(options?: string[]): Promise<GitDiffSummary>;
+    latestTag(): Promise<string | null>;
 }
 /**
  * Factory function to create NativeGit instance

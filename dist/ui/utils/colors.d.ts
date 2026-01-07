@@ -19,6 +19,7 @@ export declare const magenta = "\u001B[35m";
 export declare const cyan = "\u001B[36m";
 export declare const white = "\u001B[37m";
 export declare const gray = "\u001B[90m";
+export declare const lightGray = "\u001B[37m";
 /**
  * Background colors (40-47)
  */
