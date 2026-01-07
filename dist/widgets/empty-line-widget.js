@@ -10,11 +10,11 @@ export class EmptyLineWidget extends StdinDataWidget {
     metadata = createWidgetMetadata('Empty Line', 'Empty line separator', '1.0.0', 'claude-scope', 3 // Fourth line (0-indexed)
     );
     /**
-     * Return a single space to create a blank separator line.
-     * Using a space character instead of empty string ensures the line is visible.
+     * Return Braille Pattern Blank to create a visible empty separator line.
+     * U+2800 occupies cell width but appears blank, ensuring the line renders.
      */
     renderWithData(_data, _context) {
-        return ' ';
+        return '\u2800'; // Braille Pattern Blank - looks empty but takes space
     }
 }
 //# sourceMappingURL=empty-line-widget.js.map
