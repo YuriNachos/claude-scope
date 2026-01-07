@@ -170,15 +170,15 @@ describe('PokerWidget', () => {
       assert.strictEqual(result, '\x1b[90m6♣\x1b[0m ');
     });
 
-    it('should format participating card with suit color + BOLD + parentheses', () => {
+    it('should format participating card with suit color + BOLD + parentheses + space', () => {
       const widget = new PokerWidget();
       const cardData = {
         card: { rank: 'A', suit: 'hearts' },
         formatted: '\x1b[31m[A♥]\x1b[0m'
       };
       const result = (widget as any).formatCardByParticipation(cardData, true);
-      // Participating: red color + bold + parentheses
-      assert.strictEqual(result, '\x1b[31m\x1b[1m(A♥)\x1b[0m');
+      // Participating: red color + bold + parentheses + trailing space
+      assert.strictEqual(result, '\x1b[31m\x1b[1m(A♥)\x1b[0m ');
     });
 
     it('should handle red suit cards (non-participating)', () => {
@@ -212,6 +212,46 @@ describe('PokerWidget', () => {
       };
       const result = (widget as any).formatCardByParticipation(cardData, false);
       assert.strictEqual(result, '\x1b[90mQ♠\x1b[0m ');
+    });
+  });
+
+  /**
+   * Card spacing tests
+   *
+   * These tests verify proper spacing between cards to prevent them from
+   * clumping together (e.g., "(A♠)K♥" should be "(A♠) K♥").
+   */
+  describe('card spacing', () => {
+    it('should add space after participating cards with parentheses', async () => {
+      const widget = new PokerWidget();
+      await widget.update(createMockStdinData({}));
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      const cleanResult = stripAnsi(result || '');
+
+      // ALL cards with parentheses should have trailing space
+      // Find all parenthesized cards and verify each has a space after
+      const parenCards = cleanResult.match(/\([A-Z0-9]+[♠♥♦♣]\)/g);
+      assert.ok(parenCards, 'Should have at least one participating card with parentheses');
+
+      // Check that there are no instances of ) followed directly by card (no space)
+      const clumpedCards = cleanResult.match(/\)[A-Z0-9]/g);
+      assert.ok(!clumpedCards, `Should not have clumped cards like )K, found: ${JSON.stringify(clumpedCards)}`);
+    });
+
+    it('should have consistent spacing between all cards', async () => {
+      const widget = new PokerWidget();
+      await widget.update(createMockStdinData({}));
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      // Should not have cards without proper spacing (checking raw ANSI output)
+      // The pattern checks for ) followed by ANSI reset codes then immediately by card
+      const badPattern = /\)\x1b\[0m\x1b\[\d+m[0-9A-Z]/;
+      assert.ok(!badPattern.test(result || ''), 'Should not have participating card directly followed by another card without space');
+
+      // Also verify in clean output
+      const cleanResult = stripAnsi(result || '');
+      assert.ok(!cleanResult.includes(')('), 'Should not have )( pattern');
+      assert.ok(!/\)[A-Z0-9]/.test(cleanResult), 'Should not have ) followed by card character');
     });
   });
 

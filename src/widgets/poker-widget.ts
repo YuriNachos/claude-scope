@@ -91,8 +91,8 @@ export class PokerWidget extends StdinDataWidget {
     const cardText = formatCard(cardData.card); // "K♠"
 
     if (isParticipating) {
-      // Participating: (K♠) with color + BOLD
-      return `${color}${bold}(${cardText})${reset}`;
+      // Participating: (K♠) with color + BOLD, followed by space
+      return `${color}${bold}(${cardText})${reset} `;
     } else {
       // Non-participating: K♠ with color, no brackets, with space padding
       return `${color}${cardText}${reset} `;
