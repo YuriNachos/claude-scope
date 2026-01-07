@@ -8,13 +8,14 @@
 import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
 import { colorize } from '../ui/utils/formatters.js';
-import { ANSI_COLORS } from '../constants.js';
+import type { ILinesColors } from '../ui/theme/types.js';
+import { DEFAULT_THEME } from '../ui/theme/default-theme.js';
 import type { RenderContext, StdinData } from '../types.js';
 
 /**
  * Widget displaying lines added/removed in session
  *
- * Shows green "+N" for lines added and red "-N" for lines removed.
+ * Shows colored "+N" for lines added and "-N" for lines removed.
  * Defaults to "+0/-0" when cost data is unavailable.
  */
 export class LinesWidget extends StdinDataWidget {
@@ -27,6 +28,13 @@ export class LinesWidget extends StdinDataWidget {
     0  // First line
   );
 
+  private colors: ILinesColors;
+
+  constructor(colors?: ILinesColors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME.lines!;
+  }
+
   protected renderWithData(
     data: StdinData,
     context: RenderContext
@@ -34,8 +42,8 @@ export class LinesWidget extends StdinDataWidget {
     const added = data.cost?.total_lines_added ?? 0;
     const removed = data.cost?.total_lines_removed ?? 0;
 
-    const addedStr = colorize(`+${added}`, ANSI_COLORS.GREEN);
-    const removedStr = colorize(`-${removed}`, ANSI_COLORS.RED);
+    const addedStr = colorize(`+${added}`, this.colors.added);
+    const removedStr = colorize(`-${removed}`, this.colors.removed);
 
     return `${addedStr}/${removedStr}`;
   }

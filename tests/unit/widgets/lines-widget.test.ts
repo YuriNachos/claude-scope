@@ -132,4 +132,42 @@ describe('LinesWidget', () => {
     expect(result).to.include('+0');
     expect(result).to.include('-50');
   });
+
+  describe('with custom colors', () => {
+    it('should use custom colors when provided', async () => {
+      const customColors = { added: '\x1b[36m', removed: '\x1b[35m' };
+      const widget = new LinesWidget(customColors);
+      await widget.update(createMockStdinData({
+        cost: {
+          total_cost_usd: 0.01,
+          total_duration_ms: 0,
+          total_api_duration_ms: 0,
+          total_lines_added: 123,
+          total_lines_removed: 45
+        }
+      }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.include('\x1b[36m'); // Cyan (custom added color)
+      expect(result).to.include('\x1b[35m'); // Magenta (custom removed color)
+    });
+
+    it('should use default gray color when no colors provided', async () => {
+      const widget = new LinesWidget();
+      await widget.update(createMockStdinData({
+        cost: {
+          total_cost_usd: 0.01,
+          total_duration_ms: 0,
+          total_api_duration_ms: 0,
+          total_lines_added: 123,
+          total_lines_removed: 45
+        }
+      }));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      expect(result).to.include('\x1b[90m'); // Gray (default)
+    });
+  });
 });
