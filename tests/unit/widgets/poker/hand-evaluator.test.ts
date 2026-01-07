@@ -133,20 +133,20 @@ describe('HandEvaluator', () => {
     expect(result.emoji).to.equal('💎');
   });
 
-  it('should detect straight flush', () => {
-    const hole: Card[] = [{ rank: '10', suit: 'spades' }, { rank: 'J', suit: 'spades' }];
+  it('should detect straight flush (non-royal)', () => {
+    const hole: Card[] = [{ rank: '8', suit: 'hearts' }, { rank: '9', suit: 'hearts' }];
     const board: Card[] = [
-      { rank: 'Q', suit: 'spades' },
-      { rank: 'K', suit: 'spades' },
-      { rank: 'A', suit: 'spades' },
-      { rank: '2', suit: 'hearts' },
-      { rank: '7', suit: 'clubs' }
+      { rank: '10', suit: 'hearts' },
+      { rank: '7', suit: 'hearts' },
+      { rank: '6', suit: 'hearts' },
+      { rank: '2', suit: 'spades' },
+      { rank: 'K', suit: 'clubs' }
     ];
 
     const result = evaluateHand(hole, board);
-    expect(result.rank).to.equal(HandRank.RoyalFlush);
-    expect(result.name).to.equal('Royal Flush');
-    expect(result.emoji).to.equal('🏆');
+    expect(result.rank).to.equal(HandRank.StraightFlush);
+    expect(result.name).to.equal('Straight Flush');
+    expect(result.emoji).to.equal('🔥');
   });
 
   it('should detect royal flush (best hand)', () => {
