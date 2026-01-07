@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.3.2
+**Current version**: v0.3.3
 
 **Implemented features**:
 - Git branch and changes display
@@ -17,6 +17,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - Cost estimation display
 - Lines added/removed display
 - Configuration counts (CLAUDE.md, rules, MCPs, hooks)
+- Poker entertainment widget with Texas Hold'em hands
 
 **Planned features**: Active tools, running agents, todo progress, session analytics, configuration system.
 
@@ -45,6 +46,11 @@ src/
 │   ├── git/
 │   │   ├── git-widget.ts         # Git branch widget
 │   │   └── git-changes-widget.ts # Git diff statistics widget
+│   ├── poker-widget.ts        # Poker entertainment widget
+│   ├── poker/
+│   │   ├── types.ts           # Poker types (Card, Suit, Rank, HandRank)
+│   │   ├── deck.ts            # Deck class with shuffle/deal
+│   │   └── hand-evaluator.ts  # Hand combination evaluator
 │   ├── context-widget.ts     # Context usage with progress bar
 │   ├── cost-widget.ts        # Cost display widget
 │   ├── lines-widget.ts       # Lines added/removed widget
