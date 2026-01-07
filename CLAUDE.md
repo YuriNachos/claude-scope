@@ -52,6 +52,10 @@ src/
 │   ├── duration-widget.ts    # Session duration formatter
 │   └── model-widget.ts       # Model display widget
 ├── ui/
+│   ├── theme/                # Theme system and color configuration
+│   │   ├── index.ts          # Theme types and DEFAULT_THEME
+│   │   ├── theme-types.ts    # Color configuration interfaces
+│   │   └── context.ts        # ContextWidget color defaults
 │   └── utils/
 │       ├── colors.ts         # ANSI color utilities
 │       └── formatters.ts     # Human-readable formatters (duration, cost, progress)
@@ -134,6 +138,65 @@ interface IWidgetMetadata {
   line?: number;  // Which statusline line (0 = first, 1 = second, etc.)
 }
 ```
+
+### Theme System
+
+The project uses a theme system for widget color configuration. This allows colors to be parameterized instead of hard-coded.
+
+#### Color Configuration Types
+
+Each widget defines its own color configuration interface:
+
+```typescript
+// ContextWidget colors (progress bar states)
+interface IContextColors {
+  low: string;     // Color for < 50% usage
+  medium: string;  // Color for 50-79% usage
+  high: string;    // Color for >= 80% usage
+}
+
+// LinesWidget colors
+interface ILinesColors {
+  added: string;    // Color for added lines (+N)
+  removed: string;  // Color for removed lines (-N)
+}
+```
+
+#### Default Theme
+
+The `DEFAULT_THEME` provides neutral gray colors for all widgets:
+
+```typescript
+import { DEFAULT_THEME } from './ui/theme/index.js';
+
+// DEFAULT_THEME.context.low === '\x1b[90m' (gray)
+// DEFAULT_THEME.lines.added === '\x1b[90m' (gray)
+```
+
+#### Using Custom Colors
+
+Widgets accept optional color configuration in their constructor:
+
+```typescript
+// Use default gray colors
+const widget = new ContextWidget();
+
+// Use custom colors
+const customWidget = new ContextWidget({
+  low: '\x1b[32m',    // green
+  medium: '\x1b[33m', // yellow
+  high: '\x1b[31m'    // red
+});
+
+const linesWidget = new LinesWidget({
+  added: '\x1b[32m',   // green
+  removed: '\x1b[31m'  // red
+});
+```
+
+#### Future: Dynamic Themes
+
+The theme system is designed to support future dynamic theme switching. Themes can be loaded from configuration files, allowing users to customize colors without code changes.
 
 ### Widget Base Class
 
