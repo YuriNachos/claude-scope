@@ -92,9 +92,31 @@ describe('HandRank', () => {
 
 describe('PokerHand', () => {
   it('should create poker hand with rank', () => {
-    const hand: PokerHand = { rank: HandRank.OnePair, name: 'One Pair', emoji: '👍' };
+    const hand: PokerHand = { rank: HandRank.OnePair, name: 'One Pair', emoji: '👍', participatingCards: [] };
     expect(hand.rank).to.equal(2);
     expect(hand.name).to.equal('One Pair');
     expect(hand.emoji).to.equal('👍');
+  });
+});
+
+describe('PokerHand with participating cards', () => {
+  it('should accept participatingCards in PokerHand', () => {
+    const hand: PokerHand = {
+      rank: HandRank.OnePair,
+      name: 'One Pair',
+      emoji: '👍',
+      participatingCards: []
+    };
+    expect(hand.participatingCards).to.exist;
+  });
+
+  it('should store participating card indices', () => {
+    const hand: PokerHand = {
+      rank: HandRank.OnePair,
+      name: 'One Pair',
+      emoji: '👍',
+      participatingCards: [0, 1] // First two cards participate
+    };
+    expect(hand.participatingCards).to.deep.equal([0, 1]);
   });
 });

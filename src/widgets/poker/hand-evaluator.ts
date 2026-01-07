@@ -139,49 +139,49 @@ export function evaluateHand(hole: Card[], board: Card[]): PokerHand {
 
   // Royal Flush (Straight flush with Ace high)
   if (flush && straightHighCard === 14) {
-    return { rank: HandRank.RoyalFlush, ...HAND_DISPLAY[HandRank.RoyalFlush] };
+    return { rank: HandRank.RoyalFlush, ...HAND_DISPLAY[HandRank.RoyalFlush], participatingCards: [] };
   }
 
   // Straight Flush
   if (flush && straightHighCard !== null) {
-    return { rank: HandRank.StraightFlush, ...HAND_DISPLAY[HandRank.StraightFlush] };
+    return { rank: HandRank.StraightFlush, ...HAND_DISPLAY[HandRank.StraightFlush], participatingCards: [] };
   }
 
   // Four of a Kind
   if (maxCount === 4) {
-    return { rank: HandRank.FourOfAKind, ...HAND_DISPLAY[HandRank.FourOfAKind] };
+    return { rank: HandRank.FourOfAKind, ...HAND_DISPLAY[HandRank.FourOfAKind], participatingCards: [] };
   }
 
   // Full House (3 of a kind + pair)
   if (maxCount === 3 && pairCount >= 1) {
-    return { rank: HandRank.FullHouse, ...HAND_DISPLAY[HandRank.FullHouse] };
+    return { rank: HandRank.FullHouse, ...HAND_DISPLAY[HandRank.FullHouse], participatingCards: [] };
   }
 
   // Flush
   if (flush) {
-    return { rank: HandRank.Flush, ...HAND_DISPLAY[HandRank.Flush] };
+    return { rank: HandRank.Flush, ...HAND_DISPLAY[HandRank.Flush], participatingCards: [] };
   }
 
   // Straight
   if (straightHighCard !== null) {
-    return { rank: HandRank.Straight, ...HAND_DISPLAY[HandRank.Straight] };
+    return { rank: HandRank.Straight, ...HAND_DISPLAY[HandRank.Straight], participatingCards: [] };
   }
 
   // Three of a Kind
   if (maxCount === 3) {
-    return { rank: HandRank.ThreeOfAKind, ...HAND_DISPLAY[HandRank.ThreeOfAKind] };
+    return { rank: HandRank.ThreeOfAKind, ...HAND_DISPLAY[HandRank.ThreeOfAKind], participatingCards: [] };
   }
 
   // Two Pair
   if (pairCount >= 2) {
-    return { rank: HandRank.TwoPair, ...HAND_DISPLAY[HandRank.TwoPair] };
+    return { rank: HandRank.TwoPair, ...HAND_DISPLAY[HandRank.TwoPair], participatingCards: [] };
   }
 
   // One Pair
   if (pairCount === 1) {
-    return { rank: HandRank.OnePair, ...HAND_DISPLAY[HandRank.OnePair] };
+    return { rank: HandRank.OnePair, ...HAND_DISPLAY[HandRank.OnePair], participatingCards: [] };
   }
 
   // High Card (weakest hand)
-  return { rank: HandRank.HighCard, ...HAND_DISPLAY[HandRank.HighCard] };
+  return { rank: HandRank.HighCard, ...HAND_DISPLAY[HandRank.HighCard], participatingCards: [] };
 }
