@@ -113,13 +113,16 @@ describe('PokerWidget', () => {
       assert.ok(result?.includes('→'));
     });
 
-    it('should colorize Hand: and Board: labels', async () => {
+    it('should use lightGray color for Hand: and Board: labels', async () => {
       const widget = new PokerWidget();
       await widget.update(createMockStdinData({}));
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      // Check for gray ANSI code
-      assert.ok(result?.includes('\x1b[90m'));
+      // Check for lightGray ANSI code (37m) instead of gray (90m)
+      assert.ok(result?.includes('\x1b[37m'));
+      // Also verify Hand: and Board: labels are present
+      assert.ok(result?.includes('Hand:'));
+      assert.ok(result?.includes('Board:'));
     });
 
     it('should show parentheses for participating cards', async () => {

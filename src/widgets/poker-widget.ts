@@ -10,7 +10,7 @@ import { Deck } from './poker/deck.js';
 import { evaluateHand } from './poker/hand-evaluator.js';
 import { formatCard, isRedSuit, type Card } from './poker/types.js';
 import { colorize } from '../ui/utils/formatters.js';
-import { bold, gray, red, reset } from '../ui/utils/colors.js';
+import { bold, gray, lightGray, red, reset } from '../ui/utils/colors.js';
 import type { RenderContext, StdinData } from '../types.js';
 
 export class PokerWidget extends StdinDataWidget {
@@ -110,8 +110,8 @@ export class PokerWidget extends StdinDataWidget {
       .map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2)))
       .join('');
 
-    const handLabel = colorize('Hand:', gray);
-    const boardLabel = colorize('Board:', gray);
+    const handLabel = colorize('Hand:', lightGray);
+    const boardLabel = colorize('Board:', lightGray);
 
     return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} → ${this.handResult?.text}`;
   }
