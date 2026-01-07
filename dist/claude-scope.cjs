@@ -118,12 +118,6 @@ var COST_THRESHOLDS = {
   /** Above this value, show no decimal places ($123) */
   LARGE: 100
 };
-var CONTEXT_THRESHOLDS = {
-  /** Below this: green (low usage) */
-  LOW_MEDIUM: 50,
-  /** Below this: yellow (medium usage), above: red (high usage) */
-  MEDIUM_HIGH: 80
-};
 var DEFAULTS = {
   /** Default separator between widgets */
   SEPARATOR: " ",
@@ -441,19 +435,25 @@ function progressBar(percent, width = DEFAULTS.PROGRESS_BAR_WIDTH) {
   const empty = width - filled;
   return "\u2588".repeat(filled) + "\u2591".repeat(empty);
 }
-function getContextColor(percent) {
-  const clampedPercent = Math.max(0, Math.min(100, percent));
-  if (clampedPercent < CONTEXT_THRESHOLDS.LOW_MEDIUM) {
-    return ANSI_COLORS.GREEN;
-  } else if (clampedPercent < CONTEXT_THRESHOLDS.MEDIUM_HIGH) {
-    return ANSI_COLORS.YELLOW;
-  } else {
-    return ANSI_COLORS.RED;
-  }
-}
 function colorize(text, color) {
   return `${color}${text}${ANSI_COLORS.RESET}`;
 }
+
+// src/ui/utils/colors.ts
+var gray = "\x1B[90m";
+
+// src/ui/theme/default-theme.ts
+var DEFAULT_THEME = {
+  context: {
+    low: gray,
+    medium: gray,
+    high: gray
+  },
+  lines: {
+    added: gray,
+    removed: gray
+  }
+};
 
 // src/widgets/context-widget.ts
 var ContextWidget = class extends StdinDataWidget {
@@ -466,14 +466,29 @@ var ContextWidget = class extends StdinDataWidget {
     0
     // First line
   );
+  colors;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME.context;
+  }
   renderWithData(data, context) {
     const { current_usage, context_window_size } = data.context_window;
     if (!current_usage) return null;
     const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
     const percent = Math.round(used / context_window_size * 100);
     const bar = progressBar(percent, DEFAULTS.PROGRESS_BAR_WIDTH);
-    const color = getContextColor(percent);
+    const color = this.getContextColor(percent);
     return colorize(`[${bar}] ${percent}%`, color);
+  }
+  getContextColor(percent) {
+    const clampedPercent = Math.max(0, Math.min(100, percent));
+    if (clampedPercent < 50) {
+      return this.colors.low;
+    } else if (clampedPercent < 80) {
+      return this.colors.medium;
+    } else {
+      return this.colors.high;
+    }
   }
 };
 
@@ -505,11 +520,16 @@ var LinesWidget = class extends StdinDataWidget {
     0
     // First line
   );
+  colors;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME.lines;
+  }
   renderWithData(data, context) {
     const added = data.cost?.total_lines_added ?? 0;
     const removed = data.cost?.total_lines_removed ?? 0;
-    const addedStr = colorize(`+${added}`, ANSI_COLORS.GREEN);
-    const removedStr = colorize(`-${removed}`, ANSI_COLORS.RED);
+    const addedStr = colorize(`+${added}`, this.colors.added);
+    const removedStr = colorize(`-${removed}`, this.colors.removed);
     return `${addedStr}/${removedStr}`;
   }
 };

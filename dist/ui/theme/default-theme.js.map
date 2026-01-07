@@ -1,0 +1,1 @@
+{"version":3,"file":"default-theme.js","sourceRoot":"","sources":["../../../src/ui/theme/default-theme.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,IAAI,EAAE,MAAM,oBAAoB,CAAC;AAE1C,MAAM,CAAC,MAAM,aAAa,GAAW;IACnC,OAAO,EAAE;QACP,GAAG,EAAE,IAAI;QACT,MAAM,EAAE,IAAI;QACZ,IAAI,EAAE,IAAI;KACX;IACD,KAAK,EAAE;QACL,KAAK,EAAE,IAAI;QACX,OAAO,EAAE,IAAI;KACd;CACF,CAAC"}
