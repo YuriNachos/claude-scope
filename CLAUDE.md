@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.3.0
+**Current version**: v0.3.2
 
 **Implemented features**:
 - Git branch and changes display
@@ -458,14 +458,118 @@ This project uses **GitHub CLI (gh)** for Git operations instead of direct git c
 - Do not include AI attribution in messages
 
 ### Git Tags
-- **NEVER create git tags without explicit user permission**
-- Tags should only be created when the user explicitly requests them
+- Git tags are created automatically by `npm version` command during release process
+- **NEVER create git tags manually without following the Release Process**
 - Tag format: `v` + semantic version (e.g., `v1.0.0`, `v0.1.0`)
+- See "Release Process" section for complete workflow
 
 ### Documentation Commits
 - **NEVER commit docs/ files without explicit user permission**
 - Files in `docs/` directory (plans, research, issues, etc.) should remain untracked by default
 - Exception: CLAUDE.md is part of the project and should be committed when updated
+
+## Release Process
+
+When feature development is complete and all tests pass, follow this process to release a new version.
+
+### Prerequisites
+
+Before releasing, ensure:
+- All tasks from the implementation plan are complete
+- All tests pass (`npm test`)
+- Code is committed to the main branch
+- Working directory is clean (`git status`)
+
+### Step 1: Version Bump
+
+**Default: Minor version increment** (e.g., 0.3.0 → 0.4.0)
+
+Unless user explicitly requests a different version:
+- **Patch** (0.3.0 → 0.3.1): Bug fixes only
+- **Minor** (0.3.0 → 0.4.0): New features, backward compatible
+- **Major** (0.3.0 → 1.0.0): Breaking changes
+
+Bump version:
+```bash
+npm version minor  # or patch/major as requested
+```
+
+This updates `package.json` and creates a git tag automatically.
+
+### Step 2: Push to GitHub
+
+```bash
+git push
+git push --tags
+```
+
+**Important**: Do NOT build locally. The CI/CD pipeline will build `dist/` files.
+
+### Step 3: Monitor CI/CD
+
+The GitHub Actions workflow (`.github/workflows/release.yml`) will:
+1. Run all tests
+2. Build `dist/` files
+3. Commit `dist/` to the main branch
+4. Publish to npm
+5. Create GitHub release
+
+Monitor the workflow:
+```bash
+gh run watch
+```
+
+### Step 4: Handle Failures
+
+If CI/CD fails:
+
+1. Check the workflow logs for errors:
+   ```bash
+   gh run view --log-failed
+   ```
+
+2. Common issues:
+   - **Test failures**: Fix tests, commit, start release process over
+   - **Build errors**: Fix build issues, commit, start release process over
+   - **npm publish errors** (e.g., version already exists):
+     - Delete the failed tag: `git tag -d v0.3.1 && git push --delete origin v0.3.1`
+     - Reset to before version bump: `git reset --hard HEAD~1`
+     - Bump to different version: `npm version 0.3.2`
+     - Push again: `git push --force && git push --force --tags`
+
+3. After fixing, repeat from Step 1.
+
+### Step 5: Verify Release
+
+After successful CI/CD:
+
+1. Check GitHub release:
+   ```bash
+   gh release view
+   ```
+
+2. Check npm package:
+   ```bash
+   npm view claude-scope version
+   ```
+
+3. Install locally to verify:
+   ```bash
+   npm install -g claude-scope@latest
+   ```
+
+### Step 6: Update Local Installation
+
+After successful release, update the local environment:
+
+```bash
+npm install -g claude-scope@latest
+```
+
+Verify the installation:
+```bash
+claude-scope --version  # Should show the new version
+```
 
 ## License
 
