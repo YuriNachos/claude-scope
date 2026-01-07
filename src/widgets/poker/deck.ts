@@ -1,5 +1,5 @@
 import { randomInt } from 'node:crypto';
-import type { Card, Suit, Rank } from './types.js';
+import type { Card } from './types.js';
 import { Suit, Rank } from './types.js';
 
 const ALL_SUITS: Suit[] = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs];
