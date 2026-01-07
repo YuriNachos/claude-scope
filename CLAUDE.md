@@ -21,6 +21,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - Parentheses for participating cards with bold
 - All cards show suit color (red for ♥♦, gray for ♠♣)
 - Update throttling (5 seconds minimum between hand regeneration)
+- Empty line separator widget (4th line)
 
 **Planned features**: Active tools, running agents, todo progress, session analytics, configuration system.
 
@@ -105,6 +106,7 @@ src/
 │   ├── cost-widget.ts        # ✓ Implemented
 │   ├── duration-widget.ts    # ✓ Implemented
 │   ├── model-widget.ts       # ✓ Implemented
+│   ├── empty-line-widget.ts  # ✓ Implemented (blank separator)
 │   ├── session-widget.ts     # PLANNED
 │   ├── tools-widget.ts       # PLANNED
 │   ├── agents-widget.ts      # PLANNED
