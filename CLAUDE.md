@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.3.3
+**Current version**: v0.4.3
 
 **Implemented features**:
 - Git branch and changes display
@@ -17,7 +17,10 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - Cost estimation display
 - Lines added/removed display
 - Configuration counts (CLAUDE.md, rules, MCPs, hooks)
-- Poker entertainment widget with Texas Hold'em hands
+- Poker widget with participation-based formatting
+- Parentheses for participating cards with bold
+- All cards show suit color (red for ♥♦, gray for ♠♣)
+- Update throttling (5 seconds minimum between hand regeneration)
 
 **Planned features**: Active tools, running agents, todo progress, session analytics, configuration system.
 
