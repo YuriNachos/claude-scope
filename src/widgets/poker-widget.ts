@@ -10,7 +10,7 @@ import { Deck } from './poker/deck.js';
 import { evaluateHand } from './poker/hand-evaluator.js';
 import { formatCard, isRedSuit, type Card } from './poker/types.js';
 import { colorize } from '../ui/utils/formatters.js';
-import { gray, red } from '../ui/utils/colors.js';
+import { bold, gray, red, reset } from '../ui/utils/colors.js';
 import type { RenderContext, StdinData } from '../types.js';
 
 export class PokerWidget extends StdinDataWidget {
@@ -79,19 +79,23 @@ export class PokerWidget extends StdinDataWidget {
 
   /**
    * Format card based on participation in best hand
-   * Participating cards: [K♠] (with brackets)
-   * Non-participating cards:  K♠  (spaces instead of brackets)
+   * Participating cards: (K♠) with color + BOLD
+   * Non-participating cards: K♠ with color, no brackets
    */
   private formatCardByParticipation(
     cardData: { card: Card; formatted: string },
     isParticipating: boolean
   ): string {
+    // Get the card color based on suit (red for ♥♦, gray for ♠♣)
+    const color = isRedSuit(cardData.card.suit) ? red : gray;
+    const cardText = formatCard(cardData.card); // "K♠"
+
     if (isParticipating) {
-      return cardData.formatted; // [K♠] with colors
+      // Participating: (K♠) with color + BOLD
+      return `${color}${bold}(${cardText})${reset}`;
     } else {
-      // Use formatCard() directly to get plain text without ANSI codes
-      const plainText = formatCard(cardData.card); // Returns "6♣"
-      return ` ${plainText} `;
+      // Non-participating: K♠ with color, no brackets, with space padding
+      return `${color}${cardText}${reset} `;
     }
   }
 

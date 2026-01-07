@@ -28,14 +28,15 @@ describe('PokerWidget', () => {
     assert.ok(result?.includes('→'));
   });
 
-  it('should format cards with brackets', async () => {
+  it('should format cards with parentheses for participating cards', async () => {
     const widget = new PokerWidget();
     await widget.update(createMockStdinData({}));
 
     const result = await widget.render({ width: 80, timestamp: 0 });
     const cleanResult = stripAnsi(result || '');
 
-    assert.match(cleanResult, /\[[A-Z0-9]+[♠♥♦♣]\]/);
+    // Participating cards have parentheses like (K♠)
+    assert.match(cleanResult, /\([A-Z0-9]+[♠♥♦♣]\)/);
   });
 
   it('should show exactly 2 hole cards and 5 board cards', async () => {
@@ -45,9 +46,9 @@ describe('PokerWidget', () => {
     const result = await widget.render({ width: 80, timestamp: 0 });
     const cleanResult = stripAnsi(result || '');
 
-    // Count all cards (both with brackets [K♠] and without K♠)
-    // Cards either have brackets or are surrounded by spaces
-    const cardMatches = cleanResult.match(/(?:\[?[A-Z0-9]+[♠♥♦♣]\]?)/g);
+    // Count all cards (both with parentheses (K♠) and without K♠)
+    // Cards either have parentheses or are plain
+    const cardMatches = cleanResult.match(/(?:\(?[A-Z0-9]+[♠♥♦♣]\)?)/g);
     assert.strictEqual(cardMatches?.length, 7); // 2 hole + 5 board
   });
 
@@ -121,16 +122,16 @@ describe('PokerWidget', () => {
       assert.ok(result?.includes('\x1b[90m'));
     });
 
-    it('should show brackets for participating cards', async () => {
+    it('should show parentheses for participating cards', async () => {
       const widget = new PokerWidget();
       await widget.update(createMockStdinData({}));
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      // All cards should have at least one bracket format (participating)
-      const cleanResult = result || '';
-      // Count bracket occurrences
-      const bracketMatches = cleanResult.match(/\[.*?\]/g);
-      assert.ok(bracketMatches && bracketMatches.length > 0);
+      // Participating cards should have parentheses
+      const cleanResult = stripAnsi(result || '');
+      // Count parentheses occurrences - cards like (K♠)
+      const parenMatches = cleanResult.match(/\([^)]+\)/g);
+      assert.ok(parenMatches && parenMatches.length > 0);
     });
 
     it('should format cards with consistent spacing', async () => {
@@ -147,61 +148,67 @@ describe('PokerWidget', () => {
   /**
    * ANSI code handling tests
    *
-   * Bug: The regex `/\[(.+)\]/` in `formatCardByParticipation` incorrectly matches
-   * ANSI escape sequence brackets like `[90m]` or `[31m]` instead of card brackets like `[6♣]`.
-   * This causes visible "90m[6♣" or "31m[K♦" text in output instead of clean "6♣" or "K♦".
+   * Tests card formatting with proper suit colors:
+   * - Red suits (♥♦): \x1b[31m (red)
+   * - Black suits (♠♣): \x1b[90m (gray)
    *
-   * These tests verify that the method correctly strips ANSI codes before extracting card text.
+   * Participating cards: (K♠) with color + BOLD
+   * Non-participating cards: K♠ with color, no brackets
    */
   describe('ANSI code handling', () => {
-    it('should extract card text correctly from colorized string (non-participating)', () => {
+    it('should format non-participating card with suit color (no brackets)', () => {
       const widget = new PokerWidget();
       const cardData = {
         card: { rank: '6', suit: 'clubs' },
-        formatted: '\x1b[90m[6♣]\x1b[0m'  // Gray colorized
+        formatted: '\x1b[90m[6♣]\x1b[0m'
       };
       const result = (widget as any).formatCardByParticipation(cardData, false);
-      assert.strictEqual(result, ' 6♣ ');
+      // Non-participating: gray color, no brackets
+      assert.strictEqual(result, '\x1b[90m6♣\x1b[0m ');
     });
 
-    it('should preserve brackets for participating cards', () => {
+    it('should format participating card with suit color + BOLD + parentheses', () => {
       const widget = new PokerWidget();
       const cardData = {
         card: { rank: 'A', suit: 'hearts' },
-        formatted: '\x1b[31m[A♥]\x1b[0m'  // Red colorized
+        formatted: '\x1b[31m[A♥]\x1b[0m'
       };
       const result = (widget as any).formatCardByParticipation(cardData, true);
-      assert.strictEqual(result, '\x1b[31m[A♥]\x1b[0m');
+      // Participating: red color + bold + parentheses
+      assert.strictEqual(result, '\x1b[31m\x1b[1m(A♥)\x1b[0m');
     });
 
     it('should handle red suit cards (non-participating)', () => {
       const widget = new PokerWidget();
       const cardData = {
         card: { rank: 'K', suit: 'diamonds' },
-        formatted: '\x1b[31m[K♦]\x1b[0m'  // Red colorized
+        formatted: '\x1b[31m[K♦]\x1b[0m'
       };
       const result = (widget as any).formatCardByParticipation(cardData, false);
-      assert.strictEqual(result, ' K♦ ');
+      assert.strictEqual(result, '\x1b[31mK♦\x1b[0m ');
     });
 
-    it('should produce clean output without ANSI escape sequences visible', () => {
+    it('should produce proper output with suit colors', () => {
       const widget = new PokerWidget();
       const cardData = {
         card: { rank: '10', suit: 'spades' },
-        formatted: '\x1b[90m[10♠]\x1b[0m'  // Gray colorized
+        formatted: '\x1b[90m[10♠]\x1b[0m'
       };
       const result = (widget as any).formatCardByParticipation(cardData, false);
-      assert.strictEqual(result, ' 10♠ ');
+      // Should have gray color code
+      assert.ok(result.includes('\x1b[90m'));
+      assert.ok(result.includes('10♠'));
+      assert.ok(result.includes('\x1b[0m'));
     });
 
     it('should handle card with no brackets (fallback case)', () => {
       const widget = new PokerWidget();
       const cardData = {
         card: { rank: 'Q', suit: 'spades' },
-        formatted: 'Q♠'  // No brackets, no ANSI codes
+        formatted: 'Q♠'
       };
       const result = (widget as any).formatCardByParticipation(cardData, false);
-      assert.strictEqual(result, ' Q♠ ');
+      assert.strictEqual(result, '\x1b[90mQ♠\x1b[0m ');
     });
   });
 
