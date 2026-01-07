@@ -16,12 +16,12 @@ describe('EmptyLineWidget', () => {
     expect(widget.metadata.line).to.equal(3);
   });
 
-  it('should render space as blank line', async () => {
+  it('should render braille pattern blank as empty line', async () => {
     const widget = new EmptyLineWidget();
     await widget.update(createMockStdinData());
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.equal(' ');
+    expect(result).to.equal('\u2800'); // Braille Pattern Blank
   });
 
   it('should be enabled by default', async () => {
