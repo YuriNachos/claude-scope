@@ -21,6 +21,7 @@ export const magenta = '\x1b[35m';
 export const cyan = '\x1b[36m';
 export const white = '\x1b[37m';
 export const gray = '\x1b[90m';
+export const lightGray = '\x1b[37m';  // Light gray for labels
 
 /**
  * Background colors (40-47)

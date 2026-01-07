@@ -14,6 +14,7 @@ import {
   cyan,
   white,
   gray,
+  lightGray,
   bgRed,
   bgGreen,
   bgYellow,
@@ -70,10 +71,25 @@ describe('color utilities', () => {
       expect(gray).to.equal('\x1b[90m');
     });
 
+    it('should return ANSI code for lightGray', () => {
+      expect(lightGray).to.equal('\x1b[37m');
+    });
+
     it('should all be different codes', () => {
       const codes = [red, green, yellow, blue, magenta, cyan, white, gray];
       const uniqueCodes = new Set(codes);
       expect(uniqueCodes.size).to.equal(codes.length);
+    });
+
+    it('should be different from regular gray', () => {
+      expect(gray).to.not.equal(lightGray);
+      expect(gray).to.equal('\x1b[90m');
+      expect(lightGray).to.equal('\x1b[37m');
+    });
+
+    it('should share same code as white (both are ANSI 37)', () => {
+      expect(lightGray).to.equal(white);
+      expect(lightGray).to.equal('\x1b[37m');
     });
   });
 
