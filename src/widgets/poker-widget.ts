@@ -8,7 +8,7 @@ import { StdinDataWidget } from './core/stdin-data-widget.js';
 import { createWidgetMetadata } from '../core/widget-types.js';
 import { Deck } from './poker/deck.js';
 import { evaluateHand } from './poker/hand-evaluator.js';
-import { formatCard, isRedSuit } from './poker/types.js';
+import { formatCard, isRedSuit, type Card } from './poker/types.js';
 import { colorize } from '../ui/utils/formatters.js';
 import { gray, red } from '../ui/utils/colors.js';
 import type { RenderContext, StdinData } from '../types.js';
@@ -23,10 +23,9 @@ export class PokerWidget extends StdinDataWidget {
     2  // Third line (0-indexed)
   );
 
-  private deck: Deck | null = null;
-  private holeCards: string[] = [];
-  private boardCards: string[] = [];
-  private handResult = '';
+  private holeCards: { card: Card; formatted: string }[] = [];
+  private boardCards: { card: Card; formatted: string }[] = [];
+  private handResult: { text: string; participatingIndices: number[] } | null = null;
 
   constructor() {
     super();
@@ -38,45 +37,82 @@ export class PokerWidget extends StdinDataWidget {
   async update(data: StdinData): Promise<void> {
     await super.update(data);
 
-    // Create new shuffled deck
-    this.deck = new Deck();
-
-    // Deal 2 hole cards
-    const hole = [
-      this.deck.deal(),
-      this.deck.deal()
-    ];
-
-    // Deal 5 community cards
-    const board = [
-      this.deck.deal(),
-      this.deck.deal(),
-      this.deck.deal(),
-      this.deck.deal(),
-      this.deck.deal()
-    ];
-
-    // Evaluate hand
+    const deck = new Deck();
+    const hole = [deck.deal(), deck.deal()];
+    const board = [deck.deal(), deck.deal(), deck.deal(), deck.deal(), deck.deal()];
     const result = evaluateHand(hole, board);
 
-    // Format cards
-    this.holeCards = hole.map(card => this.formatCardColor(card));
-    this.boardCards = board.map(card => this.formatCardColor(card));
-    this.handResult = `${result.name}! ${result.emoji}`;
+    // Store cards with formatted versions
+    this.holeCards = hole.map(card => ({
+      card,
+      formatted: this.formatCardColor(card)
+    }));
+
+    this.boardCards = board.map(card => ({
+      card,
+      formatted: this.formatCardColor(card)
+    }));
+
+    // Check if player participates (indices 0 or 1 in participatingCards)
+    const playerParticipates = result.participatingCards.some(idx => idx < 2);
+
+    if (!playerParticipates) {
+      this.handResult = {
+        text: `Nothing 🃏`,
+        participatingIndices: result.participatingCards
+      };
+    } else {
+      this.handResult = {
+        text: `${result.name}! ${result.emoji}`,
+        participatingIndices: result.participatingCards
+      };
+    }
   }
 
   /**
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
    */
-  private formatCardColor(card: { rank: string; suit: string }): string {
-    const color = isRedSuit(card.suit as any) ? red : gray;
-    return colorize(`[${formatCard(card as any)}]`, color);
+  private formatCardColor(card: Card): string {
+    const color = isRedSuit(card.suit) ? red : gray;
+    return colorize(`[${formatCard(card)}]`, color);
+  }
+
+  /**
+   * Format card based on participation in best hand
+   * Participating cards: [K♠] (with brackets)
+   * Non-participating cards:  K♠  (spaces instead of brackets)
+   */
+  private formatCardByParticipation(
+    cardData: { card: Card; formatted: string },
+    isParticipating: boolean
+  ): string {
+    if (isParticipating) {
+      return cardData.formatted; // [K♠]
+    } else {
+      // Extract card text from brackets and wrap with spaces
+      const inner = cardData.formatted.match(/\[(.+)\]/)?.[1] || cardData.formatted;
+      // Preserve color codes if present
+      const colorMatch = cardData.formatted.match(/^(\x1b\[\d+m)/);
+      const color = colorMatch ? colorMatch[1] : '';
+      const reset = cardData.formatted.match(/\x1b\[0m$/) ? '\x1b[0m' : '';
+      return ` ${color}${inner}${reset} `;
+    }
   }
 
   protected renderWithData(_data: StdinData, _context: RenderContext): string | null {
-    const handStr = this.holeCards.join(' ');
-    const boardStr = this.boardCards.join(' ');
+    const participatingSet = new Set(this.handResult?.participatingIndices || []);
 
-    return `Hand: ${handStr} | Board: ${boardStr} → ${this.handResult}`;
+    const handStr = this.holeCards
+      .map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx)))
+      .join('');
+
+    const boardStr = this.boardCards
+      .map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2)))
+      .join('');
+
+    const handLabel = colorize('Hand:', gray);
+    const boardLabel = colorize('Board:', gray);
+
+    return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} → ${this.handResult?.text}`;
   }
 }
