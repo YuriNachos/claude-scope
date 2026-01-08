@@ -6,12 +6,17 @@
 
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import type { WidgetStyle } from "../core/style-types.js";
 import { bold, gray, lightGray, red, reset } from "../ui/utils/colors.js";
 import { colorize } from "../ui/utils/formatters.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { Deck } from "./poker/deck.js";
 import { evaluateHand } from "./poker/hand-evaluator.js";
 import { type Card, formatCard, isRedSuit } from "./poker/types.js";
+import { PokerBalancedRenderer } from "./poker/renderers/balanced.js";
+import { PokerCompactVerboseRenderer } from "./poker/renderers/compact-verbose.js";
+import type { PokerRenderer, PokerCardData, PokerRenderData } from "./poker/renderers/types.js";
+import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 
 export class PokerWidget extends StdinDataWidget {
   readonly id = "poker";
@@ -28,6 +33,7 @@ export class PokerWidget extends StdinDataWidget {
   private handResult: { text: string; participatingIndices: number[] } | null = null;
   private lastUpdateTimestamp = 0;
   private readonly THROTTLE_MS = 5000; // 5 seconds
+  private renderer: PokerRenderer = new PokerBalancedRenderer();
 
   /**
    * Generate new poker hand on each update
@@ -76,6 +82,22 @@ export class PokerWidget extends StdinDataWidget {
     this.lastUpdateTimestamp = now;
   }
 
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
+    switch (style) {
+      case "balanced":
+      case "compact":
+      case "playful":
+        this.renderer = new PokerBalancedRenderer();
+        break;
+      case "compact-verbose":
+        this.renderer = new PokerCompactVerboseRenderer();
+        break;
+      default:
+        this.renderer = new PokerBalancedRenderer();
+        break;
+    }
+  }
+
   /**
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
    */
@@ -107,19 +129,40 @@ export class PokerWidget extends StdinDataWidget {
   }
 
   protected renderWithData(_data: StdinData, _context: RenderContext): string | null {
-    const participatingSet = new Set(this.handResult?.participatingIndices || []);
+    const holeCardsData: PokerCardData[] = this.holeCards.map((hc, idx) => ({
+      card: hc.card,
+      isParticipating: (this.handResult?.participatingIndices || []).includes(idx),
+    }));
 
-    const handStr = this.holeCards
-      .map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx)))
-      .join("");
+    const boardCardsData: PokerCardData[] = this.boardCards.map((bc, idx) => ({
+      card: bc.card,
+      isParticipating: (this.handResult?.participatingIndices || []).includes(idx + 2),
+    }));
 
-    const boardStr = this.boardCards
-      .map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2)))
-      .join("");
+    const handResult = this.handResult
+      ? {
+          name: this.getHandName(this.handResult.text),
+          emoji: this.getHandEmoji(this.handResult.text),
+          participatingIndices: this.handResult.participatingIndices,
+        }
+      : null;
 
-    const handLabel = colorize("Hand:", lightGray);
-    const boardLabel = colorize("Board:", lightGray);
+    const renderData: PokerRenderData = {
+      holeCards: holeCardsData,
+      boardCards: boardCardsData,
+      handResult,
+    };
 
-    return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} → ${this.handResult?.text}`;
+    return this.renderer.render(renderData);
+  }
+
+  private getHandName(text: string): string {
+    const match = text.match(/^([^!]+)/);
+    return match ? match[1].trim() : "Nothing";
+  }
+
+  private getHandEmoji(text: string): string {
+    const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/);
+    return match ? match[1] : "🃏";
   }
 }

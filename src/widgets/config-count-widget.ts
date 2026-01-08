@@ -5,7 +5,8 @@
  * Data source: ConfigProvider scans filesystem.
  */
 
-import type { IWidget, RenderContext, StdinData, WidgetStyle } from "../core/types.js";
+import type { IWidget, RenderContext, StdinData } from "../core/types.js";
+import type { WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { ConfigProvider, type ConfigCounts } from "../providers/config-provider.js";
 import { ConfigCountBalancedRenderer } from "./config-count/renderers/balanced.js";
