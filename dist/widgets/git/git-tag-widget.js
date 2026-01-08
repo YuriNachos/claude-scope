@@ -5,9 +5,9 @@
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
  * because it requires async git operations with custom lifecycle management.
  */
-import { createWidgetMetadata } from '../../core/widget-types.js';
-import { createGit } from '../../providers/git-provider.js';
-import { green, gray, reset } from '../../ui/utils/colors.js';
+import { createWidgetMetadata } from "../../core/widget-types.js";
+import { createGit } from "../../providers/git-provider.js";
+import { green, gray, reset } from "../../ui/utils/colors.js";
 /**
  * Widget displaying the latest git tag
  *
@@ -17,8 +17,8 @@ import { green, gray, reset } from '../../ui/utils/colors.js';
  * - Clean separation of concerns
  */
 export class GitTagWidget {
-    id = 'git-tag';
-    metadata = createWidgetMetadata('Git Tag Widget', 'Displays the latest git tag', '1.0.0', 'claude-scope', 1 // Second line
+    id = "git-tag";
+    metadata = createWidgetMetadata("Git Tag Widget", "Displays the latest git tag", "1.0.0", "claude-scope", 1 // Second line
     );
     gitFactory;
     git = null;

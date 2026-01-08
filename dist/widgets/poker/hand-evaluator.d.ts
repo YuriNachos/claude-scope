@@ -1,4 +1,4 @@
-import type { Card, PokerHand } from './types.js';
+import type { Card, PokerHand } from "./types.js";
 /**
  * Evaluate a poker hand from hole cards and community cards
  * @param hole - Player's 2 hole cards

@@ -1,4 +1,4 @@
-import { gray } from '../utils/colors.js';
+import { gray } from "../utils/colors.js";
 export const DEFAULT_THEME = {
     context: {
         low: gray,

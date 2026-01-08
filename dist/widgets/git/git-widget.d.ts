@@ -5,8 +5,8 @@
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
  * because it requires async git operations with custom lifecycle management.
  */
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
-import type { IGit } from '../../providers/git-provider.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
+import type { IGit } from "../../providers/git-provider.js";
 /**
  * Widget displaying git branch information
  *

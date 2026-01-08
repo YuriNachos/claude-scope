@@ -1,7 +1,7 @@
 /**
  * Formatter utilities for displaying data in human-readable formats
  */
-import { TIME, COST_THRESHOLDS, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from '../../constants.js';
+import { TIME, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from "../../constants.js";
 /**
  * Format milliseconds to human-readable duration
  *
@@ -16,7 +16,7 @@ import { TIME, COST_THRESHOLDS, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from
  */
 export function formatDuration(ms) {
     if (ms <= 0)
-        return '0s';
+        return "0s";
     const seconds = Math.floor(ms / TIME.MS_PER_SECOND);
     const hours = Math.floor(seconds / TIME.SECONDS_PER_HOUR);
     const minutes = Math.floor((seconds % TIME.SECONDS_PER_HOUR) / TIME.SECONDS_PER_MINUTE);
@@ -34,37 +34,18 @@ export function formatDuration(ms) {
     else {
         parts.push(`${secs}s`);
     }
-    return parts.join(' ');
+    return parts.join(" ");
 }
 /**
- * Format cost in USD with appropriate precision
+ * Format cost in USD with 2 decimal places
  *
- * - Values < $0.01 (positive): 4 decimal places ($0.0012)
- * - Values >= $0.01: 2 decimal places ($1.23)
- * - Values >= $100: 0 decimal places ($123)
- * - Negative values: 2 decimal places ($-1.23)
+ * Always formats with 2 decimal places for consistency.
  *
  * @param usd - Cost in USD
  * @returns Formatted cost string with $ prefix
  */
 export function formatCostUSD(usd) {
-    const absUsd = Math.abs(usd);
-    if (usd < 0) {
-        // Negative values: 2 decimal places
-        return `$${usd.toFixed(2)}`;
-    }
-    else if (absUsd < COST_THRESHOLDS.SMALL) {
-        // 4 decimal places for very small positive values
-        return `$${usd.toFixed(4)}`;
-    }
-    else if (absUsd < COST_THRESHOLDS.LARGE) {
-        // 2 decimal places for normal values
-        return `$${usd.toFixed(2)}`;
-    }
-    else {
-        // 0 decimal places for large values
-        return `$${Math.floor(usd).toFixed(0)}`;
-    }
+    return `$${usd.toFixed(2)}`;
 }
 /**
  * Create a visual progress bar
@@ -77,7 +58,7 @@ export function progressBar(percent, width = DEFAULTS.PROGRESS_BAR_WIDTH) {
     const clampedPercent = Math.max(0, Math.min(100, percent));
     const filled = Math.round((clampedPercent / 100) * width);
     const empty = width - filled;
-    return '█'.repeat(filled) + '░'.repeat(empty);
+    return "█".repeat(filled) + "░".repeat(empty);
 }
 /**
  * Get color code for context percentage

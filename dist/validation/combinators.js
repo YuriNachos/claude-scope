@@ -1,9 +1,9 @@
-import { success, failure } from './result.js';
+import { success, failure } from "./result.js";
 export function object(shape) {
     return {
         validate(value) {
-            if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-                return failure([], 'Expected object', value);
+            if (typeof value !== "object" || value === null || Array.isArray(value)) {
+                return failure([], "Expected object", value);
             }
             const result = {};
             for (const [key, validator] of Object.entries(shape)) {
@@ -12,13 +12,13 @@ export function object(shape) {
                 if (!validationResult.success) {
                     return {
                         success: false,
-                        error: { ...validationResult.error, path: [key, ...validationResult.error.path] }
+                        error: { ...validationResult.error, path: [key, ...validationResult.error.path] },
                     };
                 }
                 result[key] = validationResult.data;
             }
             return success(result);
-        }
+        },
     };
 }
 export function optional(validator) {
@@ -27,7 +27,7 @@ export function optional(validator) {
             if (value === undefined)
                 return success(undefined);
             return validator.validate(value);
-        }
+        },
     };
 }
 export function nullable(validator) {
@@ -36,7 +36,7 @@ export function nullable(validator) {
             if (value === null)
                 return success(null);
             return validator.validate(value);
-        }
+        },
     };
 }
 export function partial(shape) {

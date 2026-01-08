@@ -4,9 +4,9 @@
  * Displays total lines added/removed during the session
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
-import { StdinDataWidget } from './core/stdin-data-widget.js';
-import type { ILinesColors } from '../ui/theme/types.js';
-import type { RenderContext, StdinData } from '../types.js';
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import type { ILinesColors } from "../ui/theme/types.js";
+import type { RenderContext, StdinData } from "../types.js";
 /**
  * Widget displaying lines added/removed in session
  *

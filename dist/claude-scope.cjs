@@ -112,12 +112,6 @@ var TIME = {
   /** Seconds per hour */
   SECONDS_PER_HOUR: 3600
 };
-var COST_THRESHOLDS = {
-  /** Below this value, show 4 decimal places ($0.0012) */
-  SMALL: 0.01,
-  /** Above this value, show no decimal places ($123) */
-  LARGE: 100
-};
 var DEFAULTS = {
   /** Default separator between widgets */
   SEPARATOR: " ",
@@ -266,13 +260,9 @@ var NativeGit = class {
   }
   async latestTag() {
     try {
-      const { stdout } = await execFileAsync(
-        "git",
-        ["describe", "--tags", "--abbrev=0"],
-        {
-          cwd: this.cwd
-        }
-      );
+      const { stdout } = await execFileAsync("git", ["describe", "--tags", "--abbrev=0"], {
+        cwd: this.cwd
+      });
       return stdout.trim();
     } catch {
       return null;
@@ -458,6 +448,71 @@ var StdinDataWidget = class {
   }
 };
 
+// src/core/style-renderer.ts
+var BaseStyleRenderer = class {
+};
+
+// src/widgets/model/renderers/balanced.ts
+var ModelBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return data.displayName;
+  }
+};
+
+// src/widgets/model/renderers/compact.ts
+var ModelCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return data.displayName.replace(/^Claude /, "");
+  }
+};
+
+// src/widgets/model/renderers/fancy.ts
+var ModelFancyRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const shortName = data.displayName.replace(/^Claude /, "");
+    return `[${shortName}]`;
+  }
+};
+
+// src/widgets/model/renderers/indicator.ts
+var ModelIndicatorRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const shortName = data.displayName.replace(/^Claude /, "");
+    return `\u25CF ${shortName}`;
+  }
+};
+
+// src/widgets/model/renderers/labeled.ts
+var ModelLabeledRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const shortName = data.displayName.replace(/^Claude /, "");
+    return `Model: ${shortName}`;
+  }
+};
+
+// src/widgets/model/renderers/playful.ts
+var ModelPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const shortName = data.displayName.replace(/^Claude /, "");
+    return `\u{1F916} ${shortName}`;
+  }
+};
+
+// src/widgets/model/renderers/symbolic.ts
+var ModelSymbolicRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const shortName = data.displayName.replace(/^Claude /, "");
+    return `\u25C6 ${shortName}`;
+  }
+};
+
+// src/widgets/model/renderers/technical.ts
+var ModelTechnicalRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return data.id;
+  }
+};
+
 // src/widgets/model-widget.ts
 var ModelWidget = class extends StdinDataWidget {
   id = "model";
@@ -469,8 +524,56 @@ var ModelWidget = class extends StdinDataWidget {
     0
     // First line
   );
-  renderWithData(data, context) {
-    return data.model.display_name;
+  renderer = new ModelBalancedRenderer();
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new ModelBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new ModelCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new ModelPlayfulRenderer();
+        break;
+      case "technical":
+        this.renderer = new ModelTechnicalRenderer();
+        break;
+      case "symbolic":
+        this.renderer = new ModelSymbolicRenderer();
+        break;
+      case "labeled":
+        this.renderer = new ModelLabeledRenderer();
+        break;
+      case "indicator":
+        this.renderer = new ModelIndicatorRenderer();
+        break;
+      case "fancy":
+        this.renderer = new ModelFancyRenderer();
+        break;
+      default:
+        this.renderer = new ModelBalancedRenderer();
+    }
+  }
+  renderWithData(data, _context) {
+    const renderData = {
+      displayName: data.model.display_name,
+      id: data.model.id
+    };
+    return this.renderer.render(renderData);
+  }
+};
+
+// src/ui/theme/default-theme.ts
+var DEFAULT_THEME = {
+  context: {
+    low: gray,
+    medium: gray,
+    high: gray
+  },
+  lines: {
+    added: gray,
+    removed: gray
   }
 };
 
@@ -495,37 +598,92 @@ function formatDuration(ms) {
   return parts.join(" ");
 }
 function formatCostUSD(usd) {
-  const absUsd = Math.abs(usd);
-  if (usd < 0) {
-    return `$${usd.toFixed(2)}`;
-  } else if (absUsd < COST_THRESHOLDS.SMALL) {
-    return `$${usd.toFixed(4)}`;
-  } else if (absUsd < COST_THRESHOLDS.LARGE) {
-    return `$${usd.toFixed(2)}`;
-  } else {
-    return `$${Math.floor(usd).toFixed(0)}`;
-  }
-}
-function progressBar(percent, width = DEFAULTS.PROGRESS_BAR_WIDTH) {
-  const clampedPercent = Math.max(0, Math.min(100, percent));
-  const filled = Math.round(clampedPercent / 100 * width);
-  const empty = width - filled;
-  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
+  return `$${usd.toFixed(2)}`;
 }
 function colorize(text, color) {
   return `${color}${text}${ANSI_COLORS.RESET}`;
 }
 
-// src/ui/theme/default-theme.ts
-var DEFAULT_THEME = {
-  context: {
-    low: gray,
-    medium: gray,
-    high: gray
-  },
-  lines: {
-    added: gray,
-    removed: gray
+// src/ui/utils/style-utils.ts
+function withIndicator(value) {
+  return `\u25CF ${value}`;
+}
+function withAngleBrackets(value) {
+  return `\u27E8${value}\u27E9`;
+}
+function formatTokens(n) {
+  if (n < 1e3) return n.toString();
+  return `${Math.floor(n / 1e3)}K`;
+}
+function progressBar(percent, width = 10) {
+  const clamped = Math.max(0, Math.min(100, percent));
+  const filled = Math.round(clamped / 100 * width);
+  const empty = width - filled;
+  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
+}
+
+// src/widgets/context/renderers/balanced.ts
+var ContextBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const bar = progressBar(data.percent, 10);
+    return `[${bar}] ${data.percent}%`;
+  }
+};
+
+// src/widgets/context/renderers/compact.ts
+var ContextCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `${data.percent}%`;
+  }
+};
+
+// src/widgets/context/renderers/compact-verbose.ts
+var ContextCompactVerboseRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const usedK = formatTokens(data.used);
+    const maxK = formatTokens(data.contextWindowSize);
+    return `${data.percent}% (${usedK}/${maxK})`;
+  }
+};
+
+// src/widgets/context/renderers/fancy.ts
+var ContextFancyRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withAngleBrackets(`${data.percent}%`);
+  }
+};
+
+// src/widgets/context/renderers/indicator.ts
+var ContextIndicatorRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withIndicator(`${data.percent}%`);
+  }
+};
+
+// src/widgets/context/renderers/playful.ts
+var ContextPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const bar = progressBar(data.percent, 10);
+    return `\u{1F9E0} [${bar}] ${data.percent}%`;
+  }
+};
+
+// src/widgets/context/renderers/symbolic.ts
+var ContextSymbolicRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const filled = Math.round(data.percent / 100 * 5);
+    const empty = 5 - filled;
+    const bar = "\u25AE".repeat(filled) + "\u25AF".repeat(empty);
+    return `${bar} ${data.percent}%`;
+  }
+};
+
+// src/widgets/context/renderers/verbose.ts
+var ContextVerboseRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const usedFormatted = data.used.toLocaleString();
+    const maxFormatted = data.contextWindowSize.toLocaleString();
+    return `${usedFormatted} / ${maxFormatted} tokens (${data.percent}%)`;
   }
 };
 
@@ -541,18 +699,55 @@ var ContextWidget = class extends StdinDataWidget {
     // First line
   );
   colors;
+  renderer;
   constructor(colors) {
     super();
     this.colors = colors ?? DEFAULT_THEME.context;
+    this.renderer = new ContextBalancedRenderer();
   }
-  renderWithData(data, context) {
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new ContextBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new ContextCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new ContextPlayfulRenderer();
+        break;
+      case "verbose":
+        this.renderer = new ContextVerboseRenderer();
+        break;
+      case "symbolic":
+        this.renderer = new ContextSymbolicRenderer();
+        break;
+      case "compact-verbose":
+        this.renderer = new ContextCompactVerboseRenderer();
+        break;
+      case "indicator":
+        this.renderer = new ContextIndicatorRenderer();
+        break;
+      case "fancy":
+        this.renderer = new ContextFancyRenderer();
+        break;
+      default:
+        this.renderer = new ContextBalancedRenderer();
+    }
+  }
+  renderWithData(data, _context) {
     const { current_usage, context_window_size } = data.context_window;
     if (!current_usage) return null;
     const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
     const percent = Math.round(used / context_window_size * 100);
-    const bar = progressBar(percent, DEFAULTS.PROGRESS_BAR_WIDTH);
+    const renderData = {
+      used,
+      contextWindowSize: context_window_size,
+      percent
+    };
+    const output = this.renderer.render(renderData);
     const color = this.getContextColor(percent);
-    return colorize(`[${bar}] ${percent}%`, color);
+    return colorize(output, color);
   }
   getContextColor(percent) {
     const clampedPercent = Math.max(0, Math.min(100, percent));
@@ -942,10 +1137,10 @@ function getRankValue(rank) {
     "8": 8,
     "9": 9,
     "10": 10,
-    "J": 11,
-    "Q": 12,
-    "K": 13,
-    "A": 14
+    J: 11,
+    Q: 12,
+    K: 13,
+    A: 14
   };
   return values[rank];
 }
@@ -1246,7 +1441,11 @@ function evaluateHand(hole, board) {
     const sfHighCard = getStraightFlushHighCard(allCards, flushSuit);
     if (sfHighCard === 14) {
       const participatingCards = getStraightFlushIndices(allCards, 14, flushSuit);
-      return { rank: 10 /* RoyalFlush */, ...HAND_DISPLAY[10 /* RoyalFlush */], participatingCards };
+      return {
+        rank: 10 /* RoyalFlush */,
+        ...HAND_DISPLAY[10 /* RoyalFlush */],
+        participatingCards
+      };
     }
   }
   if (flush) {
@@ -1254,13 +1453,21 @@ function evaluateHand(hole, board) {
     const sfHighCard = getStraightFlushHighCard(allCards, flushSuit);
     if (sfHighCard !== null) {
       const participatingCards = getStraightFlushIndices(allCards, sfHighCard, flushSuit);
-      return { rank: 9 /* StraightFlush */, ...HAND_DISPLAY[9 /* StraightFlush */], participatingCards };
+      return {
+        rank: 9 /* StraightFlush */,
+        ...HAND_DISPLAY[9 /* StraightFlush */],
+        participatingCards
+      };
     }
   }
   if (maxCount === 4) {
     const rank = getMostCommonRank(allCards);
     const participatingCards = findCardsOfRank(allCards, rank);
-    return { rank: 8 /* FourOfAKind */, ...HAND_DISPLAY[8 /* FourOfAKind */], participatingCards };
+    return {
+      rank: 8 /* FourOfAKind */,
+      ...HAND_DISPLAY[8 /* FourOfAKind */],
+      participatingCards
+    };
   }
   if (maxCount === 3 && pairCount >= 1) {
     const participatingCards = getFullHouseIndices(allCards);
@@ -1279,7 +1486,11 @@ function evaluateHand(hole, board) {
   if (maxCount === 3) {
     const rank = getMostCommonRank(allCards);
     const participatingCards = findCardsOfRank(allCards, rank);
-    return { rank: 4 /* ThreeOfAKind */, ...HAND_DISPLAY[4 /* ThreeOfAKind */], participatingCards };
+    return {
+      rank: 4 /* ThreeOfAKind */,
+      ...HAND_DISPLAY[4 /* ThreeOfAKind */],
+      participatingCards
+    };
   }
   if (pairCount >= 2) {
     const [rank1, rank2] = getTwoPairRanks(allCards);
@@ -1294,7 +1505,11 @@ function evaluateHand(hole, board) {
     return { rank: 2 /* OnePair */, ...HAND_DISPLAY[2 /* OnePair */], participatingCards };
   }
   const highestIdx = getHighestCardIndex(allCards);
-  return { rank: 1 /* HighCard */, ...HAND_DISPLAY[1 /* HighCard */], participatingCards: [highestIdx] };
+  return {
+    rank: 1 /* HighCard */,
+    ...HAND_DISPLAY[1 /* HighCard */],
+    participatingCards: [highestIdx]
+  };
 }
 
 // src/widgets/poker-widget.ts
@@ -1314,9 +1529,6 @@ var PokerWidget = class extends StdinDataWidget {
   lastUpdateTimestamp = 0;
   THROTTLE_MS = 5e3;
   // 5 seconds
-  constructor() {
-    super();
-  }
   /**
    * Generate new poker hand on each update
    */
@@ -1558,9 +1770,7 @@ var StdinProvider = class {
     }
     const result = StdinDataSchema.validate(data);
     if (!result.success) {
-      throw new StdinValidationError(
-        `Validation failed: ${formatError(result.error)}`
-      );
+      throw new StdinValidationError(`Validation failed: ${formatError(result.error)}`);
     }
     return result.data;
   }
@@ -1618,10 +1828,10 @@ async function main() {
     for (const widget of registry.getAll()) {
       await widget.update(stdinData);
     }
-    const lines = await renderer.render(
-      registry.getEnabledWidgets(),
-      { width: 80, timestamp: Date.now() }
-    );
+    const lines = await renderer.render(registry.getEnabledWidgets(), {
+      width: 80,
+      timestamp: Date.now()
+    });
     return lines.join("\n");
   } catch (error) {
     const fallback = await tryGitFallback();

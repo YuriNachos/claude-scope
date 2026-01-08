@@ -4,10 +4,10 @@
  * Displays total lines added/removed during the session
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
-import { StdinDataWidget } from './core/stdin-data-widget.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
-import { colorize } from '../ui/utils/formatters.js';
-import { DEFAULT_THEME } from '../ui/theme/default-theme.js';
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import { createWidgetMetadata } from "../core/widget-types.js";
+import { colorize } from "../ui/utils/formatters.js";
+import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
 /**
  * Widget displaying lines added/removed in session
  *
@@ -15,8 +15,8 @@ import { DEFAULT_THEME } from '../ui/theme/default-theme.js';
  * Defaults to "+0/-0" when cost data is unavailable.
  */
 export class LinesWidget extends StdinDataWidget {
-    id = 'lines';
-    metadata = createWidgetMetadata('Lines', 'Displays lines added/removed in session', '1.0.0', 'claude-scope', 0 // First line
+    id = "lines";
+    metadata = createWidgetMetadata("Lines", "Displays lines added/removed in session", "1.0.0", "claude-scope", 0 // First line
     );
     colors;
     constructor(colors) {

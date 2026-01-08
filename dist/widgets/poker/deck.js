@@ -1,9 +1,20 @@
-import { randomInt } from 'node:crypto';
-import { Suit, Rank } from './types.js';
+import { randomInt } from "node:crypto";
+import { Suit, Rank } from "./types.js";
 const ALL_SUITS = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs];
 const ALL_RANKS = [
-    Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven,
-    Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack, Rank.Queen, Rank.King, Rank.Ace
+    Rank.Two,
+    Rank.Three,
+    Rank.Four,
+    Rank.Five,
+    Rank.Six,
+    Rank.Seven,
+    Rank.Eight,
+    Rank.Nine,
+    Rank.Ten,
+    Rank.Jack,
+    Rank.Queen,
+    Rank.King,
+    Rank.Ace,
 ];
 /**
  * Standard 52-card deck with shuffling and dealing
@@ -41,7 +52,7 @@ export class Deck {
      */
     deal() {
         if (this.cards.length === 0) {
-            throw new Error('Deck is empty');
+            throw new Error("Deck is empty");
         }
         return this.cards.pop();
     }

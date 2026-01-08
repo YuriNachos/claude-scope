@@ -6,8 +6,8 @@
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
  * because it requires async git operations with custom lifecycle management.
  */
-import { createWidgetMetadata } from '../../core/widget-types.js';
-import { createGit } from '../../providers/git-provider.js';
+import { createWidgetMetadata } from "../../core/widget-types.js";
+import { createGit } from "../../providers/git-provider.js";
 /**
  * Widget displaying git diff statistics
  *
@@ -17,8 +17,8 @@ import { createGit } from '../../providers/git-provider.js';
  * - Clean separation of concerns
  */
 export class GitChangesWidget {
-    id = 'git-changes';
-    metadata = createWidgetMetadata('Git Changes', 'Displays git diff statistics', '1.0.0', 'claude-scope', 0 // First line
+    id = "git-changes";
+    metadata = createWidgetMetadata("Git Changes", "Displays git diff statistics", "1.0.0", "claude-scope", 0 // First line
     );
     gitFactory;
     git = null;
@@ -48,15 +48,15 @@ export class GitChangesWidget {
         }
         let changes;
         try {
-            const summary = await this.git.diffSummary(['--shortstat']);
+            const summary = await this.git.diffSummary(["--shortstat"]);
             let insertions = 0;
             let deletions = 0;
             if (summary.files && summary.files.length > 0) {
                 for (const file of summary.files) {
-                    if (typeof file.insertions === 'number') {
+                    if (typeof file.insertions === "number") {
                         insertions += file.insertions;
                     }
-                    if (typeof file.deletions === 'number') {
+                    if (typeof file.deletions === "number") {
                         deletions += file.deletions;
                     }
                 }
@@ -80,7 +80,7 @@ export class GitChangesWidget {
             parts.push(`+${changes.insertions}`);
         if (changes.deletions > 0)
             parts.push(`-${changes.deletions}`);
-        return parts.join(',');
+        return parts.join(",");
     }
     isEnabled() {
         return this.enabled;

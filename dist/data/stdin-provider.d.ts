@@ -2,7 +2,7 @@
  * Stdin provider for parsing JSON data from stdin
  * Parses and validates Claude Code session data
  */
-import type { StdinData } from '../types.js';
+import type { StdinData } from "../types.js";
 /**
  * Error thrown when stdin parsing fails
  */

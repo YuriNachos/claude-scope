@@ -13,15 +13,6 @@ export const TIME = {
     SECONDS_PER_HOUR: 3600,
 };
 /**
- * Cost formatting thresholds
- */
-export const COST_THRESHOLDS = {
-    /** Below this value, show 4 decimal places ($0.0012) */
-    SMALL: 0.01,
-    /** Above this value, show no decimal places ($123) */
-    LARGE: 100,
-};
-/**
  * Context usage color thresholds (percentages)
  */
 export const CONTEXT_THRESHOLDS = {
@@ -35,7 +26,7 @@ export const CONTEXT_THRESHOLDS = {
  */
 export const DEFAULTS = {
     /** Default separator between widgets */
-    SEPARATOR: ' ',
+    SEPARATOR: " ",
     /** Default width for progress bars in characters */
     PROGRESS_BAR_WIDTH: 20,
 };
@@ -44,13 +35,13 @@ export const DEFAULTS = {
  */
 export const ANSI_COLORS = {
     /** Green color */
-    GREEN: '\x1b[32m',
+    GREEN: "\x1b[32m",
     /** Yellow color */
-    YELLOW: '\x1b[33m',
+    YELLOW: "\x1b[33m",
     /** Red color */
-    RED: '\x1b[31m',
+    RED: "\x1b[31m",
     /** Reset color */
-    RESET: '\x1b[0m',
+    RESET: "\x1b[0m",
 };
 // Re-export for backward compatibility
 export const DEFAULT_PROGRESS_BAR_WIDTH = DEFAULTS.PROGRESS_BAR_WIDTH;

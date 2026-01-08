@@ -15,12 +15,9 @@
  */
 export declare function formatDuration(ms: number): string;
 /**
- * Format cost in USD with appropriate precision
+ * Format cost in USD with 2 decimal places
  *
- * - Values < $0.01 (positive): 4 decimal places ($0.0012)
- * - Values >= $0.01: 2 decimal places ($1.23)
- * - Values >= $100: 0 decimal places ($123)
- * - Negative values: 2 decimal places ($-1.23)
+ * Always formats with 2 decimal places for consistency.
  *
  * @param usd - Cost in USD
  * @returns Formatted cost string with $ prefix

@@ -3,8 +3,8 @@
  *
  * Displays random Texas Hold'em hands for entertainment
  */
-import { StdinDataWidget } from './core/stdin-data-widget.js';
-import type { RenderContext, StdinData } from '../types.js';
+import type { RenderContext, StdinData } from "../types.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
 export declare class PokerWidget extends StdinDataWidget {
     readonly id = "poker";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
@@ -13,7 +13,6 @@ export declare class PokerWidget extends StdinDataWidget {
     private handResult;
     private lastUpdateTimestamp;
     private readonly THROTTLE_MS;
-    constructor();
     /**
      * Generate new poker hand on each update
      */

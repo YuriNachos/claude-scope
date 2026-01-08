@@ -1,18 +1,18 @@
-import { HandRank, getRankValue } from './types.js';
+import { HandRank, getRankValue } from "./types.js";
 /**
  * Hand display names with emojis
  */
 const HAND_DISPLAY = {
-    [HandRank.RoyalFlush]: { name: 'Royal Flush', emoji: '🏆' },
-    [HandRank.StraightFlush]: { name: 'Straight Flush', emoji: '🔥' },
-    [HandRank.FourOfAKind]: { name: 'Four of a Kind', emoji: '💎' },
-    [HandRank.FullHouse]: { name: 'Full House', emoji: '🏠' },
-    [HandRank.Flush]: { name: 'Flush', emoji: '💧' },
-    [HandRank.Straight]: { name: 'Straight', emoji: '📈' },
-    [HandRank.ThreeOfAKind]: { name: 'Three of a Kind', emoji: '🎯' },
-    [HandRank.TwoPair]: { name: 'Two Pair', emoji: '✌️' },
-    [HandRank.OnePair]: { name: 'One Pair', emoji: '👍' },
-    [HandRank.HighCard]: { name: 'High Card', emoji: '🃏' },
+    [HandRank.RoyalFlush]: { name: "Royal Flush", emoji: "🏆" },
+    [HandRank.StraightFlush]: { name: "Straight Flush", emoji: "🔥" },
+    [HandRank.FourOfAKind]: { name: "Four of a Kind", emoji: "💎" },
+    [HandRank.FullHouse]: { name: "Full House", emoji: "🏠" },
+    [HandRank.Flush]: { name: "Flush", emoji: "💧" },
+    [HandRank.Straight]: { name: "Straight", emoji: "📈" },
+    [HandRank.ThreeOfAKind]: { name: "Three of a Kind", emoji: "🎯" },
+    [HandRank.TwoPair]: { name: "Two Pair", emoji: "✌️" },
+    [HandRank.OnePair]: { name: "One Pair", emoji: "👍" },
+    [HandRank.HighCard]: { name: "High Card", emoji: "🃏" },
 };
 /**
  * Count occurrences of each rank in cards
@@ -96,8 +96,10 @@ function getStraightIndices(cards, highCard) {
         const next2 = sortedValues[i + 2];
         const next3 = sortedValues[i + 3];
         const next4 = sortedValues[i + 4];
-        if (current - next1 === 1 && current - next2 === 2 &&
-            current - next3 === 3 && current - next4 === 4) {
+        if (current - next1 === 1 &&
+            current - next2 === 2 &&
+            current - next3 === 3 &&
+            current - next4 === 4) {
             if (current === highCard) {
                 // Found the straight, get one card index for each rank
                 const indices = [];
@@ -117,14 +119,14 @@ function getStraightIndices(cards, highCard) {
  * Returns the high card if found, null otherwise
  */
 function getStraightFlushHighCard(cards, suit) {
-    const suitCards = cards.filter(c => c.suit === suit);
+    const suitCards = cards.filter((c) => c.suit === suit);
     return getStraightHighCard(suitCards);
 }
 /**
  * Get indices for a straight flush with the given high card and suit
  */
 function getStraightFlushIndices(cards, highCard, suit) {
-    const suitCards = cards.filter(c => c.suit === suit);
+    const suitCards = cards.filter((c) => c.suit === suit);
     const suitCardIndices = [];
     // Map filtered cards back to original indices
     const indexMap = new Map();
@@ -136,7 +138,7 @@ function getStraightFlushIndices(cards, highCard, suit) {
     }
     const indices = getStraightIndices(suitCardIndices, highCard);
     // Map back to original indices
-    return indices.map(idx => indexMap.get(idx));
+    return indices.map((idx) => indexMap.get(idx));
 }
 /**
  * Get indices for full house (3 of a kind + pair)
@@ -208,8 +210,10 @@ function getStraightHighCard(cards) {
         const next2 = sortedValues[i + 2];
         const next3 = sortedValues[i + 3];
         const next4 = sortedValues[i + 4];
-        if (current - next1 === 1 && current - next2 === 2 &&
-            current - next3 === 3 && current - next4 === 4) {
+        if (current - next1 === 1 &&
+            current - next2 === 2 &&
+            current - next3 === 3 &&
+            current - next4 === 4) {
             return current;
         }
     }
@@ -303,7 +307,11 @@ export function evaluateHand(hole, board) {
         const sfHighCard = getStraightFlushHighCard(allCards, flushSuit);
         if (sfHighCard === 14) {
             const participatingCards = getStraightFlushIndices(allCards, 14, flushSuit);
-            return { rank: HandRank.RoyalFlush, ...HAND_DISPLAY[HandRank.RoyalFlush], participatingCards };
+            return {
+                rank: HandRank.RoyalFlush,
+                ...HAND_DISPLAY[HandRank.RoyalFlush],
+                participatingCards,
+            };
         }
     }
     // Straight Flush
@@ -312,14 +320,22 @@ export function evaluateHand(hole, board) {
         const sfHighCard = getStraightFlushHighCard(allCards, flushSuit);
         if (sfHighCard !== null) {
             const participatingCards = getStraightFlushIndices(allCards, sfHighCard, flushSuit);
-            return { rank: HandRank.StraightFlush, ...HAND_DISPLAY[HandRank.StraightFlush], participatingCards };
+            return {
+                rank: HandRank.StraightFlush,
+                ...HAND_DISPLAY[HandRank.StraightFlush],
+                participatingCards,
+            };
         }
     }
     // Four of a Kind
     if (maxCount === 4) {
         const rank = getMostCommonRank(allCards);
         const participatingCards = findCardsOfRank(allCards, rank);
-        return { rank: HandRank.FourOfAKind, ...HAND_DISPLAY[HandRank.FourOfAKind], participatingCards };
+        return {
+            rank: HandRank.FourOfAKind,
+            ...HAND_DISPLAY[HandRank.FourOfAKind],
+            participatingCards,
+        };
     }
     // Full House (3 of a kind + pair)
     if (maxCount === 3 && pairCount >= 1) {
@@ -342,7 +358,11 @@ export function evaluateHand(hole, board) {
     if (maxCount === 3) {
         const rank = getMostCommonRank(allCards);
         const participatingCards = findCardsOfRank(allCards, rank);
-        return { rank: HandRank.ThreeOfAKind, ...HAND_DISPLAY[HandRank.ThreeOfAKind], participatingCards };
+        return {
+            rank: HandRank.ThreeOfAKind,
+            ...HAND_DISPLAY[HandRank.ThreeOfAKind],
+            participatingCards,
+        };
     }
     // Two Pair
     if (pairCount >= 2) {
@@ -360,6 +380,10 @@ export function evaluateHand(hole, board) {
     }
     // High Card (weakest hand)
     const highestIdx = getHighestCardIndex(allCards);
-    return { rank: HandRank.HighCard, ...HAND_DISPLAY[HandRank.HighCard], participatingCards: [highestIdx] };
+    return {
+        rank: HandRank.HighCard,
+        ...HAND_DISPLAY[HandRank.HighCard],
+        participatingCards: [highestIdx],
+    };
 }
 //# sourceMappingURL=hand-evaluator.js.map

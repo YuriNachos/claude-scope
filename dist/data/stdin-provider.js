@@ -2,15 +2,15 @@
  * Stdin provider for parsing JSON data from stdin
  * Parses and validates Claude Code session data
  */
-import { StdinDataSchema } from '../schemas/stdin-schema.js';
-import { formatError } from '../validation/result.js';
+import { StdinDataSchema } from "../schemas/stdin-schema.js";
+import { formatError } from "../validation/result.js";
 /**
  * Error thrown when stdin parsing fails
  */
 export class StdinParseError extends Error {
     constructor(message) {
         super(message);
-        this.name = 'StdinParseError';
+        this.name = "StdinParseError";
     }
 }
 /**
@@ -19,7 +19,7 @@ export class StdinParseError extends Error {
 export class StdinValidationError extends Error {
     constructor(message) {
         super(message);
-        this.name = 'StdinValidationError';
+        this.name = "StdinValidationError";
     }
 }
 /**
@@ -36,7 +36,7 @@ export class StdinProvider {
     async parse(input) {
         // Check for empty input
         if (!input || input.trim().length === 0) {
-            throw new StdinParseError('stdin data is empty');
+            throw new StdinParseError("stdin data is empty");
         }
         // Parse JSON
         let data;

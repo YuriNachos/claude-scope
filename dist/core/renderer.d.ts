@@ -2,8 +2,8 @@
  * Unified rendering engine with error boundaries
  * Combines widget outputs into statusline
  */
-import type { IWidget } from './types.js';
-import type { RenderContext } from '../types.js';
+import type { IWidget } from "./types.js";
+import type { RenderContext } from "../types.js";
 /**
  * Renderer configuration options
  */

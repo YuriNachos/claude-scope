@@ -4,8 +4,8 @@
  * Uses native Node.js child_process to execute git commands,
  * avoiding external dependencies like simple-git.
  */
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 /**
  * Native git implementation using child_process
@@ -20,7 +20,7 @@ export class NativeGit {
     }
     async status() {
         try {
-            const { stdout } = await execFileAsync('git', ['status', '--branch', '--short'], {
+            const { stdout } = await execFileAsync("git", ["status", "--branch", "--short"], {
                 cwd: this.cwd,
             });
             // Parse output like: "## main" or "## feature-branch"
@@ -34,12 +34,12 @@ export class NativeGit {
         }
     }
     async diffSummary(options) {
-        const args = ['diff', '--shortstat'];
+        const args = ["diff", "--shortstat"];
         if (options) {
             args.push(...options);
         }
         try {
-            const { stdout } = await execFileAsync('git', args, {
+            const { stdout } = await execFileAsync("git", args, {
                 cwd: this.cwd,
             });
             // Parse output like: " 5 file(s) changed, 12 insertions(+), 3 deletions(-)"
@@ -50,9 +50,7 @@ export class NativeGit {
             const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
             // Return a single "file" entry representing total changes
             // This matches the simple-git behavior we had before
-            const files = insertions > 0 || deletions > 0
-                ? [{ file: '(total)', insertions, deletions }]
-                : [];
+            const files = insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
             return { files };
         }
         catch {
@@ -62,7 +60,7 @@ export class NativeGit {
     }
     async latestTag() {
         try {
-            const { stdout } = await execFileAsync('git', ['describe', '--tags', '--abbrev=0'], {
+            const { stdout } = await execFileAsync("git", ["describe", "--tags", "--abbrev=0"], {
                 cwd: this.cwd,
             });
             return stdout.trim();

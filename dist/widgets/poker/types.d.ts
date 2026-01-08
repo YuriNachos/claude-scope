@@ -1,7 +1,7 @@
 /**
  * Suit types for standard 52-card deck
  */
-export type Suit = 'spades' | 'hearts' | 'diamonds' | 'clubs';
+export type Suit = "spades" | "hearts" | "diamonds" | "clubs";
 /**
  * Suit enum for type-safe suit values
  */
@@ -26,7 +26,7 @@ export declare function isRedSuit(suit: Suit): boolean;
 /**
  * Rank types for standard 52-card deck
  */
-export type Rank = '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | '10' | 'J' | 'Q' | 'K' | 'A';
+export type Rank = "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K" | "A";
 /**
  * Rank enum for type-safe rank values
  */

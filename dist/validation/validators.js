@@ -1,20 +1,20 @@
-import { success, failure } from './result.js';
+import { success, failure } from "./result.js";
 export function string() {
     return {
         validate(value) {
-            if (typeof value === 'string')
+            if (typeof value === "string")
                 return success(value);
-            return failure([], 'Expected string', value);
-        }
+            return failure([], "Expected string", value);
+        },
     };
 }
 export function number() {
     return {
         validate(value) {
-            if (typeof value === 'number' && !Number.isNaN(value))
+            if (typeof value === "number" && !Number.isNaN(value))
                 return success(value);
-            return failure([], 'Expected number', value);
-        }
+            return failure([], "Expected number", value);
+        },
     };
 }
 export function literal(expected) {
@@ -23,7 +23,7 @@ export function literal(expected) {
             if (value === expected)
                 return success(expected);
             return failure([], `Expected '${expected}'`, value);
-        }
+        },
     };
 }
 export function nullValidator() {
@@ -31,11 +31,15 @@ export function nullValidator() {
         validate(value) {
             if (value === null)
                 return success(null);
-            return failure([], 'Expected null', value);
-        }
+            return failure([], "Expected null", value);
+        },
     };
 }
 export function unknown() {
-    return { validate(value) { return success(value); } };
+    return {
+        validate(value) {
+            return success(value);
+        },
+    };
 }
 //# sourceMappingURL=validators.js.map

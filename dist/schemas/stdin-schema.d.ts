@@ -2,7 +2,7 @@
  * Runtime type-safe schema for Claude Code stdin data
  * Custom validation system (no external dependencies)
  */
-import type { InferValidator } from '../validation/core.js';
+import type { InferValidator } from "../validation/core.js";
 export declare const ContextUsageSchema: import("../validation/core.js").Validator<{
     input_tokens: number;
     output_tokens: number;

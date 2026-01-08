@@ -58,7 +58,7 @@ export class WidgetRegistry {
      * Get only enabled widgets
      */
     getEnabledWidgets() {
-        return this.getAll().filter(w => w.isEnabled());
+        return this.getAll().filter((w) => w.isEnabled());
     }
     /**
      * Clear all widgets

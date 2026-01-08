@@ -3,20 +3,20 @@
  * Claude Scope - Claude Code statusline plugin
  * Entry point
  */
-import { WidgetRegistry } from './core/widget-registry.js';
-import { Renderer } from './core/renderer.js';
-import { GitWidget } from './widgets/git/git-widget.js';
-import { GitTagWidget } from './widgets/git/git-tag-widget.js';
-import { ModelWidget } from './widgets/model-widget.js';
-import { ContextWidget } from './widgets/context-widget.js';
-import { CostWidget } from './widgets/cost-widget.js';
-import { LinesWidget } from './widgets/lines-widget.js';
-import { DurationWidget } from './widgets/duration-widget.js';
-import { GitChangesWidget } from './widgets/git/git-changes-widget.js';
-import { ConfigCountWidget } from './widgets/config-count-widget.js';
-import { PokerWidget } from './widgets/poker-widget.js';
-import { EmptyLineWidget } from './widgets/empty-line-widget.js';
-import { StdinProvider } from './data/stdin-provider.js';
+import { WidgetRegistry } from "./core/widget-registry.js";
+import { Renderer } from "./core/renderer.js";
+import { GitWidget } from "./widgets/git/git-widget.js";
+import { GitTagWidget } from "./widgets/git/git-tag-widget.js";
+import { ModelWidget } from "./widgets/model-widget.js";
+import { ContextWidget } from "./widgets/context-widget.js";
+import { CostWidget } from "./widgets/cost-widget.js";
+import { LinesWidget } from "./widgets/lines-widget.js";
+import { DurationWidget } from "./widgets/duration-widget.js";
+import { GitChangesWidget } from "./widgets/git/git-changes-widget.js";
+import { ConfigCountWidget } from "./widgets/config-count-widget.js";
+import { PokerWidget } from "./widgets/poker-widget.js";
+import { EmptyLineWidget } from "./widgets/empty-line-widget.js";
+import { StdinProvider } from "./data/stdin-provider.js";
 /**
  * Read stdin as string
  */
@@ -25,7 +25,7 @@ async function readStdin() {
     for await (const chunk of process.stdin) {
         chunks.push(chunk);
     }
-    return Buffer.concat(chunks).toString('utf8');
+    return Buffer.concat(chunks).toString("utf8");
 }
 /**
  * Main entry point
@@ -58,20 +58,23 @@ export async function main() {
         await registry.register(new EmptyLineWidget());
         // Create renderer with error handling configuration
         const renderer = new Renderer({
-            separator: ' │ ',
+            separator: " │ ",
             onError: (error, widget) => {
                 // Silently ignore widget errors - they return null
             },
-            showErrors: false
+            showErrors: false,
         });
         // Update all widgets with data
         for (const widget of registry.getAll()) {
             await widget.update(stdinData);
         }
         // Render (now returns array of lines)
-        const lines = await renderer.render(registry.getEnabledWidgets(), { width: 80, timestamp: Date.now() });
+        const lines = await renderer.render(registry.getEnabledWidgets(), {
+            width: 80,
+            timestamp: Date.now(),
+        });
         // Join with newline
-        return lines.join('\n');
+        return lines.join("\n");
     }
     catch (error) {
         // Try to show at least git info on error
@@ -87,20 +90,22 @@ async function tryGitFallback() {
         const cwd = process.cwd();
         const widget = new GitWidget();
         await widget.initialize({ config: {} });
-        await widget.update({ cwd, session_id: 'fallback' });
+        await widget.update({ cwd, session_id: "fallback" });
         const result = await widget.render({ width: 80, timestamp: Date.now() });
-        return result || '';
+        return result || "";
     }
     catch {
-        return '';
+        return "";
     }
 }
 // Run when executed (works with both direct node and npx)
-main().then((output) => {
+main()
+    .then((output) => {
     if (output) {
         console.log(output);
     }
-}).catch(() => {
+})
+    .catch(() => {
     // Silently fail - return empty status line
     process.exit(0);
 });

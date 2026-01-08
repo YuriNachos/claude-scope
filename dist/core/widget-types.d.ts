@@ -1,7 +1,7 @@
 /**
  * Widget type utilities and helpers
  */
-import type { IWidgetMetadata, IWidget } from './types.js';
+import type { IWidgetMetadata, IWidget } from "./types.js";
 /**
  * Create widget metadata with defaults
  *

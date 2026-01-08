@@ -4,8 +4,8 @@
  * Displays Claude Code configuration counts on second statusline line.
  * Data source: ConfigProvider scans filesystem.
  */
-import { createWidgetMetadata } from '../core/widget-types.js';
-import { ConfigProvider } from '../providers/config-provider.js';
+import { createWidgetMetadata } from "../core/widget-types.js";
+import { ConfigProvider } from "../providers/config-provider.js";
 /**
  * Widget displaying configuration counts
  *
@@ -14,8 +14,8 @@ import { ConfigProvider } from '../providers/config-provider.js';
  * Hides if all counts are zero.
  */
 export class ConfigCountWidget {
-    id = 'config-count';
-    metadata = createWidgetMetadata('Config Count', 'Displays Claude Code configuration counts', '1.0.0', 'claude-scope', 1 // Second line
+    id = "config-count";
+    metadata = createWidgetMetadata("Config Count", "Displays Claude Code configuration counts", "1.0.0", "claude-scope", 1 // Second line
     );
     configProvider = new ConfigProvider();
     configs;
@@ -53,7 +53,7 @@ export class ConfigCountWidget {
         if (hooksCount > 0) {
             parts.push(`🪝 ${hooksCount} hooks`);
         }
-        return parts.join(' │ ') || null;
+        return parts.join(" │ ") || null;
     }
     async cleanup() {
         // No cleanup needed

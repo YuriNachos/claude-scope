@@ -1,4 +1,4 @@
-import type { Validator } from './core.js';
+import type { Validator } from "./core.js";
 export declare function string(): Validator<string>;
 export declare function number(): Validator<number>;
 export declare function literal<T extends string | number | boolean>(expected: T): Validator<T>;

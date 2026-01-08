@@ -1,7 +1,8 @@
 /**
  * Core types for the widget system
  */
-import type { StdinData, RenderContext } from '../types.js';
+import type { RenderContext, StdinData } from "../types.js";
+import type { WidgetStyle } from "./style-types.js";
 /**
  * Widget metadata describing the widget
  */
@@ -53,6 +54,11 @@ export interface IWidget {
      * Optional - called when widget is unregistered
      */
     cleanup?(): Promise<void>;
+    /**
+     * Set the display style for this widget
+     * Optional - widgets that support multiple styles implement this
+     */
+    setStyle?(style: WidgetStyle): void;
 }
 export type { StdinData, RenderContext };
 //# sourceMappingURL=types.d.ts.map

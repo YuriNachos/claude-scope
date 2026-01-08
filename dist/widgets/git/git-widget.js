@@ -5,8 +5,8 @@
  * NOTE: This widget implements IWidget directly (not extending StdinDataWidget)
  * because it requires async git operations with custom lifecycle management.
  */
-import { createWidgetMetadata } from '../../core/widget-types.js';
-import { createGit } from '../../providers/git-provider.js';
+import { createWidgetMetadata } from "../../core/widget-types.js";
+import { createGit } from "../../providers/git-provider.js";
 /**
  * Widget displaying git branch information
  *
@@ -16,8 +16,8 @@ import { createGit } from '../../providers/git-provider.js';
  * - Clean separation of concerns
  */
 export class GitWidget {
-    id = 'git';
-    metadata = createWidgetMetadata('Git Widget', 'Displays current git branch', '1.0.0', 'claude-scope', 0 // First line
+    id = "git";
+    metadata = createWidgetMetadata("Git Widget", "Displays current git branch", "1.0.0", "claude-scope", 0 // First line
     );
     gitFactory;
     git = null;

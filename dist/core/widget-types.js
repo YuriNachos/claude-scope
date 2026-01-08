@@ -11,13 +11,13 @@
  * @param line - Which statusline line this widget appears on (default: 0)
  * @returns Widget metadata object
  */
-export function createWidgetMetadata(name, description, version = '1.0.0', author = 'claude-scope', line = 0) {
+export function createWidgetMetadata(name, description, version = "1.0.0", author = "claude-scope", line = 0) {
     return {
         name,
         description,
         version,
         author,
-        line
+        line,
     };
 }
 /**
@@ -26,7 +26,7 @@ export function createWidgetMetadata(name, description, version = '1.0.0', autho
 export function createWidgetConfig(config = {}) {
     return {
         enabled: true,
-        ...config
+        ...config,
     };
 }
 //# sourceMappingURL=widget-types.js.map

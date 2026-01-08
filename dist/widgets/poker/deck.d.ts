@@ -1,4 +1,4 @@
-import type { Card } from './types.js';
+import type { Card } from "./types.js";
 /**
  * Standard 52-card deck with shuffling and dealing
  */

@@ -13,15 +13,6 @@ export declare const TIME: {
     readonly SECONDS_PER_HOUR: 3600;
 };
 /**
- * Cost formatting thresholds
- */
-export declare const COST_THRESHOLDS: {
-    /** Below this value, show 4 decimal places ($0.0012) */
-    readonly SMALL: 0.01;
-    /** Above this value, show no decimal places ($123) */
-    readonly LARGE: 100;
-};
-/**
  * Context usage color thresholds (percentages)
  */
 export declare const CONTEXT_THRESHOLDS: {
