@@ -4,7 +4,7 @@
 
 import { bold, gray, lightGray, red, reset } from "../../ui/utils/colors.js";
 import { colorize } from "../../ui/utils/formatters.js";
-import { formatCard, isRedSuit, type Card } from "./types.js";
+import { formatCard, formatCardEmoji, isRedSuit, type Card } from "./types.js";
 import type { PokerCardData, PokerRenderData } from "./widget-types.js";
 import type { StyleMap } from "../../core/style-types.js";
 
@@ -68,6 +68,22 @@ function formatCardTextCompact(card: Card): string {
   const rankSymbol = rankSymbols[rank] ?? rank;
 
   return `${rankSymbol}${card.suit}`;
+}
+
+/**
+ * Format card with emoji suit symbols
+ */
+function formatCardEmojiByParticipation(
+  cardData: PokerCardData,
+  isParticipating: boolean
+): string {
+  const cardText = formatCardEmoji(cardData.card);
+
+  if (isParticipating) {
+    return `${bold}(${cardText})${reset} `;
+  } else {
+    return `${cardText} `;
+  }
 }
 
 /**
@@ -144,5 +160,23 @@ export const pokerStyles: StyleMap<PokerRenderData> = {
     const abbreviation = getHandAbbreviation(handResult);
 
     return `${handStr}| ${boardStr}→ ${abbreviation}`;
+  },
+
+  emoji: (data: PokerRenderData) => {
+    const { holeCards, boardCards, handResult } = data;
+    const participatingSet = new Set(handResult?.participatingIndices || []);
+
+    const handStr = holeCards
+      .map((hc, idx) => formatCardEmojiByParticipation(hc, participatingSet.has(idx)))
+      .join("");
+
+    const boardStr = boardCards
+      .map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2)))
+      .join("");
+
+    const handLabel = colorize("Hand:", lightGray);
+    const boardLabel = colorize("Board:", lightGray);
+
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult)}`;
   },
 };
