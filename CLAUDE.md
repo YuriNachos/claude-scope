@@ -189,39 +189,41 @@ interface ILinesColors {
 
 #### Available Themes
 
-The project uses a single gray theme with neutral colors:
+**17 themes available:**
 
-```typescript
-import { GRAY_THEME, DEFAULT_THEME } from './ui/theme/index.js';
-
-// DEFAULT_THEME === GRAY_THEME.colors (neutral gray colors)
-```
-
-The gray theme provides minimal color distraction with all widgets using neutral gray ANSI codes. This keeps the focus on content rather than decoration.
+| Theme | Description | Style |
+|-------|-------------|-------|
+| vscode-dark-plus | VSCode default dark theme | **DEFAULT** |
+| catppuccin-mocha | Soothing pastel theme | Pastel |
+| cyberpunk-neon | High-contrast neon aesthetic | Vibrant |
+| dusty-sage | Earthy muted greens | Muted |
+| dracula | Purple/pink accents | Popular |
+| github-dark-dimmed | GitHub official dark | Standard |
+| gray | Neutral gray | Minimal |
+| monokai | Vibrant high-contrast | Classic |
+| muted-gray | Very subtle grays | Muted |
+| nord | Arctic north-bluish | Cool |
+| one-dark-pro | Atom's iconic theme | IDE |
+| professional-blue | Business-oriented blue | Professional |
+| rose-pine | Rose/violet themed | Pastel |
+| semantic-classic | Industry-standard colors | Intuitive |
+| slate-blue | Calm blue-grays | Muted |
+| solarized-dark | Precise CIELAB lightness | Classic |
+| tokyo-night | Clean Tokyo-inspired | Modern |
 
 #### Using Themes
 
-Widgets accept `IThemeColors` in their constructor and use their specific color section:
-
 ```typescript
-// Use default gray theme
-const widget = new ContextWidget();
+import { getThemeByName, DEFAULT_THEME, AVAILABLE_THEMES } from './ui/theme/index.js';
 
-// Use custom theme (partial IThemeColors supported)
-const customWidget = new ContextWidget({
-  context: {
-    low: '\x1b[32m',    // green
-    medium: '\x1b[33m', // yellow
-    high: '\x1b[31m'    // red
-  }
-} as any);
+// Get specific theme
+const nordTheme = getThemeByName('nord');
 
-const linesWidget = new LinesWidget({
-  lines: {
-    added: '\x1b[32m',   // green
-    removed: '\x1b[31m'  // red
-  }
-} as any);
+// Use default (VSCode Dark+)
+const defaultTheme = DEFAULT_THEME;
+
+// List all themes
+AVAILABLE_THEMES.forEach(t => console.log(t.name));
 ```
 
 #### Theme Migration (v0.6.x)
@@ -233,13 +235,16 @@ All widgets have been migrated to use the unified `IThemeColors` interface. Prev
 const widget = new ContextWidget({ low: '...', medium: '...', high: '...' });
 
 // After (unified theme):
-const widget = new ContextWidget(DEFAULT_THEME); // uses theme.context
+const widget = new ContextWidget(DEFAULT_THEME); // uses theme.context (VSCode Dark+)
 ```
 
 This architecture allows for:
 - Consistent theming across all widgets
 - Easy addition of new themes in the future
 - Partial theme customization via `IThemeColors` overrides
+- 17 built-in themes for different preferences
+
+All themes use ANSI RGB escape codes for 24-bit true color. Each theme is in a separate file for easy maintenance and customization.
 
 #### Future: Theme Customization
 
