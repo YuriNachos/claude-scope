@@ -2,6 +2,7 @@
  * Core types for the widget display style system
  */
 export type WidgetStyle =
+  | "minimal"
   | "balanced"
   | "compact"
   | "playful"
@@ -11,8 +12,7 @@ export type WidgetStyle =
   | "monochrome"
   | "compact-verbose"
   | "labeled"
-  | "indicator"
-  | "fancy";
+  | "indicator";
 
 export const DEFAULT_WIDGET_STYLE: WidgetStyle = "balanced";
 
@@ -32,6 +32,7 @@ export function getDefaultStyleConfig(
 
 export function isValidWidgetStyle(value: string): value is WidgetStyle {
   return [
+    "minimal",
     "balanced",
     "compact",
     "playful",
@@ -42,7 +43,6 @@ export function isValidWidgetStyle(value: string): value is WidgetStyle {
     "compact-verbose",
     "labeled",
     "indicator",
-    "fancy",
   ].includes(value);
 }
 

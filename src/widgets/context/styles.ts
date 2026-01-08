@@ -45,8 +45,4 @@ export const contextStyles: StyleMap<ContextRenderData> = {
   indicator: (data: ContextRenderData) => {
     return `● ${data.percent}%`;
   },
-
-  fancy: (data: ContextRenderData) => {
-    return `⟨${data.percent}%⟩`;
-  },
 };

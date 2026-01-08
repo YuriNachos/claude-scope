@@ -13,7 +13,6 @@ import { ContextWidget } from "./widgets/context-widget.js";
 import { CostWidget } from "./widgets/cost-widget.js";
 import { LinesWidget } from "./widgets/lines-widget.js";
 import { DurationWidget } from "./widgets/duration-widget.js";
-import { GitChangesWidget } from "./widgets/git/git-changes-widget.js";
 import { ConfigCountWidget } from "./widgets/config-count-widget.js";
 import { PokerWidget } from "./widgets/poker-widget.js";
 import { EmptyLineWidget } from "./widgets/empty-line-widget.js";
@@ -62,7 +61,6 @@ export async function main(): Promise<string> {
     await registry.register(new DurationWidget());
     await registry.register(new GitWidget());
     await registry.register(new GitTagWidget());
-    await registry.register(new GitChangesWidget());
     await registry.register(new ConfigCountWidget());
     await registry.register(new PokerWidget());
     await registry.register(new EmptyLineWidget());
