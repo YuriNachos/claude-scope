@@ -347,9 +347,22 @@ describe('GitWidget', () => {
       ) => {
         const mockGit = new MockGit();
         mockGit.setBranch(branch);
-        mockGit.setDiff([
-          { file: 'test.ts', insertions, deletions },
-        ]);
+        // Create array of files with distributed insertions/deletions
+        const diffFiles: Array<{ file: string; insertions: number; deletions: number }> = [];
+        const insertionsPerFile = Math.floor(insertions / files);
+        const deletionsPerFile = Math.floor(deletions / files);
+        const remainingInsertions = insertions % files;
+        const remainingDeletions = deletions % files;
+
+        for (let i = 0; i < files; i++) {
+          diffFiles.push({
+            file: `test${i}.ts`,
+            insertions: insertionsPerFile + (i < remainingInsertions ? 1 : 0),
+            deletions: deletionsPerFile + (i < remainingDeletions ? 1 : 0),
+          });
+        }
+        mockGit.setDiff(diffFiles);
+
         const widget = new GitWidget(() => mockGit);
         void widget.update({ cwd: '/test/dir' } as any);
         return widget;
