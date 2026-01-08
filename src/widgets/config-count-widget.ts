@@ -9,6 +9,9 @@ import type { IWidget, RenderContext, StdinData, WidgetStyle } from "../core/typ
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { ConfigProvider, type ConfigCounts } from "../providers/config-provider.js";
 import { ConfigCountBalancedRenderer } from "./config-count/renderers/balanced.js";
+import { ConfigCountCompactRenderer } from "./config-count/renderers/compact.js";
+import { ConfigCountPlayfulRenderer } from "./config-count/renderers/playful.js";
+import { ConfigCountVerboseRenderer } from "./config-count/renderers/verbose.js";
 import type { ConfigCountRenderData } from "./config-count/renderers/types.js";
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 
@@ -58,7 +61,15 @@ export class ConfigCountWidget implements IWidget {
       case "balanced":
         this.renderer = new ConfigCountBalancedRenderer();
         break;
-      // Other renderers will be added in subsequent commits
+      case "compact":
+        this.renderer = new ConfigCountCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new ConfigCountPlayfulRenderer();
+        break;
+      case "verbose":
+        this.renderer = new ConfigCountVerboseRenderer();
+        break;
       default:
         this.renderer = new ConfigCountBalancedRenderer();
         break;
