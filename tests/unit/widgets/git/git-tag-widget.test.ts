@@ -177,4 +177,181 @@ describe('GitTagWidget', () => {
       await matchSnapshot('git-tag-widget-no-tag', stripAnsi(result || ''));
     });
   });
+
+  describe('style renderers', () => {
+    const testTag = 'v0.5.4';
+
+    const createMockWidget = (tag: string | null) => {
+      const mockGit = new MockGit();
+      mockGit.setLatestTag(tag);
+      const widget = new GitTagWidget(() => mockGit);
+      void widget.update({ cwd: '/test/dir' } as any);
+      return widget;
+    };
+
+    describe('balanced style', () => {
+      it('should render tag or em dash', async () => {
+        const widget = createMockWidget(testTag);
+        widget.setStyle('balanced');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('v0.5.4');
+      });
+
+      it('should render em dash when no tag', async () => {
+        const widget = createMockWidget(null);
+        widget.setStyle('balanced');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('—');
+      });
+    });
+
+    describe('compact style', () => {
+      it('should render tag without v prefix', async () => {
+        const widget = createMockWidget(testTag);
+        widget.setStyle('compact');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('0.5.4');
+      });
+
+      it('should render em dash when no tag', async () => {
+        const widget = createMockWidget(null);
+        widget.setStyle('compact');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('—');
+      });
+    });
+
+    describe('playful style', () => {
+      it('should render with label emoji', async () => {
+        const widget = createMockWidget(testTag);
+        widget.setStyle('playful');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('🏷️ v0.5.4');
+      });
+
+      it('should render emoji with em dash when no tag', async () => {
+        const widget = createMockWidget(null);
+        widget.setStyle('playful');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('🏷️ —');
+      });
+    });
+
+    describe('verbose style', () => {
+      it('should render with version prefix', async () => {
+        const widget = createMockWidget(testTag);
+        widget.setStyle('verbose');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('version v0.5.4');
+      });
+
+      it('should render version none when no tag', async () => {
+        const widget = createMockWidget(null);
+        widget.setStyle('verbose');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('version: none');
+      });
+    });
+
+    describe('labeled style', () => {
+      it('should render with label prefix', async () => {
+        const widget = createMockWidget(testTag);
+        widget.setStyle('labeled');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('Tag: v0.5.4');
+      });
+
+      it('should render tag none when no tag', async () => {
+        const widget = createMockWidget(null);
+        widget.setStyle('labeled');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('Tag: none');
+      });
+    });
+
+    describe('indicator style', () => {
+      it('should render with bullet indicator', async () => {
+        const widget = createMockWidget(testTag);
+        widget.setStyle('indicator');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('● v0.5.4');
+      });
+
+      it('should render bullet with em dash when no tag', async () => {
+        const widget = createMockWidget(null);
+        widget.setStyle('indicator');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('● —');
+      });
+    });
+
+    describe('fancy style', () => {
+      it('should render with angle brackets', async () => {
+        const widget = createMockWidget(testTag);
+        widget.setStyle('fancy');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('⟨v0.5.4⟩');
+      });
+
+      it('should render brackets with em dash when no tag', async () => {
+        const widget = createMockWidget(null);
+        widget.setStyle('fancy');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('⟨—⟩');
+      });
+    });
+
+    describe('style switching', () => {
+      it('should switch between styles dynamically', async () => {
+        const widget = createMockWidget(testTag);
+
+        widget.setStyle('balanced');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('v0.5.4');
+
+        widget.setStyle('compact');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('0.5.4');
+
+        widget.setStyle('fancy');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('⟨v0.5.4⟩');
+      });
+
+      it('should default to balanced for unknown styles', async () => {
+        const widget = createMockWidget(testTag);
+
+        // @ts-expect-error - testing invalid style
+        widget.setStyle('unknown' as any);
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('v0.5.4');
+      });
+    });
+  });
 });
