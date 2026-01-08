@@ -1,4 +1,4 @@
-import { gray } from "../utils/colors.js";
+import { gray, lightGray } from "../utils/colors.js";
 import type { ITheme } from "./types.js";
 
 /**
@@ -57,7 +57,7 @@ export const GRAY_THEME: ITheme = {
     },
 
     poker: {
-      participating: gray,
+      participating: lightGray,
       nonParticipating: gray,
       result: gray,
     },

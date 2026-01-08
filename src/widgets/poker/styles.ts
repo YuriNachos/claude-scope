@@ -2,33 +2,31 @@
  * Functional style renderers for PokerWidget
  */
 
+import type { StyleMap } from "../../core/style-types.js";
+import type { IPokerColors } from "../../ui/theme/types.js";
 import { bold, gray, lightGray, red, reset } from "../../ui/utils/colors.js";
 import { colorize } from "../../ui/utils/formatters.js";
-import { formatCard, formatCardEmoji, isRedSuit, type Card } from "./types.js";
+import { type Card, formatCard, formatCardEmoji, isRedSuit } from "./types.js";
 import type { PokerCardData, PokerRenderData } from "./widget-types.js";
-import type { StyleMap } from "../../core/style-types.js";
 
 const HAND_ABBREVIATIONS: Record<string, string> = {
   "Royal Flush": "RF",
   "Straight Flush": "SF",
   "Four of a Kind": "4K",
   "Full House": "FH",
-  "Flush": "FL",
-  "Straight": "ST",
+  Flush: "FL",
+  Straight: "ST",
   "Three of a Kind": "3K",
   "Two Pair": "2P",
   "One Pair": "1P",
   "High Card": "HC",
-  "Nothing": "—",
+  Nothing: "—",
 };
 
 /**
  * Format card with color and optional participation formatting
  */
-function formatCardByParticipation(
-  cardData: PokerCardData,
-  isParticipating: boolean
-): string {
+function formatCardByParticipation(cardData: PokerCardData, isParticipating: boolean): string {
   const color = isRedSuit(cardData.card.suit) ? red : gray;
   const cardText = formatCard(cardData.card);
 
@@ -73,10 +71,7 @@ function formatCardTextCompact(card: Card): string {
 /**
  * Format card with emoji suit symbols
  */
-function formatCardEmojiByParticipation(
-  cardData: PokerCardData,
-  isParticipating: boolean
-): string {
+function formatCardEmojiByParticipation(cardData: PokerCardData, isParticipating: boolean): string {
   const cardText = formatCardEmoji(cardData.card);
 
   if (isParticipating) {
@@ -89,18 +84,19 @@ function formatCardEmojiByParticipation(
 /**
  * Format hand result with emoji
  */
-function formatHandResult(handResult: PokerRenderData["handResult"]): string {
+function formatHandResult(
+  handResult: PokerRenderData["handResult"],
+  colors?: IPokerColors
+): string {
   if (!handResult) {
     return "—";
   }
 
   const playerParticipates = handResult.participatingIndices.some((idx) => idx < 2);
+  const resultText = !playerParticipates ? `Nothing 🃏` : `${handResult.name}! ${handResult.emoji}`;
 
-  if (!playerParticipates) {
-    return `Nothing 🃏`;
-  } else {
-    return `${handResult.name}! ${handResult.emoji}`;
-  }
+  if (!colors) return resultText;
+  return colorize(resultText, colors.result);
 }
 
 /**
@@ -116,8 +112,8 @@ function getHandAbbreviation(handResult: PokerRenderData["handResult"]): string 
   return `${abbreviation} (${handResult.name})`;
 }
 
-export const pokerStyles: StyleMap<PokerRenderData> = {
-  balanced: (data: PokerRenderData) => {
+export const pokerStyles: StyleMap<PokerRenderData, IPokerColors> = {
+  balanced: (data: PokerRenderData, colors?: IPokerColors) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
 
@@ -129,23 +125,24 @@ export const pokerStyles: StyleMap<PokerRenderData> = {
       .map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2)))
       .join("");
 
-    const handLabel = colorize("Hand:", lightGray);
-    const boardLabel = colorize("Board:", lightGray);
+    const labelColor = colors?.participating ?? lightGray;
+    const handLabel = colorize("Hand:", labelColor);
+    const boardLabel = colorize("Board:", labelColor);
 
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult)}`;
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
   },
 
-  compact: (data: PokerRenderData) => {
+  compact: (data: PokerRenderData, colors?: IPokerColors) => {
     // Same as balanced for now
-    return pokerStyles.balanced!(data);
+    return pokerStyles.balanced!(data, colors);
   },
 
-  playful: (data: PokerRenderData) => {
+  playful: (data: PokerRenderData, colors?: IPokerColors) => {
     // Same as balanced for now
-    return pokerStyles.balanced!(data);
+    return pokerStyles.balanced!(data, colors);
   },
 
-  "compact-verbose": (data: PokerRenderData) => {
+  "compact-verbose": (data: PokerRenderData, colors?: IPokerColors) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
 
@@ -159,10 +156,12 @@ export const pokerStyles: StyleMap<PokerRenderData> = {
 
     const abbreviation = getHandAbbreviation(handResult);
 
-    return `${handStr}| ${boardStr}→ ${abbreviation}`;
+    const result = `${handStr}| ${boardStr}→ ${abbreviation}`;
+    if (!colors) return result;
+    return colorize(result, colors.result);
   },
 
-  emoji: (data: PokerRenderData) => {
+  emoji: (data: PokerRenderData, colors?: IPokerColors) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
 
@@ -174,9 +173,10 @@ export const pokerStyles: StyleMap<PokerRenderData> = {
       .map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2)))
       .join("");
 
-    const handLabel = colorize("Hand:", lightGray);
-    const boardLabel = colorize("Board:", lightGray);
+    const labelColor = colors?.participating ?? lightGray;
+    const handLabel = colorize("Hand:", labelColor);
+    const boardLabel = colorize("Board:", labelColor);
 
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult)}`;
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
   },
 };

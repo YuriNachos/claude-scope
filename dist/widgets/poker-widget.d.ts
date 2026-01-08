@@ -5,6 +5,7 @@
  */
 import type { WidgetStyle } from "../core/style-types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import type { IThemeColors } from "../ui/theme/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 export declare class PokerWidget extends StdinDataWidget {
     readonly id = "poker";
@@ -14,8 +15,10 @@ export declare class PokerWidget extends StdinDataWidget {
     private handResult;
     private lastUpdateTimestamp;
     private readonly THROTTLE_MS;
+    private colors;
     private styleFn;
     setStyle(style?: WidgetStyle): void;
+    constructor(colors?: IThemeColors);
     /**
      * Generate new poker hand on each update
      */

@@ -1,4 +1,4 @@
-import { gray } from "../utils/colors.js";
+import { gray, lightGray } from "../utils/colors.js";
 /**
  * Gray theme - neutral gray colors for all widgets
  * This is the default theme, providing minimal color distraction
@@ -46,7 +46,7 @@ export const GRAY_THEME = {
             version: gray,
         },
         poker: {
-            participating: gray,
+            participating: lightGray,
             nonParticipating: gray,
             result: gray,
         },

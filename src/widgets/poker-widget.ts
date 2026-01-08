@@ -5,15 +5,17 @@
  */
 
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
+import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
+import type { IPokerColors, IThemeColors } from "../ui/theme/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { Deck } from "./poker/deck.js";
 import { evaluateHand } from "./poker/hand-evaluator.js";
-import { type Card, formatCard, isRedSuit } from "./poker/types.js";
 import { pokerStyles } from "./poker/styles.js";
+import { type Card, formatCard, isRedSuit } from "./poker/types.js";
 import type { PokerCardData, PokerRenderData } from "./poker/widget-types.js";
-import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 
 export class PokerWidget extends StdinDataWidget {
   readonly id = "poker";
@@ -30,13 +32,19 @@ export class PokerWidget extends StdinDataWidget {
   private handResult: { text: string; participatingIndices: number[] } | null = null;
   private lastUpdateTimestamp = 0;
   private readonly THROTTLE_MS = 5000; // 5 seconds
-  private styleFn: StyleRendererFn<PokerRenderData> = pokerStyles.balanced!;
+  private colors: IThemeColors;
+  private styleFn: StyleRendererFn<PokerRenderData, IPokerColors> = pokerStyles.balanced!;
 
   setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
     const fn = pokerStyles[style];
     if (fn) {
       this.styleFn = fn;
     }
+  }
+
+  constructor(colors?: IThemeColors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
   }
 
   /**
@@ -120,7 +128,7 @@ export class PokerWidget extends StdinDataWidget {
       handResult,
     };
 
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.poker);
   }
 
   private getHandName(text: string): string {
@@ -129,7 +137,7 @@ export class PokerWidget extends StdinDataWidget {
   }
 
   private getHandEmoji(text: string): string {
-    const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/);
+    const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/u);
     return match ? match[1] : "🃏";
   }
 }

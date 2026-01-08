@@ -9,13 +9,13 @@ const HAND_ABBREVIATIONS = {
     "Straight Flush": "SF",
     "Four of a Kind": "4K",
     "Full House": "FH",
-    "Flush": "FL",
-    "Straight": "ST",
+    Flush: "FL",
+    Straight: "ST",
     "Three of a Kind": "3K",
     "Two Pair": "2P",
     "One Pair": "1P",
     "High Card": "HC",
-    "Nothing": "—",
+    Nothing: "—",
 };
 /**
  * Format card with color and optional participation formatting
@@ -73,17 +73,15 @@ function formatCardEmojiByParticipation(cardData, isParticipating) {
 /**
  * Format hand result with emoji
  */
-function formatHandResult(handResult) {
+function formatHandResult(handResult, colors) {
     if (!handResult) {
         return "—";
     }
     const playerParticipates = handResult.participatingIndices.some((idx) => idx < 2);
-    if (!playerParticipates) {
-        return `Nothing 🃏`;
-    }
-    else {
-        return `${handResult.name}! ${handResult.emoji}`;
-    }
+    const resultText = !playerParticipates ? `Nothing 🃏` : `${handResult.name}! ${handResult.emoji}`;
+    if (!colors)
+        return resultText;
+    return colorize(resultText, colors.result);
 }
 /**
  * Get hand abbreviation for compact-verbose style
@@ -96,7 +94,7 @@ function getHandAbbreviation(handResult) {
     return `${abbreviation} (${handResult.name})`;
 }
 export const pokerStyles = {
-    balanced: (data) => {
+    balanced: (data, colors) => {
         const { holeCards, boardCards, handResult } = data;
         const participatingSet = new Set(handResult?.participatingIndices || []);
         const handStr = holeCards
@@ -105,19 +103,20 @@ export const pokerStyles = {
         const boardStr = boardCards
             .map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2)))
             .join("");
-        const handLabel = colorize("Hand:", lightGray);
-        const boardLabel = colorize("Board:", lightGray);
-        return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult)}`;
+        const labelColor = colors?.participating ?? lightGray;
+        const handLabel = colorize("Hand:", labelColor);
+        const boardLabel = colorize("Board:", labelColor);
+        return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
     },
-    compact: (data) => {
+    compact: (data, colors) => {
         // Same as balanced for now
-        return pokerStyles.balanced(data);
+        return pokerStyles.balanced(data, colors);
     },
-    playful: (data) => {
+    playful: (data, colors) => {
         // Same as balanced for now
-        return pokerStyles.balanced(data);
+        return pokerStyles.balanced(data, colors);
     },
-    "compact-verbose": (data) => {
+    "compact-verbose": (data, colors) => {
         const { holeCards, boardCards, handResult } = data;
         const participatingSet = new Set(handResult?.participatingIndices || []);
         const handStr = holeCards
@@ -127,9 +126,12 @@ export const pokerStyles = {
             .map((bc, idx) => formatCardCompact(bc, participatingSet.has(idx + 2)))
             .join("");
         const abbreviation = getHandAbbreviation(handResult);
-        return `${handStr}| ${boardStr}→ ${abbreviation}`;
+        const result = `${handStr}| ${boardStr}→ ${abbreviation}`;
+        if (!colors)
+            return result;
+        return colorize(result, colors.result);
     },
-    emoji: (data) => {
+    emoji: (data, colors) => {
         const { holeCards, boardCards, handResult } = data;
         const participatingSet = new Set(handResult?.participatingIndices || []);
         const handStr = holeCards
@@ -138,9 +140,10 @@ export const pokerStyles = {
         const boardStr = boardCards
             .map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2)))
             .join("");
-        const handLabel = colorize("Hand:", lightGray);
-        const boardLabel = colorize("Board:", lightGray);
-        return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult)}`;
+        const labelColor = colors?.participating ?? lightGray;
+        const handLabel = colorize("Hand:", labelColor);
+        const boardLabel = colorize("Board:", labelColor);
+        return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
     },
 };
 //# sourceMappingURL=styles.js.map

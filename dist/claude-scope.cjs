@@ -329,7 +329,7 @@ var GRAY_THEME = {
       version: gray
     },
     poker: {
-      participating: gray,
+      participating: lightGray,
       nonParticipating: gray,
       result: gray
     }
@@ -1843,13 +1843,13 @@ var HAND_ABBREVIATIONS = {
   "Straight Flush": "SF",
   "Four of a Kind": "4K",
   "Full House": "FH",
-  "Flush": "FL",
-  "Straight": "ST",
+  Flush: "FL",
+  Straight: "ST",
   "Three of a Kind": "3K",
   "Two Pair": "2P",
   "One Pair": "1P",
   "High Card": "HC",
-  "Nothing": "\u2014"
+  Nothing: "\u2014"
 };
 function formatCardByParticipation(cardData, isParticipating) {
   const color = isRedSuit(cardData.card.suit) ? red : gray;
@@ -1889,16 +1889,14 @@ function formatCardEmojiByParticipation(cardData, isParticipating) {
     return `${cardText} `;
   }
 }
-function formatHandResult(handResult) {
+function formatHandResult(handResult, colors) {
   if (!handResult) {
     return "\u2014";
   }
   const playerParticipates = handResult.participatingIndices.some((idx) => idx < 2);
-  if (!playerParticipates) {
-    return `Nothing \u{1F0CF}`;
-  } else {
-    return `${handResult.name}! ${handResult.emoji}`;
-  }
+  const resultText = !playerParticipates ? `Nothing \u{1F0CF}` : `${handResult.name}! ${handResult.emoji}`;
+  if (!colors) return resultText;
+  return colorize2(resultText, colors.result);
 }
 function getHandAbbreviation(handResult) {
   if (!handResult) {
@@ -1908,37 +1906,41 @@ function getHandAbbreviation(handResult) {
   return `${abbreviation} (${handResult.name})`;
 }
 var pokerStyles = {
-  balanced: (data) => {
+  balanced: (data, colors) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
     const handStr = holeCards.map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx))).join("");
     const boardStr = boardCards.map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const handLabel = colorize2("Hand:", lightGray);
-    const boardLabel = colorize2("Board:", lightGray);
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult)}`;
+    const labelColor = colors?.participating ?? lightGray;
+    const handLabel = colorize2("Hand:", labelColor);
+    const boardLabel = colorize2("Board:", labelColor);
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult, colors)}`;
   },
-  compact: (data) => {
-    return pokerStyles.balanced(data);
+  compact: (data, colors) => {
+    return pokerStyles.balanced(data, colors);
   },
-  playful: (data) => {
-    return pokerStyles.balanced(data);
+  playful: (data, colors) => {
+    return pokerStyles.balanced(data, colors);
   },
-  "compact-verbose": (data) => {
+  "compact-verbose": (data, colors) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
     const handStr = holeCards.map((hc, idx) => formatCardCompact(hc, participatingSet.has(idx))).join("");
     const boardStr = boardCards.map((bc, idx) => formatCardCompact(bc, participatingSet.has(idx + 2))).join("");
     const abbreviation = getHandAbbreviation(handResult);
-    return `${handStr}| ${boardStr}\u2192 ${abbreviation}`;
+    const result = `${handStr}| ${boardStr}\u2192 ${abbreviation}`;
+    if (!colors) return result;
+    return colorize2(result, colors.result);
   },
-  emoji: (data) => {
+  emoji: (data, colors) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
     const handStr = holeCards.map((hc, idx) => formatCardEmojiByParticipation(hc, participatingSet.has(idx))).join("");
     const boardStr = boardCards.map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const handLabel = colorize2("Hand:", lightGray);
-    const boardLabel = colorize2("Board:", lightGray);
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult)}`;
+    const labelColor = colors?.participating ?? lightGray;
+    const handLabel = colorize2("Hand:", labelColor);
+    const boardLabel = colorize2("Board:", labelColor);
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult, colors)}`;
   }
 };
 
@@ -1959,12 +1961,17 @@ var PokerWidget = class extends StdinDataWidget {
   lastUpdateTimestamp = 0;
   THROTTLE_MS = 5e3;
   // 5 seconds
+  colors;
   styleFn = pokerStyles.balanced;
   setStyle(style = DEFAULT_WIDGET_STYLE) {
     const fn = pokerStyles[style];
     if (fn) {
       this.styleFn = fn;
     }
+  }
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
   }
   /**
    * Generate new poker hand on each update
@@ -2027,14 +2034,14 @@ var PokerWidget = class extends StdinDataWidget {
       boardCards: boardCardsData,
       handResult
     };
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.poker);
   }
   getHandName(text) {
     const match = text.match(/^([^!]+)/);
     return match ? match[1].trim() : "Nothing";
   }
   getHandEmoji(text) {
-    const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/);
+    const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/u);
     return match ? match[1] : "\u{1F0CF}";
   }
 };
