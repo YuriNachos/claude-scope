@@ -48,8 +48,7 @@ src/
 │   ├── core/
 │   │   └── stdin-data-widget.ts  # Base class for widgets receiving StdinData
 │   ├── git/
-│   │   ├── git-widget.ts         # Git branch widget
-│   │   └── git-changes-widget.ts # Git diff statistics widget
+│   │   └── git-widget.ts         # Git branch with changes display
 │   ├── poker-widget.ts        # Poker entertainment widget
 │   ├── poker/
 │   │   ├── types.ts           # Poker types (Card, Suit, Rank, HandRank)
@@ -100,8 +99,7 @@ src/
 │   ├── core/
 │   │   └── stdin-data-widget.ts
 │   ├── git/
-│   │   ├── git-widget.ts     # ✓ Implemented
-│   │   └── git-changes-widget.ts  # ✓ Implemented
+│   │   └── git-widget.ts     # ✓ Implemented (branch + changes)
 │   ├── context-widget.ts     # ✓ Implemented
 │   ├── cost-widget.ts        # ✓ Implemented
 │   ├── duration-widget.ts    # ✓ Implemented
