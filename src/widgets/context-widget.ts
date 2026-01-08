@@ -4,21 +4,15 @@
  * Displays context window usage with progress bar
  */
 
-import type { WidgetStyle } from "../core/style-types.js";
+import type { StyleRendererFn } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
 import type { IContextColors } from "../ui/theme/types.js";
 import { colorize } from "../ui/utils/formatters.js";
-import { ContextBalancedRenderer } from "./context/renderers/balanced.js";
-import { ContextCompactRenderer } from "./context/renderers/compact.js";
-import { ContextCompactVerboseRenderer } from "./context/renderers/compact-verbose.js";
-import { ContextFancyRenderer } from "./context/renderers/fancy.js";
-import { ContextIndicatorRenderer } from "./context/renderers/indicator.js";
-import { ContextPlayfulRenderer } from "./context/renderers/playful.js";
-import { ContextSymbolicRenderer } from "./context/renderers/symbolic.js";
-import type { ContextRenderer } from "./context/renderers/types.js";
-import { ContextVerboseRenderer } from "./context/renderers/verbose.js";
+import { createStyleSetter } from "../utils/create-style-setter.js";
+import { contextStyles } from "./context/styles.js";
+import type { ContextRenderData } from "./context/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 
 export class ContextWidget extends StdinDataWidget {
@@ -32,44 +26,14 @@ export class ContextWidget extends StdinDataWidget {
   );
 
   private colors: IContextColors;
-  private renderer: ContextRenderer;
+  private styleFn: StyleRendererFn<ContextRenderData> = contextStyles.balanced!;
 
   constructor(colors?: IContextColors) {
     super();
     this.colors = colors ?? DEFAULT_THEME.context!;
-    this.renderer = new ContextBalancedRenderer();
   }
 
-  setStyle(style: WidgetStyle): void {
-    switch (style) {
-      case "balanced":
-        this.renderer = new ContextBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new ContextCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new ContextPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new ContextVerboseRenderer();
-        break;
-      case "symbolic":
-        this.renderer = new ContextSymbolicRenderer();
-        break;
-      case "compact-verbose":
-        this.renderer = new ContextCompactVerboseRenderer();
-        break;
-      case "indicator":
-        this.renderer = new ContextIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new ContextFancyRenderer();
-        break;
-      default:
-        this.renderer = new ContextBalancedRenderer();
-    }
-  }
+  setStyle = createStyleSetter(contextStyles, { value: this.styleFn });
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     const { current_usage, context_window_size } = data.context_window;
@@ -95,7 +59,7 @@ export class ContextWidget extends StdinDataWidget {
       percent,
     };
 
-    const output = this.renderer.render(renderData);
+    const output = this.styleFn(renderData);
     const color = this.getContextColor(percent);
 
     return colorize(output, color);
