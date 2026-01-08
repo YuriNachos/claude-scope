@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.5.4
+**Current version**: v0.6.0
 
 **Implemented features**:
 - Git branch and changes display
@@ -206,6 +206,160 @@ const linesWidget = new LinesWidget({
 #### Future: Dynamic Themes
 
 The theme system is designed to support future dynamic theme switching. Themes can be loaded from configuration files, allowing users to customize colors without code changes.
+
+### Widget Style System
+
+Each widget supports multiple display styles through a functional renderer pattern. Styles are pure functions that transform widget data into formatted output strings.
+
+#### Available Styles
+
+| Style | Description | Example |
+|-------|-------------|---------|
+| `minimal` | Most compact, no labels | `main` |
+| `balanced` | Default, clean formatting | `main [+42 -18]` |
+| `compact` | Condensed, minimal spacing | `main +42/-18` |
+| `playful` | With emojis | `🔀 main ⬆42 ⬇18` |
+| `verbose` | Full text labels | `branch: main [+42 insertions, -18 deletions]` |
+| `technical` | Raw values | `claude-opus-4-5-20251101` |
+| `symbolic` | With symbols | `◆ Opus 4.5` |
+| `labeled` | Prefix labels | `Git: main [3 files: +42/-18]` |
+| `indicator` | Bullet indicators | `● main [+42 -18]` |
+| `emoji` | Colorful emojis | `Hand: A♠️ K♠️ | Board: Q♥️ ...` |
+| `compact-verbose` | Compact with abbreviations | `RF (Royal Flush)` |
+
+#### Style Examples by Widget
+
+**GitWidget** (shows branch and changes):
+```
+minimal:     main
+balanced:    main [+42 -18]
+compact:     main +42/-18
+playful:     🔀 main ⬆42 ⬇18
+verbose:     branch: main [+42 insertions, -18 deletions]
+labeled:     Git: main [3 files: +42/-18]
+indicator:   ● main [+42 -18]
+```
+
+**ModelWidget** (shows model name):
+```
+balanced:    Claude Opus 4.5
+compact:     Opus 4.5
+playful:     🤖 Opus 4.5
+technical:   claude-opus-4-5-20251101
+symbolic:    ◆ Opus 4.5
+labeled:     Model: Opus 4.5
+indicator:   ● Opus 4.5
+```
+
+**PokerWidget** (shows poker hand):
+```
+balanced:    Hand: A♠ K♠ | Board: Q♥ J♦ T♣ ... → One Pair! 👍
+playful:     Hand: A♠️ K♠️ | Board: Q♥️ J♦️ T♣️ ... → One Pair! 👍 (emoji suits)
+compact-verbose: AK| QJT10 → 1P (One Pair)
+```
+
+**ContextWidget** (shows context usage):
+```
+balanced:    45% [████████░░░░░░░░░]
+compact:     45%
+playful:     📊 45% [████████░░░░░░░░░]
+verbose:     45% used (90k/200k tokens)
+labeled:     Context: 45%
+indicator:   ● 45%
+```
+
+**CostWidget** (shows session cost):
+```
+balanced:    $0.42
+compact:     $0.42
+playful:     💰 $0.42
+labeled:     Cost: $0.42
+indicator:   ● $0.42
+```
+
+**DurationWidget** (shows session time):
+```
+balanced:    1h 1m 5s
+compact:     1h1m
+playful:     ⌛ 1h 1m
+technical:   3665000ms
+labeled:     Time: 1h 1m 5s
+indicator:   ● 1h 1m 5s
+```
+
+**LinesWidget** (shows code changes):
+```
+balanced:    +142/-27
+compact:     +142-27
+playful:     ➕142 ➖27
+verbose:     +142 added, -27 removed
+labeled:     Lines: +142/-27
+indicator:   ● +142/-27
+```
+
+**GitTagWidget** (shows git tag):
+```
+balanced:    v0.5.4
+compact:     0.5.4
+playful:     🏷️ v0.5.4
+verbose:     version v0.5.4
+labeled:     Tag: v0.5.4
+indicator:   ● v0.5.4
+```
+
+#### Style Implementation
+
+Styles are implemented as functional renderers in each widget's styles file:
+
+```typescript
+// src/widgets/model/styles.ts
+import type { StyleMap } from "../../core/style-types.js";
+
+export const modelStyles: StyleMap<ModelRenderData> = {
+  balanced: (data: ModelRenderData) => data.display_name,
+  compact: (data: ModelRenderData) => data.display_name.replace("Claude ", ""),
+  playful: (data: ModelRenderData) => `🤖 ${data.display_name}`,
+  // ... more styles
+};
+```
+
+#### Setting Widget Style
+
+Widgets use the default `balanced` style unless configured otherwise. Styles can be set dynamically:
+
+```typescript
+const widget = new ModelWidget();
+widget.setStyle('playful');
+const result = await widget.render({ width: 80, timestamp: 0 });
+// Result: "🤖 Opus 4.5"
+```
+
+Invalid styles fall back to `balanced`:
+
+```typescript
+widget.setStyle('unknown' as any);
+// Uses balanced style as fallback
+```
+
+#### Style Type Safety
+
+The `WidgetStyle` type ensures only valid styles can be used:
+
+```typescript
+// src/core/style-types.ts
+export type WidgetStyle =
+  | "minimal"
+  | "balanced"
+  | "compact"
+  | "playful"
+  | "verbose"
+  | "technical"
+  | "symbolic"
+  | "labeled"
+  | "indicator"
+  | "emoji"
+  | "compact-verbose";
+```
 
 ### Widget Base Class
 
