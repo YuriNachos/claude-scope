@@ -11,9 +11,9 @@ export declare class ContextWidget extends StdinDataWidget {
     readonly id = "context";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
     private colors;
-    private renderer;
+    private styleFn;
     constructor(colors?: IContextColors);
-    setStyle(style: WidgetStyle): void;
+    setStyle(style?: WidgetStyle): void;
     protected renderWithData(data: StdinData, _context: RenderContext): string | null;
     private getContextColor;
 }

@@ -4,10 +4,10 @@
  * Displays total lines added/removed during the session
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
-import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import type { WidgetStyle } from "../core/style-types.js";
 import type { ILinesColors } from "../ui/theme/types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
 /**
  * Widget displaying lines added/removed in session
  *
@@ -18,9 +18,10 @@ export declare class LinesWidget extends StdinDataWidget {
     readonly id = "lines";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
     private colors;
-    private renderer;
+    private linesStyles;
+    private styleFn;
     constructor(colors?: ILinesColors);
-    setStyle(style: WidgetStyle): void;
+    setStyle(style?: WidgetStyle): void;
     protected renderWithData(data: StdinData, _context: RenderContext): string | null;
 }
 //# sourceMappingURL=lines-widget.d.ts.map

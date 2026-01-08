@@ -273,24 +273,6 @@ function createGit(cwd) {
   return new NativeGit(cwd);
 }
 
-// src/core/style-renderer.ts
-var BaseStyleRenderer = class {
-};
-
-// src/widgets/git/renderers/balanced.ts
-var GitBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return data.branch;
-  }
-};
-
-// src/widgets/git/renderers/compact.ts
-var GitCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return data.branch;
-  }
-};
-
 // src/ui/utils/style-utils.ts
 function withLabel(prefix, value) {
   if (prefix === "") return value;
@@ -308,10 +290,6 @@ function withBrackets(value) {
 function withAngleBrackets(value) {
   return `\u27E8${value}\u27E9`;
 }
-function formatTokens(n) {
-  if (n < 1e3) return n.toString();
-  return `${Math.floor(n / 1e3)}K`;
-}
 function progressBar(percent, width = 10) {
   const clamped = Math.max(0, Math.min(100, percent));
   const filled = Math.round(clamped / 100 * width);
@@ -319,38 +297,28 @@ function progressBar(percent, width = 10) {
   return "\u2588".repeat(filled) + "\u2591".repeat(empty);
 }
 
-// src/widgets/git/renderers/fancy.ts
-var GitFancyRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withBrackets(data.branch);
-  }
-};
-
-// src/widgets/git/renderers/indicator.ts
-var GitIndicatorRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withIndicator(data.branch);
-  }
-};
-
-// src/widgets/git/renderers/labeled.ts
-var GitLabeledRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withLabel("Git", data.branch);
-  }
-};
-
-// src/widgets/git/renderers/playful.ts
-var GitPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
+// src/widgets/git/styles.ts
+var gitStyles = {
+  balanced: (data) => {
+    return data.branch;
+  },
+  compact: (data) => {
+    return data.branch;
+  },
+  playful: (data) => {
     return `\u{1F500} ${data.branch}`;
-  }
-};
-
-// src/widgets/git/renderers/verbose.ts
-var GitVerboseRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  verbose: (data) => {
     return `branch: ${data.branch} (HEAD)`;
+  },
+  labeled: (data) => {
+    return withLabel("Git", data.branch);
+  },
+  indicator: (data) => {
+    return withIndicator(data.branch);
+  },
+  fancy: (data) => {
+    return withBrackets(data.branch);
   }
 };
 
@@ -369,7 +337,7 @@ var GitWidget = class {
   git = null;
   enabled = true;
   cwd = null;
-  renderer = new GitBalancedRenderer();
+  styleFn = gitStyles.balanced;
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
@@ -378,31 +346,10 @@ var GitWidget = class {
   constructor(gitFactory) {
     this.gitFactory = gitFactory || createGit;
   }
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new GitBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new GitCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new GitPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new GitVerboseRenderer();
-        break;
-      case "indicator":
-        this.renderer = new GitIndicatorRenderer();
-        break;
-      case "labeled":
-        this.renderer = new GitLabeledRenderer();
-        break;
-      case "fancy":
-        this.renderer = new GitFancyRenderer();
-        break;
-      default:
-        this.renderer = new GitBalancedRenderer();
+  setStyle(style = "balanced") {
+    const fn = gitStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   async initialize(context) {
@@ -418,7 +365,8 @@ var GitWidget = class {
       if (!branch) {
         return null;
       }
-      return this.renderer.render({ branch });
+      const renderData = { branch };
+      return this.styleFn(renderData);
     } catch {
       return null;
     }
@@ -436,54 +384,30 @@ var GitWidget = class {
   }
 };
 
-// src/widgets/git-tag/renderers/balanced.ts
-var GitTagBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
+// src/widgets/git-tag/styles.ts
+var gitTagStyles = {
+  balanced: (data) => {
     return data.tag || "\u2014";
-  }
-};
-
-// src/widgets/git-tag/renderers/compact.ts
-var GitTagCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  compact: (data) => {
     if (!data.tag) return "\u2014";
     return data.tag.replace(/^v/, "");
-  }
-};
-
-// src/widgets/git-tag/renderers/fancy.ts
-var GitTagFancyRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withAngleBrackets(data.tag || "\u2014");
-  }
-};
-
-// src/widgets/git-tag/renderers/indicator.ts
-var GitTagIndicatorRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withIndicator(data.tag || "\u2014");
-  }
-};
-
-// src/widgets/git-tag/renderers/labeled.ts
-var GitTagLabeledRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withLabel("Tag", data.tag || "none");
-  }
-};
-
-// src/widgets/git-tag/renderers/playful.ts
-var GitTagPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  playful: (data) => {
     return `\u{1F3F7}\uFE0F ${data.tag || "\u2014"}`;
-  }
-};
-
-// src/widgets/git-tag/renderers/verbose.ts
-var GitTagVerboseRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  verbose: (data) => {
     if (!data.tag) return "version: none";
     return `version ${data.tag}`;
+  },
+  labeled: (data) => {
+    return withLabel("Tag", data.tag || "none");
+  },
+  indicator: (data) => {
+    return withIndicator(data.tag || "\u2014");
+  },
+  fancy: (data) => {
+    return withAngleBrackets(data.tag || "\u2014");
   }
 };
 
@@ -502,7 +426,7 @@ var GitTagWidget = class {
   git = null;
   enabled = true;
   cwd = null;
-  renderer = new GitTagBalancedRenderer();
+  styleFn = gitTagStyles.balanced;
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
@@ -511,31 +435,10 @@ var GitTagWidget = class {
   constructor(gitFactory) {
     this.gitFactory = gitFactory || createGit;
   }
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new GitTagBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new GitTagCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new GitTagPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new GitTagVerboseRenderer();
-        break;
-      case "labeled":
-        this.renderer = new GitTagLabeledRenderer();
-        break;
-      case "indicator":
-        this.renderer = new GitTagIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new GitTagFancyRenderer();
-        break;
-      default:
-        this.renderer = new GitTagBalancedRenderer();
+  setStyle(style = "balanced") {
+    const fn = gitTagStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   async initialize(context) {
@@ -547,7 +450,8 @@ var GitTagWidget = class {
     }
     try {
       const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
-      return this.renderer.render({ tag: latestTag });
+      const renderData = { tag: latestTag };
+      return this.styleFn(renderData);
     } catch {
       return null;
     }
@@ -562,6 +466,37 @@ var GitTagWidget = class {
     return this.enabled;
   }
   async cleanup() {
+  }
+};
+
+// src/widgets/model/styles.ts
+function getShortName(displayName) {
+  return displayName.replace(/^Claude\s+/, "");
+}
+var modelStyles = {
+  balanced: (data) => {
+    return data.displayName;
+  },
+  compact: (data) => {
+    return getShortName(data.displayName);
+  },
+  playful: (data) => {
+    return `\u{1F916} ${getShortName(data.displayName)}`;
+  },
+  technical: (data) => {
+    return data.id;
+  },
+  symbolic: (data) => {
+    return `\u25C6 ${getShortName(data.displayName)}`;
+  },
+  labeled: (data) => {
+    return withLabel("Model", getShortName(data.displayName));
+  },
+  indicator: (data) => {
+    return withIndicator(getShortName(data.displayName));
+  },
+  fancy: (data) => {
+    return withBrackets(getShortName(data.displayName));
   }
 };
 
@@ -623,67 +558,6 @@ var StdinDataWidget = class {
   }
 };
 
-// src/widgets/model/renderers/balanced.ts
-var ModelBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return data.displayName;
-  }
-};
-
-// src/widgets/model/renderers/compact.ts
-var ModelCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return data.displayName.replace(/^Claude /, "");
-  }
-};
-
-// src/widgets/model/renderers/fancy.ts
-var ModelFancyRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const shortName = data.displayName.replace(/^Claude /, "");
-    return `[${shortName}]`;
-  }
-};
-
-// src/widgets/model/renderers/indicator.ts
-var ModelIndicatorRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const shortName = data.displayName.replace(/^Claude /, "");
-    return `\u25CF ${shortName}`;
-  }
-};
-
-// src/widgets/model/renderers/labeled.ts
-var ModelLabeledRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const shortName = data.displayName.replace(/^Claude /, "");
-    return `Model: ${shortName}`;
-  }
-};
-
-// src/widgets/model/renderers/playful.ts
-var ModelPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const shortName = data.displayName.replace(/^Claude /, "");
-    return `\u{1F916} ${shortName}`;
-  }
-};
-
-// src/widgets/model/renderers/symbolic.ts
-var ModelSymbolicRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const shortName = data.displayName.replace(/^Claude /, "");
-    return `\u25C6 ${shortName}`;
-  }
-};
-
-// src/widgets/model/renderers/technical.ts
-var ModelTechnicalRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return data.id;
-  }
-};
-
 // src/widgets/model-widget.ts
 var ModelWidget = class extends StdinDataWidget {
   id = "model";
@@ -695,35 +569,11 @@ var ModelWidget = class extends StdinDataWidget {
     0
     // First line
   );
-  renderer = new ModelBalancedRenderer();
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new ModelBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new ModelCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new ModelPlayfulRenderer();
-        break;
-      case "technical":
-        this.renderer = new ModelTechnicalRenderer();
-        break;
-      case "symbolic":
-        this.renderer = new ModelSymbolicRenderer();
-        break;
-      case "labeled":
-        this.renderer = new ModelLabeledRenderer();
-        break;
-      case "indicator":
-        this.renderer = new ModelIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new ModelFancyRenderer();
-        break;
-      default:
-        this.renderer = new ModelBalancedRenderer();
+  styleFn = modelStyles.balanced;
+  setStyle(style = "balanced") {
+    const fn = modelStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   renderWithData(data, _context) {
@@ -731,7 +581,7 @@ var ModelWidget = class extends StdinDataWidget {
       displayName: data.model.display_name,
       id: data.model.id
     };
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
 };
 
@@ -782,68 +632,39 @@ function colorize(text, color) {
   return `${color}${text}${ANSI_COLORS.RESET}`;
 }
 
-// src/widgets/context/renderers/balanced.ts
-var ContextBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
+// src/widgets/context/styles.ts
+var contextStyles = {
+  balanced: (data) => {
     const bar = progressBar(data.percent, 10);
     return `[${bar}] ${data.percent}%`;
-  }
-};
-
-// src/widgets/context/renderers/compact.ts
-var ContextCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  compact: (data) => {
     return `${data.percent}%`;
-  }
-};
-
-// src/widgets/context/renderers/compact-verbose.ts
-var ContextCompactVerboseRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const usedK = formatTokens(data.used);
-    const maxK = formatTokens(data.contextWindowSize);
-    return `${data.percent}% (${usedK}/${maxK})`;
-  }
-};
-
-// src/widgets/context/renderers/fancy.ts
-var ContextFancyRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withAngleBrackets(`${data.percent}%`);
-  }
-};
-
-// src/widgets/context/renderers/indicator.ts
-var ContextIndicatorRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withIndicator(`${data.percent}%`);
-  }
-};
-
-// src/widgets/context/renderers/playful.ts
-var ContextPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  playful: (data) => {
     const bar = progressBar(data.percent, 10);
     return `\u{1F9E0} [${bar}] ${data.percent}%`;
-  }
-};
-
-// src/widgets/context/renderers/symbolic.ts
-var ContextSymbolicRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const filled = Math.round(data.percent / 100 * 5);
-    const empty = 5 - filled;
-    const bar = "\u25AE".repeat(filled) + "\u25AF".repeat(empty);
-    return `${bar} ${data.percent}%`;
-  }
-};
-
-// src/widgets/context/renderers/verbose.ts
-var ContextVerboseRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  verbose: (data) => {
     const usedFormatted = data.used.toLocaleString();
     const maxFormatted = data.contextWindowSize.toLocaleString();
     return `${usedFormatted} / ${maxFormatted} tokens (${data.percent}%)`;
+  },
+  symbolic: (data) => {
+    const filled = Math.round(data.percent / 100 * 5);
+    const empty = 5 - filled;
+    return `${"\u25AE".repeat(filled)}${"\u25AF".repeat(empty)} ${data.percent}%`;
+  },
+  "compact-verbose": (data) => {
+    const usedK = data.used >= 1e3 ? `${Math.floor(data.used / 1e3)}K` : data.used.toString();
+    const maxK = data.contextWindowSize >= 1e3 ? `${Math.floor(data.contextWindowSize / 1e3)}K` : data.contextWindowSize.toString();
+    return `${data.percent}% (${usedK}/${maxK})`;
+  },
+  indicator: (data) => {
+    return `\u25CF ${data.percent}%`;
+  },
+  fancy: (data) => {
+    return `\u27E8${data.percent}%\u27E9`;
   }
 };
 
@@ -859,40 +680,15 @@ var ContextWidget = class extends StdinDataWidget {
     // First line
   );
   colors;
-  renderer;
+  styleFn = contextStyles.balanced;
   constructor(colors) {
     super();
     this.colors = colors ?? DEFAULT_THEME.context;
-    this.renderer = new ContextBalancedRenderer();
   }
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new ContextBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new ContextCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new ContextPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new ContextVerboseRenderer();
-        break;
-      case "symbolic":
-        this.renderer = new ContextSymbolicRenderer();
-        break;
-      case "compact-verbose":
-        this.renderer = new ContextCompactVerboseRenderer();
-        break;
-      case "indicator":
-        this.renderer = new ContextIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new ContextFancyRenderer();
-        break;
-      default:
-        this.renderer = new ContextBalancedRenderer();
+  setStyle(style = "balanced") {
+    const fn = contextStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   renderWithData(data, _context) {
@@ -905,7 +701,7 @@ var ContextWidget = class extends StdinDataWidget {
       contextWindowSize: context_window_size,
       percent
     };
-    const output = this.renderer.render(renderData);
+    const output = this.styleFn(renderData);
     const color = this.getContextColor(percent);
     return colorize(output, color);
   }
@@ -921,45 +717,25 @@ var ContextWidget = class extends StdinDataWidget {
   }
 };
 
-// src/widgets/cost/renderers/balanced.ts
-var CostBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
+// src/widgets/cost/styles.ts
+var costStyles = {
+  balanced: (data) => {
     return formatCostUSD(data.costUsd);
-  }
-};
-
-// src/widgets/cost/renderers/compact.ts
-var CostCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  compact: (data) => {
     return formatCostUSD(data.costUsd);
-  }
-};
-
-// src/widgets/cost/renderers/fancy.ts
-var CostFancyRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withFancy(formatCostUSD(data.costUsd));
-  }
-};
-
-// src/widgets/cost/renderers/indicator.ts
-var CostIndicatorRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return `\u25CF ${formatCostUSD(data.costUsd)}`;
-  }
-};
-
-// src/widgets/cost/renderers/labeled.ts
-var CostLabeledRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return `Cost: ${formatCostUSD(data.costUsd)}`;
-  }
-};
-
-// src/widgets/cost/renderers/playful.ts
-var CostPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  playful: (data) => {
     return `\u{1F4B0} ${formatCostUSD(data.costUsd)}`;
+  },
+  labeled: (data) => {
+    return withLabel("Cost", formatCostUSD(data.costUsd));
+  },
+  indicator: (data) => {
+    return withIndicator(formatCostUSD(data.costUsd));
+  },
+  fancy: (data) => {
+    return withFancy(formatCostUSD(data.costUsd));
   }
 };
 
@@ -974,29 +750,11 @@ var CostWidget = class extends StdinDataWidget {
     0
     // First line
   );
-  renderer = new CostBalancedRenderer();
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new CostBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new CostCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new CostPlayfulRenderer();
-        break;
-      case "labeled":
-        this.renderer = new CostLabeledRenderer();
-        break;
-      case "indicator":
-        this.renderer = new CostIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new CostFancyRenderer();
-        break;
-      default:
-        this.renderer = new CostBalancedRenderer();
+  styleFn = costStyles.balanced;
+  setStyle(style = "balanced") {
+    const fn = costStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   renderWithData(data, _context) {
@@ -1004,108 +762,58 @@ var CostWidget = class extends StdinDataWidget {
     const renderData = {
       costUsd: data.cost.total_cost_usd
     };
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
 };
 
-// src/widgets/lines/renderers/balanced.ts
-var LinesBalancedRenderer = class extends BaseStyleRenderer {
-  constructor(colors) {
-    super();
-    this.colors = colors;
-  }
-  render(data) {
-    const addedStr = colorize(`+${data.added}`, this.colors.added);
-    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
-    return `${addedStr}/${removedStr}`;
-  }
-};
-
-// src/widgets/lines/renderers/compact.ts
-var LinesCompactRenderer = class extends BaseStyleRenderer {
-  constructor(colors) {
-    super();
-    this.colors = colors;
-  }
-  render(data) {
-    const addedStr = colorize(`+${data.added}`, this.colors.added);
-    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
-    return `${addedStr}${removedStr}`;
-  }
-};
-
-// src/widgets/lines/renderers/fancy.ts
-var LinesFancyRenderer = class extends BaseStyleRenderer {
-  constructor(colors) {
-    super();
-    this.colors = colors;
-  }
-  render(data) {
-    const addedStr = colorize(`+${data.added}`, this.colors.added);
-    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
-    const lines = `${addedStr}|${removedStr}`;
-    return withAngleBrackets(lines);
-  }
-};
-
-// src/widgets/lines/renderers/indicator.ts
-var LinesIndicatorRenderer = class extends BaseStyleRenderer {
-  constructor(colors) {
-    super();
-    this.colors = colors;
-  }
-  render(data) {
-    const addedStr = colorize(`+${data.added}`, this.colors.added);
-    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
-    const lines = `${addedStr}/${removedStr}`;
-    return withIndicator(lines);
-  }
-};
-
-// src/widgets/lines/renderers/labeled.ts
-var LinesLabeledRenderer = class extends BaseStyleRenderer {
-  constructor(colors) {
-    super();
-    this.colors = colors;
-  }
-  render(data) {
-    const addedStr = colorize(`+${data.added}`, this.colors.added);
-    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
-    const lines = `${addedStr}/${removedStr}`;
-    return withLabel("Lines", lines);
-  }
-};
-
-// src/widgets/lines/renderers/playful.ts
-var LinesPlayfulRenderer = class extends BaseStyleRenderer {
-  constructor(colors) {
-    super();
-    this.colors = colors;
-  }
-  render(data) {
-    const addedStr = colorize(`\u2795${data.added}`, this.colors.added);
-    const removedStr = colorize(`\u2796${data.removed}`, this.colors.removed);
-    return `${addedStr} ${removedStr}`;
-  }
-};
-
-// src/widgets/lines/renderers/verbose.ts
-var LinesVerboseRenderer = class extends BaseStyleRenderer {
-  constructor(colors) {
-    super();
-    this.colors = colors;
-  }
-  render(data) {
-    const parts = [];
-    if (data.added > 0) {
-      parts.push(colorize(`+${data.added} added`, this.colors.added));
+// src/widgets/lines/styles.ts
+function createLinesStyles(colors) {
+  return {
+    balanced: (data) => {
+      const addedStr = colorize(`+${data.added}`, colors.added);
+      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      return `${addedStr}/${removedStr}`;
+    },
+    compact: (data) => {
+      const addedStr = colorize(`+${data.added}`, colors.added);
+      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      return `${addedStr}${removedStr}`;
+    },
+    playful: (data) => {
+      const addedStr = colorize(`\u2795${data.added}`, colors.added);
+      const removedStr = colorize(`\u2796${data.removed}`, colors.removed);
+      return `${addedStr} ${removedStr}`;
+    },
+    verbose: (data) => {
+      const parts = [];
+      if (data.added > 0) {
+        parts.push(colorize(`+${data.added} added`, colors.added));
+      }
+      if (data.removed > 0) {
+        parts.push(colorize(`-${data.removed} removed`, colors.removed));
+      }
+      return parts.join(", ");
+    },
+    labeled: (data) => {
+      const addedStr = colorize(`+${data.added}`, colors.added);
+      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      const lines = `${addedStr}/${removedStr}`;
+      return withLabel("Lines", lines);
+    },
+    indicator: (data) => {
+      const addedStr = colorize(`+${data.added}`, colors.added);
+      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      const lines = `${addedStr}/${removedStr}`;
+      return withIndicator(lines);
+    },
+    fancy: (data) => {
+      const addedStr = colorize(`+${data.added}`, colors.added);
+      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      const lines = `${addedStr}|${removedStr}`;
+      return withAngleBrackets(lines);
     }
-    if (data.removed > 0) {
-      parts.push(colorize(`-${data.removed} removed`, this.colors.removed));
-    }
-    return parts.join(", ");
-  }
-};
+  };
+}
 
 // src/widgets/lines-widget.ts
 var LinesWidget = class extends StdinDataWidget {
@@ -1119,57 +827,34 @@ var LinesWidget = class extends StdinDataWidget {
     // First line
   );
   colors;
-  renderer;
+  linesStyles;
+  styleFn;
   constructor(colors) {
     super();
     this.colors = colors ?? DEFAULT_THEME.lines;
-    this.renderer = new LinesBalancedRenderer(this.colors);
+    this.linesStyles = createLinesStyles(this.colors);
+    this.styleFn = this.linesStyles.balanced;
   }
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new LinesBalancedRenderer(this.colors);
-        break;
-      case "compact":
-        this.renderer = new LinesCompactRenderer(this.colors);
-        break;
-      case "playful":
-        this.renderer = new LinesPlayfulRenderer(this.colors);
-        break;
-      case "verbose":
-        this.renderer = new LinesVerboseRenderer(this.colors);
-        break;
-      case "labeled":
-        this.renderer = new LinesLabeledRenderer(this.colors);
-        break;
-      case "indicator":
-        this.renderer = new LinesIndicatorRenderer(this.colors);
-        break;
-      case "fancy":
-        this.renderer = new LinesFancyRenderer(this.colors);
-        break;
-      default:
-        this.renderer = new LinesBalancedRenderer(this.colors);
+  setStyle(style = "balanced") {
+    const fn = this.linesStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   renderWithData(data, _context) {
     const added = data.cost?.total_lines_added ?? 0;
     const removed = data.cost?.total_lines_removed ?? 0;
     const renderData = { added, removed };
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
 };
 
-// src/widgets/duration/renderers/balanced.ts
-var DurationBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
+// src/widgets/duration/styles.ts
+var durationStyles = {
+  balanced: (data) => {
     return formatDuration(data.durationMs);
-  }
-};
-
-// src/widgets/duration/renderers/compact.ts
-var DurationCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  compact: (data) => {
     const totalSeconds = Math.floor(data.durationMs / 1e3);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor(totalSeconds % 3600 / 60);
@@ -1177,33 +862,8 @@ var DurationCompactRenderer = class extends BaseStyleRenderer {
       return `${hours}h${minutes}m`;
     }
     return `${minutes}m`;
-  }
-};
-
-// src/widgets/duration/renderers/fancy.ts
-var DurationFancyRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withAngleBrackets(formatDuration(data.durationMs));
-  }
-};
-
-// src/widgets/duration/renderers/indicator.ts
-var DurationIndicatorRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return withIndicator(formatDuration(data.durationMs));
-  }
-};
-
-// src/widgets/duration/renderers/labeled.ts
-var DurationLabeledRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    return `Time: ${formatDuration(data.durationMs)}`;
-  }
-};
-
-// src/widgets/duration/renderers/playful.ts
-var DurationPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  playful: (data) => {
     const totalSeconds = Math.floor(data.durationMs / 1e3);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor(totalSeconds % 3600 / 60);
@@ -1211,13 +871,18 @@ var DurationPlayfulRenderer = class extends BaseStyleRenderer {
       return `\u231B ${hours}h ${minutes}m`;
     }
     return `\u231B ${minutes}m`;
-  }
-};
-
-// src/widgets/duration/renderers/technical.ts
-var DurationTechnicalRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  technical: (data) => {
     return `${Math.floor(data.durationMs)}ms`;
+  },
+  labeled: (data) => {
+    return withLabel("Time", formatDuration(data.durationMs));
+  },
+  indicator: (data) => {
+    return withIndicator(formatDuration(data.durationMs));
+  },
+  fancy: (data) => {
+    return withAngleBrackets(formatDuration(data.durationMs));
   }
 };
 
@@ -1232,32 +897,11 @@ var DurationWidget = class extends StdinDataWidget {
     0
     // First line
   );
-  renderer = new DurationBalancedRenderer();
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new DurationBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new DurationCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new DurationPlayfulRenderer();
-        break;
-      case "technical":
-        this.renderer = new DurationTechnicalRenderer();
-        break;
-      case "labeled":
-        this.renderer = new DurationLabeledRenderer();
-        break;
-      case "indicator":
-        this.renderer = new DurationIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new DurationFancyRenderer();
-        break;
-      default:
-        this.renderer = new DurationBalancedRenderer();
+  styleFn = durationStyles.balanced;
+  setStyle(style = "balanced") {
+    const fn = durationStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   renderWithData(data, _context) {
@@ -1265,100 +909,68 @@ var DurationWidget = class extends StdinDataWidget {
     const renderData = {
       durationMs: data.cost.total_duration_ms
     };
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
 };
 
-// src/widgets/git-changes/renderers/balanced.ts
-var GitChangesBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
+// src/widgets/git-changes/styles.ts
+var gitChangesStyles = {
+  balanced: (data) => {
     const parts = [];
     if (data.insertions > 0) parts.push(`+${data.insertions}`);
     if (data.deletions > 0) parts.push(`-${data.deletions}`);
     return parts.join(" ");
-  }
-};
-
-// src/widgets/git-changes/renderers/compact.ts
-var GitChangesCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  compact: (data) => {
     const parts = [];
     if (data.insertions > 0) parts.push(`+${data.insertions}`);
     if (data.deletions > 0) parts.push(`-${data.deletions}`);
     return parts.join("/");
-  }
-};
-
-// src/widgets/git-changes/renderers/fancy.ts
-var GitChangesFancyRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  playful: (data) => {
     const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions}`);
-    if (data.deletions > 0) parts.push(`-${data.deletions}`);
-    const changes = parts.join("|");
-    return withAngleBrackets(changes);
-  }
-};
-
-// src/widgets/git-changes/renderers/indicator.ts
-var GitChangesIndicatorRenderer = class extends BaseStyleRenderer {
-  render(data) {
+    if (data.insertions > 0) parts.push(`\u2B06${data.insertions}`);
+    if (data.deletions > 0) parts.push(`\u2B07${data.deletions}`);
+    return parts.join(" ");
+  },
+  verbose: (data) => {
     const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions}`);
-    if (data.deletions > 0) parts.push(`-${data.deletions}`);
-    const changes = parts.join(" ");
-    return withIndicator(changes);
-  }
-};
-
-// src/widgets/git-changes/renderers/labeled.ts
-var GitChangesLabeledRenderer = class extends BaseStyleRenderer {
-  render(data) {
+    if (data.insertions > 0) parts.push(`+${data.insertions} insertions`);
+    if (data.deletions > 0) parts.push(`-${data.deletions} deletions`);
+    return parts.join(", ");
+  },
+  technical: (data) => {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`${data.insertions}`);
+    if (data.deletions > 0) parts.push(`${data.deletions}`);
+    return parts.join("/");
+  },
+  symbolic: (data) => {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`\u25B2${data.insertions}`);
+    if (data.deletions > 0) parts.push(`\u25BC${data.deletions}`);
+    return parts.join(" ");
+  },
+  labeled: (data) => {
     const parts = [];
     if (data.insertions > 0) parts.push(`+${data.insertions}`);
     if (data.deletions > 0) parts.push(`-${data.deletions}`);
     const changes = parts.join(" ");
     return withLabel("Diff", changes);
-  }
-};
-
-// src/widgets/git-changes/renderers/playful.ts
-var GitChangesPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  indicator: (data) => {
     const parts = [];
-    if (data.insertions > 0) parts.push(`\u2B06${data.insertions}`);
-    if (data.deletions > 0) parts.push(`\u2B07${data.deletions}`);
-    return parts.join(" ");
-  }
-};
-
-// src/widgets/git-changes/renderers/symbolic.ts
-var GitChangesSymbolicRenderer = class extends BaseStyleRenderer {
-  render(data) {
+    if (data.insertions > 0) parts.push(`+${data.insertions}`);
+    if (data.deletions > 0) parts.push(`-${data.deletions}`);
+    const changes = parts.join(" ");
+    return withIndicator(changes);
+  },
+  fancy: (data) => {
     const parts = [];
-    if (data.insertions > 0) parts.push(`\u25B2${data.insertions}`);
-    if (data.deletions > 0) parts.push(`\u25BC${data.deletions}`);
-    return parts.join(" ");
-  }
-};
-
-// src/widgets/git-changes/renderers/technical.ts
-var GitChangesTechnicalRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`${data.insertions}`);
-    if (data.deletions > 0) parts.push(`${data.deletions}`);
-    return parts.join("/");
-  }
-};
-
-// src/widgets/git-changes/renderers/verbose.ts
-var GitChangesVerboseRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions} insertions`);
-    if (data.deletions > 0) parts.push(`-${data.deletions} deletions`);
-    return parts.join(", ");
+    if (data.insertions > 0) parts.push(`+${data.insertions}`);
+    if (data.deletions > 0) parts.push(`-${data.deletions}`);
+    const changes = parts.join("|");
+    return withAngleBrackets(changes);
   }
 };
 
@@ -1377,7 +989,7 @@ var GitChangesWidget = class {
   git = null;
   enabled = true;
   cwd = null;
-  renderer = new GitChangesBalancedRenderer();
+  styleFn = gitChangesStyles.balanced;
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
@@ -1386,37 +998,10 @@ var GitChangesWidget = class {
   constructor(gitFactory) {
     this.gitFactory = gitFactory || createGit;
   }
-  setStyle(style) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new GitChangesBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new GitChangesCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new GitChangesPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new GitChangesVerboseRenderer();
-        break;
-      case "technical":
-        this.renderer = new GitChangesTechnicalRenderer();
-        break;
-      case "symbolic":
-        this.renderer = new GitChangesSymbolicRenderer();
-        break;
-      case "labeled":
-        this.renderer = new GitChangesLabeledRenderer();
-        break;
-      case "indicator":
-        this.renderer = new GitChangesIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new GitChangesFancyRenderer();
-        break;
-      default:
-        this.renderer = new GitChangesBalancedRenderer();
+  setStyle(style = "balanced") {
+    const fn = gitChangesStyles[style];
+    if (fn) {
+      this.styleFn = fn;
     }
   }
   async initialize(context) {
@@ -1458,7 +1043,8 @@ var GitChangesWidget = class {
     if (changes.insertions === 0 && changes.deletions === 0) {
       return null;
     }
-    return this.renderer.render(changes);
+    const renderData = changes;
+    return this.styleFn(renderData);
   }
   isEnabled() {
     return this.enabled;
@@ -1614,9 +1200,9 @@ var ConfigProvider = class {
   }
 };
 
-// src/widgets/config-count/renderers/balanced.ts
-var ConfigCountBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
+// src/widgets/config-count/styles.ts
+var configCountStyles = {
+  balanced: (data) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts = [];
     if (claudeMdCount > 0) {
@@ -1632,12 +1218,8 @@ var ConfigCountBalancedRenderer = class extends BaseStyleRenderer {
       parts.push(`hooks:${hooksCount}`);
     }
     return parts.join(" \u2502 ");
-  }
-};
-
-// src/widgets/config-count/renderers/compact.ts
-var ConfigCountCompactRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  compact: (data) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts = [];
     if (claudeMdCount > 0) {
@@ -1654,12 +1236,8 @@ var ConfigCountCompactRenderer = class extends BaseStyleRenderer {
       parts.push(`${hooksCount} ${hookLabel}`);
     }
     return parts.join(" \u2502 ");
-  }
-};
-
-// src/widgets/config-count/renderers/playful.ts
-var ConfigCountPlayfulRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  playful: (data) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts = [];
     if (claudeMdCount > 0) {
@@ -1675,12 +1253,8 @@ var ConfigCountPlayfulRenderer = class extends BaseStyleRenderer {
       parts.push(`\u{1FA9D} hooks:${hooksCount}`);
     }
     return parts.join(" \u2502 ");
-  }
-};
-
-// src/widgets/config-count/renderers/verbose.ts
-var ConfigCountVerboseRenderer = class extends BaseStyleRenderer {
-  render(data) {
+  },
+  verbose: (data) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts = [];
     if (claudeMdCount > 0) {
@@ -1716,7 +1290,13 @@ var ConfigCountWidget = class {
   configProvider = new ConfigProvider();
   configs;
   cwd;
-  renderer = new ConfigCountBalancedRenderer();
+  styleFn = configCountStyles.balanced;
+  setStyle(style = DEFAULT_WIDGET_STYLE) {
+    const fn = configCountStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
   async initialize() {
   }
   async update(data) {
@@ -1730,25 +1310,6 @@ var ConfigCountWidget = class {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
     return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
   }
-  setStyle(style = DEFAULT_WIDGET_STYLE) {
-    switch (style) {
-      case "balanced":
-        this.renderer = new ConfigCountBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new ConfigCountCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new ConfigCountPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new ConfigCountVerboseRenderer();
-        break;
-      default:
-        this.renderer = new ConfigCountBalancedRenderer();
-        break;
-    }
-  }
   async render(context) {
     if (!this.configs) {
       return null;
@@ -1760,7 +1321,7 @@ var ConfigCountWidget = class {
       mcpCount,
       hooksCount
     };
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
   async cleanup() {
   }
@@ -2186,40 +1747,7 @@ function evaluateHand(hole, board) {
   };
 }
 
-// src/widgets/poker/renderers/balanced.ts
-var PokerBalancedRenderer = class extends BaseStyleRenderer {
-  render(data) {
-    const { holeCards, boardCards, handResult } = data;
-    const participatingSet = new Set(handResult?.participatingIndices || []);
-    const handStr = holeCards.map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx))).join("");
-    const boardStr = boardCards.map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const handLabel = colorize("Hand:", lightGray);
-    const boardLabel = colorize("Board:", lightGray);
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${this.formatHandResult(handResult)}`;
-  }
-  formatCardByParticipation(cardData, isParticipating) {
-    const color = isRedSuit(cardData.card.suit) ? red : gray;
-    const cardText = formatCard(cardData.card);
-    if (isParticipating) {
-      return `${color}${bold}(${cardText})${reset} `;
-    } else {
-      return `${color}${cardText}${reset} `;
-    }
-  }
-  formatHandResult(handResult) {
-    if (!handResult) {
-      return "\u2014";
-    }
-    const playerParticipates = handResult.participatingIndices.some((idx) => idx < 2);
-    if (!playerParticipates) {
-      return `Nothing \u{1F0CF}`;
-    } else {
-      return `${handResult.name}! ${handResult.emoji}`;
-    }
-  }
-};
-
-// src/widgets/poker/renderers/compact-verbose.ts
+// src/widgets/poker/styles.ts
 var HAND_ABBREVIATIONS = {
   "Royal Flush": "RF",
   "Straight Flush": "SF",
@@ -2233,42 +1761,77 @@ var HAND_ABBREVIATIONS = {
   "High Card": "HC",
   "Nothing": "\u2014"
 };
-var PokerCompactVerboseRenderer = class extends BaseStyleRenderer {
-  render(data) {
+function formatCardByParticipation(cardData, isParticipating) {
+  const color = isRedSuit(cardData.card.suit) ? red : gray;
+  const cardText = formatCard(cardData.card);
+  if (isParticipating) {
+    return `${color}${bold}(${cardText})${reset} `;
+  } else {
+    return `${color}${cardText}${reset} `;
+  }
+}
+function formatCardCompact(cardData, isParticipating) {
+  const color = isRedSuit(cardData.card.suit) ? red : gray;
+  const cardText = formatCardTextCompact(cardData.card);
+  if (isParticipating) {
+    return `${color}${bold}(${cardText})${reset}`;
+  } else {
+    return `${color}${cardText}${reset}`;
+  }
+}
+function formatCardTextCompact(card) {
+  const rankSymbols = {
+    "10": "T",
+    "11": "J",
+    "12": "Q",
+    "13": "K",
+    "14": "A"
+  };
+  const rank = String(card.rank);
+  const rankSymbol = rankSymbols[rank] ?? rank;
+  return `${rankSymbol}${card.suit}`;
+}
+function formatHandResult(handResult) {
+  if (!handResult) {
+    return "\u2014";
+  }
+  const playerParticipates = handResult.participatingIndices.some((idx) => idx < 2);
+  if (!playerParticipates) {
+    return `Nothing \u{1F0CF}`;
+  } else {
+    return `${handResult.name}! ${handResult.emoji}`;
+  }
+}
+function getHandAbbreviation(handResult) {
+  if (!handResult) {
+    return "\u2014 (\u2014)";
+  }
+  const abbreviation = HAND_ABBREVIATIONS[handResult.name] ?? "\u2014";
+  return `${abbreviation} (${handResult.name})`;
+}
+var pokerStyles = {
+  balanced: (data) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
-    const handStr = holeCards.map((hc, idx) => this.formatCardCompact(hc, participatingSet.has(idx))).join("");
-    const boardStr = boardCards.map((bc, idx) => this.formatCardCompact(bc, participatingSet.has(idx + 2))).join("");
-    const abbreviation = this.getHandAbbreviation(handResult);
+    const handStr = holeCards.map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx))).join("");
+    const boardStr = boardCards.map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
+    const handLabel = colorize("Hand:", lightGray);
+    const boardLabel = colorize("Board:", lightGray);
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult)}`;
+  },
+  compact: (data) => {
+    return pokerStyles.balanced(data);
+  },
+  playful: (data) => {
+    return pokerStyles.balanced(data);
+  },
+  "compact-verbose": (data) => {
+    const { holeCards, boardCards, handResult } = data;
+    const participatingSet = new Set(handResult?.participatingIndices || []);
+    const handStr = holeCards.map((hc, idx) => formatCardCompact(hc, participatingSet.has(idx))).join("");
+    const boardStr = boardCards.map((bc, idx) => formatCardCompact(bc, participatingSet.has(idx + 2))).join("");
+    const abbreviation = getHandAbbreviation(handResult);
     return `${handStr}| ${boardStr}\u2192 ${abbreviation}`;
-  }
-  formatCardCompact(cardData, isParticipating) {
-    const color = isRedSuit(cardData.card.suit) ? red : gray;
-    const cardText = this.formatCardText(cardData.card);
-    if (isParticipating) {
-      return `${color}${bold}(${cardText})${reset}`;
-    } else {
-      return `${color}${cardText}${reset}`;
-    }
-  }
-  formatCardText(card) {
-    const rankSymbols = {
-      "10": "T",
-      "11": "J",
-      "12": "Q",
-      "13": "K",
-      "14": "A"
-    };
-    const rank = String(card.rank);
-    const rankSymbol = rankSymbols[rank] ?? rank;
-    return `${rankSymbol}${card.suit}`;
-  }
-  getHandAbbreviation(handResult) {
-    if (!handResult) {
-      return "\u2014 (\u2014)";
-    }
-    const abbreviation = HAND_ABBREVIATIONS[handResult.name] ?? "\u2014";
-    return `${abbreviation} (${handResult.name})`;
   }
 };
 
@@ -2289,7 +1852,13 @@ var PokerWidget = class extends StdinDataWidget {
   lastUpdateTimestamp = 0;
   THROTTLE_MS = 5e3;
   // 5 seconds
-  renderer = new PokerBalancedRenderer();
+  styleFn = pokerStyles.balanced;
+  setStyle(style = DEFAULT_WIDGET_STYLE) {
+    const fn = pokerStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
   /**
    * Generate new poker hand on each update
    */
@@ -2325,41 +1894,12 @@ var PokerWidget = class extends StdinDataWidget {
     }
     this.lastUpdateTimestamp = now;
   }
-  setStyle(style = DEFAULT_WIDGET_STYLE) {
-    switch (style) {
-      case "balanced":
-      case "compact":
-      case "playful":
-        this.renderer = new PokerBalancedRenderer();
-        break;
-      case "compact-verbose":
-        this.renderer = new PokerCompactVerboseRenderer();
-        break;
-      default:
-        this.renderer = new PokerBalancedRenderer();
-        break;
-    }
-  }
   /**
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
    */
   formatCardColor(card) {
-    const color = isRedSuit(card.suit) ? red : gray;
-    return colorize(`[${formatCard(card)}]`, color);
-  }
-  /**
-   * Format card based on participation in best hand
-   * Participating cards: (K♠) with color + BOLD
-   * Non-participating cards: K♠ with color, no brackets
-   */
-  formatCardByParticipation(cardData, isParticipating) {
-    const color = isRedSuit(cardData.card.suit) ? red : gray;
-    const cardText = formatCard(cardData.card);
-    if (isParticipating) {
-      return `${color}${bold}(${cardText})${reset} `;
-    } else {
-      return `${color}${cardText}${reset} `;
-    }
+    const color = isRedSuit(card.suit) ? "red" : "gray";
+    return formatCard(card);
   }
   renderWithData(_data, _context) {
     const holeCardsData = this.holeCards.map((hc, idx) => ({
@@ -2380,7 +1920,7 @@ var PokerWidget = class extends StdinDataWidget {
       boardCards: boardCardsData,
       handResult
     };
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
   getHandName(text) {
     const match = text.match(/^([^!]+)/);

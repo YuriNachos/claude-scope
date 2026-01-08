@@ -9,8 +9,8 @@ import { StdinDataWidget } from "./core/stdin-data-widget.js";
 export declare class DurationWidget extends StdinDataWidget {
     readonly id = "duration";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
-    private renderer;
-    setStyle(style: WidgetStyle): void;
+    private styleFn;
+    setStyle(style?: WidgetStyle): void;
     protected renderWithData(data: StdinData, _context: RenderContext): string | null;
 }
 //# sourceMappingURL=duration-widget.d.ts.map

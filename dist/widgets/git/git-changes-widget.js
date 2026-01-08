@@ -8,15 +8,7 @@
  */
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { createGit } from "../../providers/git-provider.js";
-import { GitChangesBalancedRenderer } from "../git-changes/renderers/balanced.js";
-import { GitChangesCompactRenderer } from "../git-changes/renderers/compact.js";
-import { GitChangesFancyRenderer } from "../git-changes/renderers/fancy.js";
-import { GitChangesIndicatorRenderer } from "../git-changes/renderers/indicator.js";
-import { GitChangesLabeledRenderer } from "../git-changes/renderers/labeled.js";
-import { GitChangesPlayfulRenderer } from "../git-changes/renderers/playful.js";
-import { GitChangesSymbolicRenderer } from "../git-changes/renderers/symbolic.js";
-import { GitChangesTechnicalRenderer } from "../git-changes/renderers/technical.js";
-import { GitChangesVerboseRenderer } from "../git-changes/renderers/verbose.js";
+import { gitChangesStyles } from "../git-changes/styles.js";
 /**
  * Widget displaying git diff statistics
  *
@@ -33,7 +25,7 @@ export class GitChangesWidget {
     git = null;
     enabled = true;
     cwd = null;
-    renderer = new GitChangesBalancedRenderer();
+    styleFn = gitChangesStyles.balanced;
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
      *                     If not provided, uses default createGit (production)
@@ -42,37 +34,10 @@ export class GitChangesWidget {
     constructor(gitFactory) {
         this.gitFactory = gitFactory || createGit;
     }
-    setStyle(style) {
-        switch (style) {
-            case "balanced":
-                this.renderer = new GitChangesBalancedRenderer();
-                break;
-            case "compact":
-                this.renderer = new GitChangesCompactRenderer();
-                break;
-            case "playful":
-                this.renderer = new GitChangesPlayfulRenderer();
-                break;
-            case "verbose":
-                this.renderer = new GitChangesVerboseRenderer();
-                break;
-            case "technical":
-                this.renderer = new GitChangesTechnicalRenderer();
-                break;
-            case "symbolic":
-                this.renderer = new GitChangesSymbolicRenderer();
-                break;
-            case "labeled":
-                this.renderer = new GitChangesLabeledRenderer();
-                break;
-            case "indicator":
-                this.renderer = new GitChangesIndicatorRenderer();
-                break;
-            case "fancy":
-                this.renderer = new GitChangesFancyRenderer();
-                break;
-            default:
-                this.renderer = new GitChangesBalancedRenderer();
+    setStyle(style = "balanced") {
+        const fn = gitChangesStyles[style];
+        if (fn) {
+            this.styleFn = fn;
         }
     }
     async initialize(context) {
@@ -118,7 +83,8 @@ export class GitChangesWidget {
         if (changes.insertions === 0 && changes.deletions === 0) {
             return null;
         }
-        return this.renderer.render(changes);
+        const renderData = changes;
+        return this.styleFn(renderData);
     }
     isEnabled() {
         return this.enabled;

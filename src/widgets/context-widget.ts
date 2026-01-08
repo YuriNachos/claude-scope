@@ -4,13 +4,12 @@
  * Displays context window usage with progress bar
  */
 
-import type { StyleRendererFn } from "../core/style-types.js";
+import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
 import type { IContextColors } from "../ui/theme/types.js";
 import { colorize } from "../ui/utils/formatters.js";
-import { createStyleSetter } from "../utils/create-style-setter.js";
 import { contextStyles } from "./context/styles.js";
 import type { ContextRenderData } from "./context/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
@@ -33,7 +32,12 @@ export class ContextWidget extends StdinDataWidget {
     this.colors = colors ?? DEFAULT_THEME.context!;
   }
 
-  setStyle = createStyleSetter(contextStyles, { value: this.styleFn });
+  setStyle(style: WidgetStyle = "balanced"): void {
+    const fn = contextStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     const { current_usage, context_window_size } = data.context_window;

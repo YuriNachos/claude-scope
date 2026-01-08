@@ -19,11 +19,11 @@ export declare class ConfigCountWidget implements IWidget {
     private configProvider;
     private configs?;
     private cwd?;
-    private renderer;
+    private styleFn;
+    setStyle(style?: WidgetStyle): void;
     initialize(): Promise<void>;
     update(data: StdinData): Promise<void>;
     isEnabled(): boolean;
-    setStyle(style?: WidgetStyle): void;
     render(context: RenderContext): Promise<string | null>;
     cleanup(): Promise<void>;
 }

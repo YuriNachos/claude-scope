@@ -6,10 +6,7 @@
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { ConfigProvider } from "../providers/config-provider.js";
-import { ConfigCountBalancedRenderer } from "./config-count/renderers/balanced.js";
-import { ConfigCountCompactRenderer } from "./config-count/renderers/compact.js";
-import { ConfigCountPlayfulRenderer } from "./config-count/renderers/playful.js";
-import { ConfigCountVerboseRenderer } from "./config-count/renderers/verbose.js";
+import { configCountStyles } from "./config-count/styles.js";
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 /**
  * Widget displaying configuration counts
@@ -25,7 +22,13 @@ export class ConfigCountWidget {
     configProvider = new ConfigProvider();
     configs;
     cwd;
-    renderer = new ConfigCountBalancedRenderer();
+    styleFn = configCountStyles.balanced;
+    setStyle(style = DEFAULT_WIDGET_STYLE) {
+        const fn = configCountStyles[style];
+        if (fn) {
+            this.styleFn = fn;
+        }
+    }
     async initialize() {
         // No initialization needed
     }
@@ -41,25 +44,6 @@ export class ConfigCountWidget {
         const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
         return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
     }
-    setStyle(style = DEFAULT_WIDGET_STYLE) {
-        switch (style) {
-            case "balanced":
-                this.renderer = new ConfigCountBalancedRenderer();
-                break;
-            case "compact":
-                this.renderer = new ConfigCountCompactRenderer();
-                break;
-            case "playful":
-                this.renderer = new ConfigCountPlayfulRenderer();
-                break;
-            case "verbose":
-                this.renderer = new ConfigCountVerboseRenderer();
-                break;
-            default:
-                this.renderer = new ConfigCountBalancedRenderer();
-                break;
-        }
-    }
     async render(context) {
         if (!this.configs) {
             return null;
@@ -71,7 +55,7 @@ export class ConfigCountWidget {
             mcpCount,
             hooksCount
         };
-        return this.renderer.render(renderData);
+        return this.styleFn(renderData);
     }
     async cleanup() {
         // No cleanup needed

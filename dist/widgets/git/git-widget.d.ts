@@ -23,14 +23,14 @@ export declare class GitWidget implements IWidget {
     private git;
     private enabled;
     private cwd;
-    private renderer;
+    private styleFn;
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
      *                     If not provided, uses default createGit (production)
      *                     Tests can inject MockGit factory here
      */
     constructor(gitFactory?: (cwd: string) => IGit);
-    setStyle(style: WidgetStyle): void;
+    setStyle(style?: WidgetStyle): void;
     initialize(context: WidgetContext): Promise<void>;
     render(context: RenderContext): Promise<string | null>;
     update(data: StdinData): Promise<void>;
