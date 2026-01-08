@@ -7,6 +7,10 @@ import type { GitRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
 
 export const gitStyles: StyleMap<GitRenderData> = {
+  minimal: (data: GitRenderData) => {
+    return data.branch;
+  },
+
   balanced: (data: GitRenderData) => {
     return data.branch;
   },
