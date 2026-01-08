@@ -2,7 +2,7 @@
  * Functional style renderers for GitTagWidget
  */
 
-import { withLabel, withIndicator, withAngleBrackets } from "../../ui/utils/style-utils.js";
+import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
 import type { GitTagRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
 
@@ -32,9 +32,5 @@ export const gitTagStyles: StyleMap<GitTagRenderData> = {
 
   indicator: (data: GitTagRenderData) => {
     return withIndicator(data.tag || "—");
-  },
-
-  fancy: (data: GitTagRenderData) => {
-    return withAngleBrackets(data.tag || "—");
   },
 };

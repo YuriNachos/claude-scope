@@ -2,7 +2,7 @@
  * Functional style renderers for ModelWidget
  */
 
-import { withLabel, withIndicator, withBrackets, withAngleBrackets } from "../../ui/utils/style-utils.js";
+import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
 import type { ModelRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
 
@@ -37,9 +37,5 @@ export const modelStyles: StyleMap<ModelRenderData> = {
 
   indicator: (data: ModelRenderData) => {
     return withIndicator(getShortName(data.displayName));
-  },
-
-  fancy: (data: ModelRenderData) => {
-    return withBrackets(getShortName(data.displayName));
   },
 };

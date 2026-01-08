@@ -5,7 +5,7 @@
  */
 
 import { colorize } from "../../ui/utils/formatters.js";
-import { withLabel, withIndicator, withAngleBrackets } from "../../ui/utils/style-utils.js";
+import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
 import type { ILinesColors } from "../../ui/theme/types.js";
 import type { LinesRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
@@ -56,13 +56,6 @@ export function createLinesStyles(colors: ILinesColors): StyleMap<LinesRenderDat
       const removedStr = colorize(`-${data.removed}`, colors.removed);
       const lines = `${addedStr}/${removedStr}`;
       return withIndicator(lines);
-    },
-
-    fancy: (data: LinesRenderData) => {
-      const addedStr = colorize(`+${data.added}`, colors.added);
-      const removedStr = colorize(`-${data.removed}`, colors.removed);
-      const lines = `${addedStr}|${removedStr}`;
-      return withAngleBrackets(lines);
     },
   };
 }

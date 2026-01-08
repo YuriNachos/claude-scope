@@ -3,7 +3,7 @@
  */
 
 import { formatDuration } from "../../ui/utils/formatters.js";
-import { withIndicator, withAngleBrackets, withLabel } from "../../ui/utils/style-utils.js";
+import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
 import type { DurationRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
 
@@ -44,9 +44,5 @@ export const durationStyles: StyleMap<DurationRenderData> = {
 
   indicator: (data: DurationRenderData) => {
     return withIndicator(formatDuration(data.durationMs));
-  },
-
-  fancy: (data: DurationRenderData) => {
-    return withAngleBrackets(formatDuration(data.durationMs));
   },
 };

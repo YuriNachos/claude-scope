@@ -3,7 +3,7 @@
  */
 
 import { formatCostUSD } from "../../ui/utils/formatters.js";
-import { withLabel, withIndicator, withFancy } from "../../ui/utils/style-utils.js";
+import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
 import type { CostRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
 
@@ -26,9 +26,5 @@ export const costStyles: StyleMap<CostRenderData> = {
 
   indicator: (data: CostRenderData) => {
     return withIndicator(formatCostUSD(data.costUsd));
-  },
-
-  fancy: (data: CostRenderData) => {
-    return withFancy(formatCostUSD(data.costUsd));
   },
 };
