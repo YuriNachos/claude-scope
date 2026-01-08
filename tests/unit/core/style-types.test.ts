@@ -1,12 +1,10 @@
-import { describe, it } from "node:test";
 import assert from "node:assert";
+import { describe, it } from "node:test";
 import {
-  type WidgetStyle,
   DEFAULT_WIDGET_STYLE,
   getDefaultStyleConfig,
   isValidWidgetStyle,
-  type WidgetStyleConfig,
-  type StyleConfig,
+  type WidgetStyle,
 } from "../../../src/core/style-types.js";
 
 describe("style-types", () => {
