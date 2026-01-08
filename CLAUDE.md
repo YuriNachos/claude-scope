@@ -150,11 +150,27 @@ interface IWidgetMetadata {
 
 ### Theme System
 
-The project uses a theme system for widget color configuration. This allows colors to be parameterized instead of hard-coded.
+The project uses a unified theme system for widget color configuration. All colors are managed through a single `IThemeColors` interface, allowing consistent theming across all widgets.
 
-#### Color Configuration Types
+#### IThemeColors Interface
 
-Each widget defines its own color configuration interface:
+The unified theme contains color sections for all widgets:
+
+```typescript
+interface IThemeColors {
+  base: IBaseColors;        // Base text, muted text
+  semantic: ISemanticColors; // Info, warning, error, success
+  git: IGitColors;          // Git branch and changes
+  context: IContextColors;  // Context usage progress
+  lines: ILinesColors;      // Lines added/removed
+  cost: ICostColors;        // Cost display
+  duration: IDurationColors;// Session duration
+  model: IModelColors;      // Model name display
+  poker: IPokerColors;      // Poker game display
+}
+```
+
+Each widget has a color section with widget-specific colors:
 
 ```typescript
 // ContextWidget colors (progress bar states)
@@ -171,36 +187,41 @@ interface ILinesColors {
 }
 ```
 
-#### Default Theme
+#### Available Themes
 
-The `DEFAULT_THEME` provides neutral gray colors for all widgets:
+Three themes are available:
 
 ```typescript
-import { DEFAULT_THEME } from './ui/theme/index.js';
+import { GRAY_THEME, DARK_THEME, LIGHT_THEME, DEFAULT_THEME } from './ui/theme/index.js';
 
-// DEFAULT_THEME.context.low === '\x1b[90m' (gray)
-// DEFAULT_THEME.lines.added === '\x1b[90m' (gray)
+// DEFAULT_THEME === GRAY_THEME (neutral gray colors)
+// DARK_THEME (vibrant colors for dark backgrounds)
+// LIGHT_THEME (darker colors for light backgrounds)
 ```
 
-#### Using Custom Colors
+#### Using Themes
 
-Widgets accept optional color configuration in their constructor:
+Widgets accept `IThemeColors` in their constructor and use their specific color section:
 
 ```typescript
-// Use default gray colors
+// Use default gray theme
 const widget = new ContextWidget();
 
-// Use custom colors
+// Use custom theme (partial IThemeColors supported)
 const customWidget = new ContextWidget({
-  low: '\x1b[32m',    // green
-  medium: '\x1b[33m', // yellow
-  high: '\x1b[31m'    // red
-});
+  context: {
+    low: '\x1b[32m',    // green
+    medium: '\x1b[33m', // yellow
+    high: '\x1b[31m'    // red
+  }
+} as any);
 
 const linesWidget = new LinesWidget({
-  added: '\x1b[32m',   // green
-  removed: '\x1b[31m'  // red
-});
+  lines: {
+    added: '\x1b[32m',   // green
+    removed: '\x1b[31m'  // red
+  }
+} as any);
 ```
 
 #### Future: Dynamic Themes
