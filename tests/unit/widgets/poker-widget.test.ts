@@ -325,6 +325,22 @@ describe('PokerWidget', () => {
       assert.ok(cleanResult.includes('→'));
     });
 
+    it('should render emoji style with emoji suit symbols', async () => {
+      const widget = new PokerWidget();
+      widget.setStyle('emoji');
+      await widget.update(createMockStdinData({}));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      assert.ok(result);
+      assert.ok(result?.includes('Hand:'));
+      assert.ok(result?.includes('Board:'));
+      // Should contain emoji suit symbols (they have the variation selector \uFE0F)
+      // The emoji versions of suits are: ♠️, ♥️, ♦️, ♣️
+      // Check for the variation selector character that makes them emoji
+      assert.ok(result?.includes('\uFE0F'));
+    });
+
     it('should default to balanced for unknown styles', async () => {
       const widget = new PokerWidget();
       await widget.update(createMockStdinData({}));

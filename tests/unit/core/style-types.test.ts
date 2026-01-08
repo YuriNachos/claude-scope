@@ -22,8 +22,9 @@ describe("style-types", () => {
         "compact-verbose",
         "labeled",
         "indicator",
+        "emoji",
       ];
-      assert.equal(validStyles.length, 11);
+      assert.equal(validStyles.length, 12);
     });
 
     it("should have balanced as default style", () => {
