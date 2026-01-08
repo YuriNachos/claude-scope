@@ -302,14 +302,14 @@ describe('GitWidget', () => {
       });
     });
 
-    describe('fancy style', () => {
-      it('should render in brackets', async () => {
+    describe('minimal style', () => {
+      it('should render branch name only (never shows changes)', async () => {
         const widget = createMockWidget(testBranch);
-        widget.setStyle('fancy');
+        widget.setStyle('minimal');
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal('[main]');
+        expect(result).to.equal('main');
       });
     });
 
@@ -323,8 +323,8 @@ describe('GitWidget', () => {
         widget.setStyle('playful');
         expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('🔀 main');
 
-        widget.setStyle('fancy');
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('[main]');
+        widget.setStyle('minimal');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('main');
       });
 
       it('should default to balanced for unknown styles', async () => {
@@ -335,6 +335,75 @@ describe('GitWidget', () => {
         const result = await widget.render({ width: 80, timestamp: 0 });
 
         expect(result).to.equal('main');
+      });
+    });
+
+    describe('with changes', () => {
+      const createMockWidgetWithChanges = (
+        branch: string,
+        files: number,
+        insertions: number,
+        deletions: number,
+      ) => {
+        const mockGit = new MockGit();
+        mockGit.setBranch(branch);
+        mockGit.setDiff([
+          { file: 'test.ts', insertions, deletions },
+        ]);
+        const widget = new GitWidget(() => mockGit);
+        void widget.update({ cwd: '/test/dir' } as any);
+        return widget;
+      };
+
+      describe('balanced style', () => {
+        it('should render branch with changes', async () => {
+          const widget = createMockWidgetWithChanges('main', 1, 42, 18);
+          widget.setStyle('balanced');
+
+          const result = await widget.render({ width: 80, timestamp: 0 });
+
+          expect(result).to.equal('main [+42 -18]');
+        });
+
+        it('should render branch with only insertions', async () => {
+          const widget = createMockWidgetWithChanges('main', 1, 42, 0);
+          widget.setStyle('balanced');
+
+          const result = await widget.render({ width: 80, timestamp: 0 });
+
+          expect(result).to.equal('main [+42]');
+        });
+
+        it('should render branch with only deletions', async () => {
+          const widget = createMockWidgetWithChanges('main', 1, 0, 18);
+          widget.setStyle('balanced');
+
+          const result = await widget.render({ width: 80, timestamp: 0 });
+
+          expect(result).to.equal('main [-18]');
+        });
+      });
+
+      describe('compact style', () => {
+        it('should render branch with changes in compact format', async () => {
+          const widget = createMockWidgetWithChanges('main', 1, 42, 18);
+          widget.setStyle('compact');
+
+          const result = await widget.render({ width: 80, timestamp: 0 });
+
+          expect(result).to.equal('main +42/-18');
+        });
+      });
+
+      describe('labeled style', () => {
+        it('should render branch with changes and file count', async () => {
+          const widget = createMockWidgetWithChanges('main', 3, 42, 18);
+          widget.setStyle('labeled');
+
+          const result = await widget.render({ width: 80, timestamp: 0 });
+
+          expect(result).to.equal('Git: main [3 files: +42/-18]');
+        });
       });
     });
   });
