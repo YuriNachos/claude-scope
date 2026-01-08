@@ -9,9 +9,9 @@ import type { StyleMap, StyleRendererFn, WidgetStyle } from "../core/style-types
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
-import type { ILinesColors } from "../ui/theme/types.js";
+import type { ILinesColors, IThemeColors } from "../ui/theme/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
-import { createLinesStyles } from "./lines/styles.js";
+import { linesStyles } from "./lines/styles.js";
 import type { LinesRenderData } from "./lines/types.js";
 
 /**
@@ -30,19 +30,16 @@ export class LinesWidget extends StdinDataWidget {
     0 // First line
   );
 
-  private colors: ILinesColors;
-  private linesStyles: StyleMap<LinesRenderData>;
-  private styleFn: StyleRendererFn<LinesRenderData>;
+  private colors: IThemeColors;
+  private styleFn: StyleRendererFn<LinesRenderData, ILinesColors> = linesStyles.balanced!;
 
-  constructor(colors?: ILinesColors) {
+  constructor(colors?: IThemeColors) {
     super();
-    this.colors = colors ?? DEFAULT_THEME.lines;
-    this.linesStyles = createLinesStyles(this.colors);
-    this.styleFn = this.linesStyles.balanced!;
+    this.colors = colors ?? DEFAULT_THEME;
   }
 
   setStyle(style: WidgetStyle = "balanced"): void {
-    const fn = this.linesStyles[style];
+    const fn = linesStyles[style];
     if (fn) {
       this.styleFn = fn;
     }
@@ -53,6 +50,6 @@ export class LinesWidget extends StdinDataWidget {
     const removed = data.cost?.total_lines_removed ?? 0;
 
     const renderData: LinesRenderData = { added, removed };
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.lines);
   }
 }

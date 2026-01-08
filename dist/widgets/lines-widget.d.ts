@@ -6,7 +6,7 @@
  */
 import type { WidgetStyle } from "../core/style-types.js";
 import type { RenderContext, StdinData } from "../types.js";
-import type { ILinesColors } from "../ui/theme/types.js";
+import type { IThemeColors } from "../ui/theme/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 /**
  * Widget displaying lines added/removed in session
@@ -18,9 +18,8 @@ export declare class LinesWidget extends StdinDataWidget {
     readonly id = "lines";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
     private colors;
-    private linesStyles;
     private styleFn;
-    constructor(colors?: ILinesColors);
+    constructor(colors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
     protected renderWithData(data: StdinData, _context: RenderContext): string | null;
 }

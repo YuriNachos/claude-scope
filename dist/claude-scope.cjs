@@ -898,47 +898,50 @@ var CostWidget = class extends StdinDataWidget {
 };
 
 // src/widgets/lines/styles.ts
-function createLinesStyles(colors) {
-  return {
-    balanced: (data) => {
-      const addedStr = colorize2(`+${data.added}`, colors.added);
-      const removedStr = colorize2(`-${data.removed}`, colors.removed);
-      return `${addedStr}/${removedStr}`;
-    },
-    compact: (data) => {
-      const addedStr = colorize2(`+${data.added}`, colors.added);
-      const removedStr = colorize2(`-${data.removed}`, colors.removed);
-      return `${addedStr}${removedStr}`;
-    },
-    playful: (data) => {
-      const addedStr = colorize2(`\u2795${data.added}`, colors.added);
-      const removedStr = colorize2(`\u2796${data.removed}`, colors.removed);
-      return `${addedStr} ${removedStr}`;
-    },
-    verbose: (data) => {
-      const parts = [];
-      if (data.added > 0) {
-        parts.push(colorize2(`+${data.added} added`, colors.added));
-      }
-      if (data.removed > 0) {
-        parts.push(colorize2(`-${data.removed} removed`, colors.removed));
-      }
-      return parts.join(", ");
-    },
-    labeled: (data) => {
-      const addedStr = colorize2(`+${data.added}`, colors.added);
-      const removedStr = colorize2(`-${data.removed}`, colors.removed);
-      const lines = `${addedStr}/${removedStr}`;
-      return withLabel("Lines", lines);
-    },
-    indicator: (data) => {
-      const addedStr = colorize2(`+${data.added}`, colors.added);
-      const removedStr = colorize2(`-${data.removed}`, colors.removed);
-      const lines = `${addedStr}/${removedStr}`;
-      return withIndicator(lines);
+var linesStyles = {
+  balanced: (data, colors) => {
+    if (!colors) return `+${data.added}/-${data.removed}`;
+    const addedStr = colorize(`+${data.added}`, colors.added);
+    const removedStr = colorize(`-${data.removed}`, colors.removed);
+    return `${addedStr}/${removedStr}`;
+  },
+  compact: (data, colors) => {
+    if (!colors) return `+${data.added}-${data.removed}`;
+    const addedStr = colorize(`+${data.added}`, colors.added);
+    const removedStr = colorize(`-${data.removed}`, colors.removed);
+    return `${addedStr}${removedStr}`;
+  },
+  playful: (data, colors) => {
+    if (!colors) return `\u2795${data.added} \u2796${data.removed}`;
+    const addedStr = colorize(`\u2795${data.added}`, colors.added);
+    const removedStr = colorize(`\u2796${data.removed}`, colors.removed);
+    return `${addedStr} ${removedStr}`;
+  },
+  verbose: (data, colors) => {
+    const parts = [];
+    if (data.added > 0) {
+      const text = `+${data.added} added`;
+      parts.push(colors ? colorize(text, colors.added) : text);
     }
-  };
-}
+    if (data.removed > 0) {
+      const text = `-${data.removed} removed`;
+      parts.push(colors ? colorize(text, colors.removed) : text);
+    }
+    return parts.join(", ");
+  },
+  labeled: (data, colors) => {
+    const addedStr = colors ? colorize(`+${data.added}`, colors.added) : `+${data.added}`;
+    const removedStr = colors ? colorize(`-${data.removed}`, colors.removed) : `-${data.removed}`;
+    const lines = `${addedStr}/${removedStr}`;
+    return withLabel("Lines", lines);
+  },
+  indicator: (data, colors) => {
+    const addedStr = colors ? colorize(`+${data.added}`, colors.added) : `+${data.added}`;
+    const removedStr = colors ? colorize(`-${data.removed}`, colors.removed) : `-${data.removed}`;
+    const lines = `${addedStr}/${removedStr}`;
+    return withIndicator(lines);
+  }
+};
 
 // src/widgets/lines-widget.ts
 var LinesWidget = class extends StdinDataWidget {
@@ -952,16 +955,13 @@ var LinesWidget = class extends StdinDataWidget {
     // First line
   );
   colors;
-  linesStyles;
-  styleFn;
+  styleFn = linesStyles.balanced;
   constructor(colors) {
     super();
-    this.colors = colors ?? DEFAULT_THEME.lines;
-    this.linesStyles = createLinesStyles(this.colors);
-    this.styleFn = this.linesStyles.balanced;
+    this.colors = colors ?? DEFAULT_THEME;
   }
   setStyle(style = "balanced") {
-    const fn = this.linesStyles[style];
+    const fn = linesStyles[style];
     if (fn) {
       this.styleFn = fn;
     }
@@ -970,7 +970,7 @@ var LinesWidget = class extends StdinDataWidget {
     const added = data.cost?.total_lines_added ?? 0;
     const removed = data.cost?.total_lines_removed ?? 0;
     const renderData = { added, removed };
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.lines);
   }
 };
 

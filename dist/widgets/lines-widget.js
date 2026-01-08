@@ -7,7 +7,7 @@
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
-import { createLinesStyles } from "./lines/styles.js";
+import { linesStyles } from "./lines/styles.js";
 /**
  * Widget displaying lines added/removed in session
  *
@@ -19,16 +19,13 @@ export class LinesWidget extends StdinDataWidget {
     metadata = createWidgetMetadata("Lines", "Displays lines added/removed in session", "1.0.0", "claude-scope", 0 // First line
     );
     colors;
-    linesStyles;
-    styleFn;
+    styleFn = linesStyles.balanced;
     constructor(colors) {
         super();
-        this.colors = colors ?? DEFAULT_THEME.lines;
-        this.linesStyles = createLinesStyles(this.colors);
-        this.styleFn = this.linesStyles.balanced;
+        this.colors = colors ?? DEFAULT_THEME;
     }
     setStyle(style = "balanced") {
-        const fn = this.linesStyles[style];
+        const fn = linesStyles[style];
         if (fn) {
             this.styleFn = fn;
         }
@@ -37,7 +34,7 @@ export class LinesWidget extends StdinDataWidget {
         const added = data.cost?.total_lines_added ?? 0;
         const removed = data.cost?.total_lines_removed ?? 0;
         const renderData = { added, removed };
-        return this.styleFn(renderData);
+        return this.styleFn(renderData, this.colors.lines);
     }
 }
 //# sourceMappingURL=lines-widget.js.map
