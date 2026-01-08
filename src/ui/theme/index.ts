@@ -1,11 +1,9 @@
 /**
  * Theme system
- * Provides color themes for all widgets
+ * Provides color theme for all widgets
  */
 
-import { DARK_THEME } from "./dark-theme.js";
 import { GRAY_THEME } from "./gray-theme.js";
-import { LIGHT_THEME } from "./light-theme.js";
 
 // Export all theme types
 export type {
@@ -22,13 +20,13 @@ export type {
   IThemeColors,
 } from "./types.js";
 
-// Export all themes
-export { GRAY_THEME, DARK_THEME, LIGHT_THEME };
+// Export theme
+export { GRAY_THEME };
 
 /**
  * Available themes
  */
-export const AVAILABLE_THEMES = [GRAY_THEME, DARK_THEME, LIGHT_THEME] as const;
+export const AVAILABLE_THEMES = [GRAY_THEME] as const;
 
 /**
  * Default theme colors
@@ -38,7 +36,7 @@ export const DEFAULT_THEME = GRAY_THEME.colors;
 
 /**
  * Get theme by name
- * @param name - Theme name (gray, dark, light)
+ * @param name - Theme name (gray)
  * @returns Theme object or gray theme as default
  */
 export function getThemeByName(name: string): typeof GRAY_THEME {

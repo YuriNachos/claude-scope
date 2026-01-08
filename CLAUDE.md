@@ -64,7 +64,7 @@ src/
 │   ├── theme/                # Theme system and color configuration
 │   │   ├── index.ts          # Theme exports
 │   │   ├── types.ts          # Color configuration interfaces
-│   │   └── default-theme.ts  # Default gray theme
+│   │   └── gray-theme.ts     # Gray theme (default)
 │   └── utils/
 │       ├── colors.ts         # ANSI color utilities
 │       └── formatters.ts     # Human-readable formatters (duration, cost, progress)
@@ -189,15 +189,15 @@ interface ILinesColors {
 
 #### Available Themes
 
-Three themes are available:
+The project uses a single gray theme with neutral colors:
 
 ```typescript
-import { GRAY_THEME, DARK_THEME, LIGHT_THEME, DEFAULT_THEME } from './ui/theme/index.js';
+import { GRAY_THEME, DEFAULT_THEME } from './ui/theme/index.js';
 
-// DEFAULT_THEME === GRAY_THEME (neutral gray colors)
-// DARK_THEME (vibrant colors for dark backgrounds)
-// LIGHT_THEME (darker colors for light backgrounds)
+// DEFAULT_THEME === GRAY_THEME.colors (neutral gray colors)
 ```
+
+The gray theme provides minimal color distraction with all widgets using neutral gray ANSI codes. This keeps the focus on content rather than decoration.
 
 #### Using Themes
 
@@ -224,9 +224,29 @@ const linesWidget = new LinesWidget({
 } as any);
 ```
 
-#### Future: Dynamic Themes
+#### Theme Migration (v0.6.x)
 
-The theme system is designed to support future dynamic theme switching. Themes can be loaded from configuration files, allowing users to customize colors without code changes.
+All widgets have been migrated to use the unified `IThemeColors` interface. Previously, widgets accepted individual color sections (e.g., `IContextColors`), but now all widgets use a single theme object:
+
+```typescript
+// Before (individual color sections):
+const widget = new ContextWidget({ low: '...', medium: '...', high: '...' });
+
+// After (unified theme):
+const widget = new ContextWidget(DEFAULT_THEME); // uses theme.context
+```
+
+This architecture allows for:
+- Consistent theming across all widgets
+- Easy addition of new themes in the future
+- Partial theme customization via `IThemeColors` overrides
+
+#### Future: Theme Customization
+
+The theme system is designed to support future customization options:
+- Custom color themes via configuration
+- Theme selection from config file
+- Per-widget color overrides
 
 ### Widget Style System
 
