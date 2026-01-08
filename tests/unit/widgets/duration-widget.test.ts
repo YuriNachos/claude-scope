@@ -135,18 +135,6 @@ describe('DurationWidget', () => {
       });
     });
 
-    describe('fancy style', () => {
-      it('should render with angle brackets', async () => {
-        const widget = new DurationWidget();
-        widget.setStyle('fancy');
-        await widget.update(createMockStdinData(createDurationData(testDurationMs)));
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        expect(result).to.equal('⟨1h 1m 5s⟩');
-      });
-    });
-
     describe('style switching', () => {
       it('should switch between styles dynamically', async () => {
         const widget = new DurationWidget();

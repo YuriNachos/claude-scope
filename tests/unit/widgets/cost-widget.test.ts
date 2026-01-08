@@ -163,18 +163,6 @@ describe("CostWidget", () => {
       });
     });
 
-    describe("fancy style", () => {
-      it("should render with french quotes", async () => {
-        const widget = new CostWidget();
-        widget.setStyle("fancy");
-        await widget.update(createMockStdinData(createCostData(testCost)));
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        expect(result).to.equal("«$0.42»");
-      });
-    });
-
     describe("style switching", () => {
       it("should switch between styles dynamically", async () => {
         const widget = new CostWidget();
@@ -185,9 +173,6 @@ describe("CostWidget", () => {
 
         widget.setStyle("playful");
         expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("💰 $0.42");
-
-        widget.setStyle("fancy");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("«$0.42»");
       });
 
       it("should default to balanced for unknown styles", async () => {

@@ -266,21 +266,6 @@ describe('LinesWidget', () => {
       });
     });
 
-    describe('fancy style', () => {
-      it('should render with angle brackets and colors', async () => {
-        const widget = new LinesWidget();
-        widget.setStyle('fancy');
-        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        expect(result).to.include('⟨');
-        expect(result).to.include('⟩');
-        expect(result).to.include('+142');
-        expect(result).to.include('-27');
-      });
-    });
-
     describe('style switching', () => {
       it('should switch between styles dynamically', async () => {
         const widget = new LinesWidget();
@@ -295,10 +280,6 @@ describe('LinesWidget', () => {
         result = await widget.render({ width: 80, timestamp: 0 });
         expect(result).to.include('+142');
         expect(result).to.not.include('/');
-
-        widget.setStyle('fancy');
-        result = await widget.render({ width: 80, timestamp: 0 });
-        expect(result).to.include('⟨');
       });
 
       it('should default to balanced for unknown styles', async () => {

@@ -309,26 +309,6 @@ describe('GitTagWidget', () => {
       });
     });
 
-    describe('fancy style', () => {
-      it('should render with angle brackets', async () => {
-        const widget = createMockWidget(testTag);
-        widget.setStyle('fancy');
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        expect(result).to.equal('⟨v0.5.4⟩');
-      });
-
-      it('should render brackets with em dash when no tag', async () => {
-        const widget = createMockWidget(null);
-        widget.setStyle('fancy');
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        expect(result).to.equal('⟨—⟩');
-      });
-    });
-
     describe('style switching', () => {
       it('should switch between styles dynamically', async () => {
         const widget = createMockWidget(testTag);
@@ -338,9 +318,6 @@ describe('GitTagWidget', () => {
 
         widget.setStyle('compact');
         expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('0.5.4');
-
-        widget.setStyle('fancy');
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('⟨v0.5.4⟩');
       });
 
       it('should default to balanced for unknown styles', async () => {

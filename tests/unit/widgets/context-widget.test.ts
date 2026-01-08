@@ -449,18 +449,6 @@ describe("ContextWidget", () => {
       });
     });
 
-    describe("fancy style", () => {
-      it("should render in angle brackets", async () => {
-        const widget = new ContextWidget();
-        widget.setStyle("fancy");
-        await widget.update(createMockStdinData(createContextData(71)));
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        expect(stripAnsi(result || "")).to.equal("⟨71%⟩");
-      });
-    });
-
     describe("style switching", () => {
       it("should switch between styles dynamically", async () => {
         const widget = new ContextWidget();

@@ -230,18 +230,6 @@ describe("ModelWidget", () => {
       });
     });
 
-    describe("fancy style", () => {
-      it("should render in brackets", async () => {
-        const widget = new ModelWidget();
-        widget.setStyle("fancy");
-        await widget.update(createMockStdinData({ model: testData }));
-
-        const result = await widget.render({ width: 80, timestamp: 0 });
-
-        expect(result).to.equal("[Opus 4.5]");
-      });
-    });
-
     describe("style switching", () => {
       it("should switch between styles dynamically", async () => {
         const widget = new ModelWidget();

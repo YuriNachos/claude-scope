@@ -12,6 +12,7 @@ describe("style-types", () => {
     it("should accept valid style strings", () => {
       const validStyles: WidgetStyle[] = [
         "balanced",
+        "minimal",
         "compact",
         "playful",
         "verbose",
@@ -21,7 +22,6 @@ describe("style-types", () => {
         "compact-verbose",
         "labeled",
         "indicator",
-        "fancy",
       ];
       assert.equal(validStyles.length, 11);
     });
@@ -47,7 +47,7 @@ describe("style-types", () => {
     it("should return true for valid styles", () => {
       assert.equal(isValidWidgetStyle("balanced"), true);
       assert.equal(isValidWidgetStyle("compact"), true);
-      assert.equal(isValidWidgetStyle("fancy"), true);
+      assert.equal(isValidWidgetStyle("minimal"), true);
     });
 
     it("should return false for invalid styles", () => {
