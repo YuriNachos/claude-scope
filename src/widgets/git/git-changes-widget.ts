@@ -8,20 +8,13 @@
  */
 
 import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
-import type { WidgetStyle } from "../../core/style-types.js";
+import type { StyleRendererFn } from "../../core/style-types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { IGit } from "../../providers/git-provider.js";
 import { createGit } from "../../providers/git-provider.js";
-import { GitChangesBalancedRenderer } from "../git-changes/renderers/balanced.js";
-import { GitChangesCompactRenderer } from "../git-changes/renderers/compact.js";
-import { GitChangesFancyRenderer } from "../git-changes/renderers/fancy.js";
-import { GitChangesIndicatorRenderer } from "../git-changes/renderers/indicator.js";
-import { GitChangesLabeledRenderer } from "../git-changes/renderers/labeled.js";
-import { GitChangesPlayfulRenderer } from "../git-changes/renderers/playful.js";
-import { GitChangesSymbolicRenderer } from "../git-changes/renderers/symbolic.js";
-import { GitChangesTechnicalRenderer } from "../git-changes/renderers/technical.js";
-import { GitChangesVerboseRenderer } from "../git-changes/renderers/verbose.js";
-import type { GitChangesRenderer } from "../git-changes/renderers/types.js";
+import { createStyleSetter } from "../../utils/create-style-setter.js";
+import { gitChangesStyles } from "../git-changes/styles.js";
+import type { GitChangesRenderData } from "../git-changes/types.js";
 
 /**
  * Widget displaying git diff statistics
@@ -45,7 +38,7 @@ export class GitChangesWidget implements IWidget {
   private git: IGit | null = null;
   private enabled = true;
   private cwd: string | null = null;
-  private renderer: GitChangesRenderer = new GitChangesBalancedRenderer();
+  private styleFn: StyleRendererFn<GitChangesRenderData> = gitChangesStyles.balanced!;
 
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
@@ -56,39 +49,7 @@ export class GitChangesWidget implements IWidget {
     this.gitFactory = gitFactory || createGit;
   }
 
-  setStyle(style: WidgetStyle): void {
-    switch (style) {
-      case "balanced":
-        this.renderer = new GitChangesBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new GitChangesCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new GitChangesPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new GitChangesVerboseRenderer();
-        break;
-      case "technical":
-        this.renderer = new GitChangesTechnicalRenderer();
-        break;
-      case "symbolic":
-        this.renderer = new GitChangesSymbolicRenderer();
-        break;
-      case "labeled":
-        this.renderer = new GitChangesLabeledRenderer();
-        break;
-      case "indicator":
-        this.renderer = new GitChangesIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new GitChangesFancyRenderer();
-        break;
-      default:
-        this.renderer = new GitChangesBalancedRenderer();
-    }
-  }
+  setStyle = createStyleSetter(gitChangesStyles, { value: this.styleFn });
 
   async initialize(context: WidgetContext): Promise<void> {
     this.enabled = context.config?.enabled !== false;
@@ -141,7 +102,8 @@ export class GitChangesWidget implements IWidget {
       return null;
     }
 
-    return this.renderer.render(changes);
+    const renderData: GitChangesRenderData = changes;
+    return this.styleFn(renderData);
   }
 
   isEnabled(): boolean {
