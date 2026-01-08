@@ -55,7 +55,32 @@ Or for global install:
 
 ## Usage
 
-Once configured, claude-scope displays the current git branch in your statusline.
+Once configured, claude-scope displays real-time session information in your statusline including:
+- Git branch and changes
+- Model information
+- Context usage with progress bar
+- Session duration
+- Cost estimation
+- Lines added/removed
+- Configuration counts
+- Poker hand (entertainment)
+
+### Widget Display Styles
+
+Each widget supports multiple display styles for customization:
+
+| Style | Description |
+|-------|-------------|
+| `balanced` | Default balanced style (minimalism + informativeness) |
+| `compact` | Maximally compact display |
+| `playful` | Fun style with informative emojis |
+| `verbose` | Detailed text descriptions |
+| `technical` | Technical details (model IDs, milliseconds, etc.) |
+| `symbolic` | Symbol-based representation |
+| `labeled` | Prefix labels for clarity |
+| `indicator` | Bullet indicator prefix |
+| `fancy` | Decorative formatting (brackets, quotes) |
+| `compact-verbose` | Compact with K-formatted numbers |
 
 **Note:** This is an early release with basic functionality. Additional features (repository status, session analytics, etc.) are planned for future releases.
 
