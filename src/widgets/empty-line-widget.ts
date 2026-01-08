@@ -4,9 +4,10 @@
  * Renders an empty string to create a blank separator line
  */
 
-import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import type { WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
 
 export class EmptyLineWidget extends StdinDataWidget {
   readonly id = "empty-line";
@@ -17,6 +18,14 @@ export class EmptyLineWidget extends StdinDataWidget {
     "claude-scope",
     3 // Fourth line (0-indexed)
   );
+
+  /**
+   * All styles return the same value (Braille Pattern Blank).
+   * This method exists for API consistency with other widgets.
+   */
+  setStyle(_style: WidgetStyle): void {
+    // No-op - all styles return the same value
+  }
 
   /**
    * Return Braille Pattern Blank to create a visible empty separator line.
