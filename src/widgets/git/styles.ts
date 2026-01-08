@@ -12,6 +12,14 @@ export const gitStyles: StyleMap<GitRenderData> = {
   },
 
   balanced: (data: GitRenderData) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts: string[] = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        return `${data.branch} [${parts.join(" ")}]`;
+      }
+    }
     return data.branch;
   },
 
