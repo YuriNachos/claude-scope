@@ -1,7 +1,8 @@
 /**
  * Functional style renderers for GitWidget
  */
-import type { GitRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
-export declare const gitStyles: StyleMap<GitRenderData>;
+import type { IGitColors } from "../../ui/theme/types.js";
+import type { GitRenderData } from "./types.js";
+export declare const gitStyles: StyleMap<GitRenderData, IGitColors>;
 //# sourceMappingURL=styles.d.ts.map

@@ -1,12 +1,15 @@
 /**
  * Functional style renderers for GitWidget
  */
+import { colorize } from "../../ui/utils/colors.js";
 import { withIndicator } from "../../ui/utils/style-utils.js";
 export const gitStyles = {
-    minimal: (data) => {
-        return data.branch;
+    minimal: (data, colors) => {
+        if (!colors)
+            return data.branch;
+        return colorize(data.branch, colors.branch);
     },
-    balanced: (data) => {
+    balanced: (data, colors) => {
         if (data.changes && data.changes.files > 0) {
             const parts = [];
             if (data.changes.insertions > 0)
@@ -14,12 +17,16 @@ export const gitStyles = {
             if (data.changes.deletions > 0)
                 parts.push(`-${data.changes.deletions}`);
             if (parts.length > 0) {
-                return `${data.branch} [${parts.join(" ")}]`;
+                const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+                const changes = colors
+                    ? colorize(`[${parts.join(" ")}]`, colors.changes)
+                    : `[${parts.join(" ")}]`;
+                return `${branch} ${changes}`;
             }
         }
-        return data.branch;
+        return colors ? colorize(data.branch, colors.branch) : data.branch;
     },
-    compact: (data) => {
+    compact: (data, colors) => {
         if (data.changes && data.changes.files > 0) {
             const parts = [];
             if (data.changes.insertions > 0)
@@ -27,12 +34,14 @@ export const gitStyles = {
             if (data.changes.deletions > 0)
                 parts.push(`-${data.changes.deletions}`);
             if (parts.length > 0) {
-                return `${data.branch} ${parts.join("/")}`;
+                const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+                const changesStr = parts.join("/");
+                return `${branch} ${changesStr}`;
             }
         }
-        return data.branch;
+        return colors ? colorize(data.branch, colors.branch) : data.branch;
     },
-    playful: (data) => {
+    playful: (data, colors) => {
         if (data.changes && data.changes.files > 0) {
             const parts = [];
             if (data.changes.insertions > 0)
@@ -40,12 +49,14 @@ export const gitStyles = {
             if (data.changes.deletions > 0)
                 parts.push(`⬇${data.changes.deletions}`);
             if (parts.length > 0) {
-                return `🔀 ${data.branch} ${parts.join(" ")}`;
+                const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+                return `🔀 ${branch} ${parts.join(" ")}`;
             }
         }
-        return `🔀 ${data.branch}`;
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        return `🔀 ${branch}`;
     },
-    verbose: (data) => {
+    verbose: (data, colors) => {
         if (data.changes && data.changes.files > 0) {
             const parts = [];
             if (data.changes.insertions > 0)
@@ -53,12 +64,17 @@ export const gitStyles = {
             if (data.changes.deletions > 0)
                 parts.push(`-${data.changes.deletions} deletions`);
             if (parts.length > 0) {
-                return `branch: ${data.branch} [${parts.join(", ")}]`;
+                const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+                const changes = colors
+                    ? colorize(`[${parts.join(", ")}]`, colors.changes)
+                    : `[${parts.join(", ")}]`;
+                return `branch: ${branch} ${changes}`;
             }
         }
-        return `branch: ${data.branch} (HEAD)`;
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        return `branch: ${branch} (HEAD)`;
     },
-    labeled: (data) => {
+    labeled: (data, colors) => {
         if (data.changes && data.changes.files > 0) {
             const parts = [];
             if (data.changes.insertions > 0)
@@ -66,13 +82,15 @@ export const gitStyles = {
             if (data.changes.deletions > 0)
                 parts.push(`-${data.changes.deletions}`);
             if (parts.length > 0) {
+                const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
                 const changes = `${data.changes.files} files: ${parts.join("/")}`;
-                return `Git: ${data.branch} [${changes}]`;
+                return `Git: ${branch} [${changes}]`;
             }
         }
-        return `Git: ${data.branch}`;
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        return `Git: ${branch}`;
     },
-    indicator: (data) => {
+    indicator: (data, colors) => {
         if (data.changes && data.changes.files > 0) {
             const parts = [];
             if (data.changes.insertions > 0)
@@ -80,10 +98,14 @@ export const gitStyles = {
             if (data.changes.deletions > 0)
                 parts.push(`-${data.changes.deletions}`);
             if (parts.length > 0) {
-                return `● ${data.branch} [${parts.join(" ")}]`;
+                const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+                const changes = colors
+                    ? colorize(`[${parts.join(" ")}]`, colors.changes)
+                    : `[${parts.join(" ")}]`;
+                return `● ${branch} ${changes}`;
             }
         }
-        return withIndicator(data.branch);
+        return withIndicator(colors ? colorize(data.branch, colors.branch) : data.branch);
     },
 };
 //# sourceMappingURL=styles.js.map

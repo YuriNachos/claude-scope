@@ -275,6 +275,70 @@ function createGit(cwd) {
   return new NativeGit(cwd);
 }
 
+// src/ui/utils/colors.ts
+var reset = "\x1B[0m";
+var red = "\x1B[31m";
+var gray = "\x1B[90m";
+var lightGray = "\x1B[37m";
+var bold = "\x1B[1m";
+function colorize(text, color) {
+  return `${color}${text}${reset}`;
+}
+
+// src/ui/theme/gray-theme.ts
+var GRAY_THEME = {
+  name: "gray",
+  description: "Neutral gray theme for minimal color distraction",
+  colors: {
+    base: {
+      text: gray,
+      muted: gray,
+      accent: gray,
+      border: gray
+    },
+    semantic: {
+      success: gray,
+      warning: gray,
+      error: gray,
+      info: gray
+    },
+    git: {
+      branch: gray,
+      changes: gray
+    },
+    context: {
+      low: gray,
+      medium: gray,
+      high: gray,
+      bar: gray
+    },
+    lines: {
+      added: gray,
+      removed: gray
+    },
+    cost: {
+      amount: gray,
+      currency: gray
+    },
+    duration: {
+      value: gray,
+      unit: gray
+    },
+    model: {
+      name: gray,
+      version: gray
+    },
+    poker: {
+      participating: gray,
+      nonParticipating: gray,
+      result: gray
+    }
+  }
+};
+
+// src/ui/theme/index.ts
+var DEFAULT_THEME = GRAY_THEME.colors;
+
 // src/ui/utils/style-utils.ts
 function withLabel(prefix, value) {
   if (prefix === "") return value;
@@ -292,75 +356,89 @@ function progressBar(percent, width = 10) {
 
 // src/widgets/git/styles.ts
 var gitStyles = {
-  minimal: (data) => {
-    return data.branch;
+  minimal: (data, colors) => {
+    if (!colors) return data.branch;
+    return colorize(data.branch, colors.branch);
   },
-  balanced: (data) => {
+  balanced: (data, colors) => {
     if (data.changes && data.changes.files > 0) {
       const parts = [];
       if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
       if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
       if (parts.length > 0) {
-        return `${data.branch} [${parts.join(" ")}]`;
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changes = colors ? colorize(`[${parts.join(" ")}]`, colors.changes) : `[${parts.join(" ")}]`;
+        return `${branch} ${changes}`;
       }
     }
-    return data.branch;
+    return colors ? colorize(data.branch, colors.branch) : data.branch;
   },
-  compact: (data) => {
+  compact: (data, colors) => {
     if (data.changes && data.changes.files > 0) {
       const parts = [];
       if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
       if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
       if (parts.length > 0) {
-        return `${data.branch} ${parts.join("/")}`;
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changesStr = parts.join("/");
+        return `${branch} ${changesStr}`;
       }
     }
-    return data.branch;
+    return colors ? colorize(data.branch, colors.branch) : data.branch;
   },
-  playful: (data) => {
+  playful: (data, colors) => {
     if (data.changes && data.changes.files > 0) {
       const parts = [];
       if (data.changes.insertions > 0) parts.push(`\u2B06${data.changes.insertions}`);
       if (data.changes.deletions > 0) parts.push(`\u2B07${data.changes.deletions}`);
       if (parts.length > 0) {
-        return `\u{1F500} ${data.branch} ${parts.join(" ")}`;
+        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
+        return `\u{1F500} ${branch2} ${parts.join(" ")}`;
       }
     }
-    return `\u{1F500} ${data.branch}`;
+    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+    return `\u{1F500} ${branch}`;
   },
-  verbose: (data) => {
+  verbose: (data, colors) => {
     if (data.changes && data.changes.files > 0) {
       const parts = [];
       if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions} insertions`);
       if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions} deletions`);
       if (parts.length > 0) {
-        return `branch: ${data.branch} [${parts.join(", ")}]`;
+        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changes = colors ? colorize(`[${parts.join(", ")}]`, colors.changes) : `[${parts.join(", ")}]`;
+        return `branch: ${branch2} ${changes}`;
       }
     }
-    return `branch: ${data.branch} (HEAD)`;
+    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+    return `branch: ${branch} (HEAD)`;
   },
-  labeled: (data) => {
+  labeled: (data, colors) => {
     if (data.changes && data.changes.files > 0) {
       const parts = [];
       if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
       if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
       if (parts.length > 0) {
+        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
         const changes = `${data.changes.files} files: ${parts.join("/")}`;
-        return `Git: ${data.branch} [${changes}]`;
+        return `Git: ${branch2} [${changes}]`;
       }
     }
-    return `Git: ${data.branch}`;
+    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+    return `Git: ${branch}`;
   },
-  indicator: (data) => {
+  indicator: (data, colors) => {
     if (data.changes && data.changes.files > 0) {
       const parts = [];
       if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
       if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
       if (parts.length > 0) {
-        return `\u25CF ${data.branch} [${parts.join(" ")}]`;
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changes = colors ? colorize(`[${parts.join(" ")}]`, colors.changes) : `[${parts.join(" ")}]`;
+        return `\u25CF ${branch} ${changes}`;
       }
     }
-    return withIndicator(data.branch);
+    return withIndicator(colors ? colorize(data.branch, colors.branch) : data.branch);
   }
 };
 
@@ -379,14 +457,17 @@ var GitWidget = class {
   git = null;
   enabled = true;
   cwd = null;
+  colors;
   styleFn = gitStyles.balanced;
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
    *                     Tests can inject MockGit factory here
+   * @param colors - Optional theme colors
    */
-  constructor(gitFactory) {
+  constructor(gitFactory, colors) {
     this.gitFactory = gitFactory || createGit;
+    this.colors = colors ?? DEFAULT_THEME;
   }
   setStyle(style = "balanced") {
     const fn = gitStyles[style];
@@ -424,7 +505,7 @@ var GitWidget = class {
       } catch {
       }
       const renderData = { branch, changes };
-      return this.styleFn(renderData);
+      return this.styleFn(renderData, this.colors.git);
     } catch {
       return null;
     }
@@ -523,70 +604,6 @@ var GitTagWidget = class {
   async cleanup() {
   }
 };
-
-// src/ui/utils/colors.ts
-var reset = "\x1B[0m";
-var red = "\x1B[31m";
-var gray = "\x1B[90m";
-var lightGray = "\x1B[37m";
-var bold = "\x1B[1m";
-function colorize(text, color) {
-  return `${color}${text}${reset}`;
-}
-
-// src/ui/theme/gray-theme.ts
-var GRAY_THEME = {
-  name: "gray",
-  description: "Neutral gray theme for minimal color distraction",
-  colors: {
-    base: {
-      text: gray,
-      muted: gray,
-      accent: gray,
-      border: gray
-    },
-    semantic: {
-      success: gray,
-      warning: gray,
-      error: gray,
-      info: gray
-    },
-    git: {
-      branch: gray,
-      changes: gray
-    },
-    context: {
-      low: gray,
-      medium: gray,
-      high: gray,
-      bar: gray
-    },
-    lines: {
-      added: gray,
-      removed: gray
-    },
-    cost: {
-      amount: gray,
-      currency: gray
-    },
-    duration: {
-      value: gray,
-      unit: gray
-    },
-    model: {
-      name: gray,
-      version: gray
-    },
-    poker: {
-      participating: gray,
-      nonParticipating: gray,
-      result: gray
-    }
-  }
-};
-
-// src/ui/theme/index.ts
-var DEFAULT_THEME = GRAY_THEME.colors;
 
 // src/widgets/core/stdin-data-widget.ts
 var StdinDataWidget = class {

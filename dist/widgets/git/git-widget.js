@@ -7,6 +7,7 @@
  */
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { createGit } from "../../providers/git-provider.js";
+import { DEFAULT_THEME } from "../../ui/theme/index.js";
 import { gitStyles } from "./styles.js";
 /**
  * Widget displaying git branch information
@@ -24,14 +25,17 @@ export class GitWidget {
     git = null;
     enabled = true;
     cwd = null;
+    colors;
     styleFn = gitStyles.balanced;
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
      *                     If not provided, uses default createGit (production)
      *                     Tests can inject MockGit factory here
+     * @param colors - Optional theme colors
      */
-    constructor(gitFactory) {
+    constructor(gitFactory, colors) {
         this.gitFactory = gitFactory || createGit;
+        this.colors = colors ?? DEFAULT_THEME;
     }
     setStyle(style = "balanced") {
         const fn = gitStyles[style];
@@ -72,7 +76,7 @@ export class GitWidget {
                 // Diff may fail, continue without changes
             }
             const renderData = { branch, changes };
-            return this.styleFn(renderData);
+            return this.styleFn(renderData, this.colors.git);
         }
         catch {
             // Log specific error for debugging but return null (graceful degradation)
