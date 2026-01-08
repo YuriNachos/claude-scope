@@ -170,4 +170,148 @@ describe('LinesWidget', () => {
       expect(result).to.include('\x1b[90m'); // Gray (default)
     });
   });
+
+  describe('style renderers', () => {
+    const testAdded = 142;
+    const testRemoved = 27;
+
+    const createLinesData = (added: number, removed: number) => ({
+      cost: {
+        total_cost_usd: 0.01,
+        total_duration_ms: 0,
+        total_api_duration_ms: 0,
+        total_lines_added: added,
+        total_lines_removed: removed
+      }
+    });
+
+    describe('balanced style', () => {
+      it('should render with slash separator and colors', async () => {
+        const widget = new LinesWidget();
+        widget.setStyle('balanced');
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('+142');
+        expect(result).to.include('-27');
+        expect(result).to.include('/');
+      });
+    });
+
+    describe('compact style', () => {
+      it('should render without separator and with colors', async () => {
+        const widget = new LinesWidget();
+        widget.setStyle('compact');
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('+142');
+        expect(result).to.include('-27');
+      });
+    });
+
+    describe('playful style', () => {
+      it('should render with emojis and colors', async () => {
+        const widget = new LinesWidget();
+        widget.setStyle('playful');
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('➕142');
+        expect(result).to.include('➖27');
+      });
+    });
+
+    describe('verbose style', () => {
+      it('should render with full text and colors', async () => {
+        const widget = new LinesWidget();
+        widget.setStyle('verbose');
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('+142 added');
+        expect(result).to.include('-27 removed');
+      });
+    });
+
+    describe('labeled style', () => {
+      it('should render with label prefix and colors', async () => {
+        const widget = new LinesWidget();
+        widget.setStyle('labeled');
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('Lines:');
+        expect(result).to.include('+142');
+        expect(result).to.include('-27');
+      });
+    });
+
+    describe('indicator style', () => {
+      it('should render with bullet indicator and colors', async () => {
+        const widget = new LinesWidget();
+        widget.setStyle('indicator');
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('●');
+        expect(result).to.include('+142');
+        expect(result).to.include('-27');
+      });
+    });
+
+    describe('fancy style', () => {
+      it('should render with angle brackets and colors', async () => {
+        const widget = new LinesWidget();
+        widget.setStyle('fancy');
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('⟨');
+        expect(result).to.include('⟩');
+        expect(result).to.include('+142');
+        expect(result).to.include('-27');
+      });
+    });
+
+    describe('style switching', () => {
+      it('should switch between styles dynamically', async () => {
+        const widget = new LinesWidget();
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        widget.setStyle('balanced');
+        let result = await widget.render({ width: 80, timestamp: 0 });
+        expect(result).to.include('+142');
+        expect(result).to.include('/');
+
+        widget.setStyle('compact');
+        result = await widget.render({ width: 80, timestamp: 0 });
+        expect(result).to.include('+142');
+        expect(result).to.not.include('/');
+
+        widget.setStyle('fancy');
+        result = await widget.render({ width: 80, timestamp: 0 });
+        expect(result).to.include('⟨');
+      });
+
+      it('should default to balanced for unknown styles', async () => {
+        const widget = new LinesWidget();
+        await widget.update(createMockStdinData(createLinesData(testAdded, testRemoved)));
+
+        // @ts-expect-error - testing invalid style
+        widget.setStyle('unknown' as any);
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.include('+142');
+        expect(result).to.include('-27');
+      });
+    });
+  });
 });
