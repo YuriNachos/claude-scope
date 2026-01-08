@@ -45,3 +45,14 @@ export function isValidWidgetStyle(value: string): value is WidgetStyle {
     "fancy",
   ].includes(value);
 }
+
+/**
+ * Functional renderer type - a pure function that renders data to string
+ * This is the functional alternative to BaseStyleRenderer class
+ */
+export type StyleRendererFn<T = unknown> = (data: T) => string;
+
+/**
+ * Map of widget styles to their renderer functions
+ */
+export type StyleMap<T> = Partial<Record<WidgetStyle, StyleRendererFn<T>>>;
