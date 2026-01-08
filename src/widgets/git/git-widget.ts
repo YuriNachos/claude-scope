@@ -7,18 +7,13 @@
  */
 
 import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
-import type { WidgetStyle } from "../../core/style-types.js";
+import type { StyleRendererFn } from "../../core/style-types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { IGit } from "../../providers/git-provider.js";
 import { createGit } from "../../providers/git-provider.js";
-import { GitBalancedRenderer } from "./renderers/balanced.js";
-import { GitCompactRenderer } from "./renderers/compact.js";
-import { GitFancyRenderer } from "./renderers/fancy.js";
-import { GitIndicatorRenderer } from "./renderers/indicator.js";
-import { GitLabeledRenderer } from "./renderers/labeled.js";
-import { GitPlayfulRenderer } from "./renderers/playful.js";
-import { GitVerboseRenderer } from "./renderers/verbose.js";
-import type { GitRenderer } from "./renderers/types.js";
+import { createStyleSetter } from "../../utils/create-style-setter.js";
+import { gitStyles } from "./styles.js";
+import type { GitRenderData } from "./types.js";
 
 /**
  * Widget displaying git branch information
@@ -42,7 +37,7 @@ export class GitWidget implements IWidget {
   private git: IGit | null = null;
   private enabled = true;
   private cwd: string | null = null;
-  private renderer: GitRenderer = new GitBalancedRenderer();
+  private styleFn: StyleRendererFn<GitRenderData> = gitStyles.balanced!;
 
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
@@ -53,33 +48,7 @@ export class GitWidget implements IWidget {
     this.gitFactory = gitFactory || createGit;
   }
 
-  setStyle(style: WidgetStyle): void {
-    switch (style) {
-      case "balanced":
-        this.renderer = new GitBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new GitCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new GitPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new GitVerboseRenderer();
-        break;
-      case "indicator":
-        this.renderer = new GitIndicatorRenderer();
-        break;
-      case "labeled":
-        this.renderer = new GitLabeledRenderer();
-        break;
-      case "fancy":
-        this.renderer = new GitFancyRenderer();
-        break;
-      default:
-        this.renderer = new GitBalancedRenderer();
-    }
-  }
+  setStyle = createStyleSetter(gitStyles, { value: this.styleFn });
 
   async initialize(context: WidgetContext): Promise<void> {
     this.enabled = context.config?.enabled !== false;
@@ -98,7 +67,8 @@ export class GitWidget implements IWidget {
         return null;
       }
 
-      return this.renderer.render({ branch });
+      const renderData: GitRenderData = { branch };
+      return this.styleFn(renderData);
     } catch {
       // Log specific error for debugging but return null (graceful degradation)
       return null;
