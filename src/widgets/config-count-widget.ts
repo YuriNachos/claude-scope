@@ -6,14 +6,12 @@
  */
 
 import type { IWidget, RenderContext, StdinData } from "../core/types.js";
-import type { WidgetStyle } from "../core/style-types.js";
+import type { StyleRendererFn } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { ConfigProvider, type ConfigCounts } from "../providers/config-provider.js";
-import { ConfigCountBalancedRenderer } from "./config-count/renderers/balanced.js";
-import { ConfigCountCompactRenderer } from "./config-count/renderers/compact.js";
-import { ConfigCountPlayfulRenderer } from "./config-count/renderers/playful.js";
-import { ConfigCountVerboseRenderer } from "./config-count/renderers/verbose.js";
-import type { ConfigCountRenderData } from "./config-count/renderers/types.js";
+import { createStyleSetter } from "../utils/create-style-setter.js";
+import { configCountStyles } from "./config-count/styles.js";
+import type { ConfigCountRenderData } from "./config-count/types.js";
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 
 /**
@@ -36,7 +34,9 @@ export class ConfigCountWidget implements IWidget {
   private configProvider = new ConfigProvider();
   private configs?: ConfigCounts;
   private cwd?: string;
-  private renderer = new ConfigCountBalancedRenderer();
+  private styleFn: StyleRendererFn<ConfigCountRenderData> = configCountStyles.balanced!;
+
+  setStyle = createStyleSetter(configCountStyles, { value: this.styleFn }, DEFAULT_WIDGET_STYLE);
 
   async initialize(): Promise<void> {
     // No initialization needed
@@ -57,26 +57,6 @@ export class ConfigCountWidget implements IWidget {
     return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
   }
 
-  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
-    switch (style) {
-      case "balanced":
-        this.renderer = new ConfigCountBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new ConfigCountCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new ConfigCountPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new ConfigCountVerboseRenderer();
-        break;
-      default:
-        this.renderer = new ConfigCountBalancedRenderer();
-        break;
-    }
-  }
-
   async render(context: RenderContext): Promise<string | null> {
     if (!this.configs) {
       return null;
@@ -90,7 +70,7 @@ export class ConfigCountWidget implements IWidget {
       hooksCount
     };
 
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
 
   async cleanup(): Promise<void> {
