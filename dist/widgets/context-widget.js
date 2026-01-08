@@ -4,7 +4,7 @@
  * Displays context window usage with progress bar
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { colorize } from "../ui/utils/formatters.js";
 import { contextStyles } from "./context/styles.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";

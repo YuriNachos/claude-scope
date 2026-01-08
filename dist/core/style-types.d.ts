@@ -14,10 +14,12 @@ export declare function isValidWidgetStyle(value: string): value is WidgetStyle;
 /**
  * Functional renderer type - a pure function that renders data to string
  * This is the functional alternative to BaseStyleRenderer class
+ * @param data - The data to render
+ * @param colors - Optional colors for theming (widget-specific color interface)
  */
-export type StyleRendererFn<T = unknown> = (data: T) => string;
+export type StyleRendererFn<T = unknown, C = unknown> = (data: T, colors?: C) => string;
 /**
  * Map of widget styles to their renderer functions
  */
-export type StyleMap<T> = Partial<Record<WidgetStyle, StyleRendererFn<T>>>;
+export type StyleMap<T, C = unknown> = Partial<Record<WidgetStyle, StyleRendererFn<T, C>>>;
 //# sourceMappingURL=style-types.d.ts.map

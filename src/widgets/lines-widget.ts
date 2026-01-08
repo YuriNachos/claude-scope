@@ -5,14 +5,14 @@
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
 
-import type { StyleRendererFn, StyleMap, WidgetStyle } from "../core/style-types.js";
+import type { StyleMap, StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
-import type { ILinesColors } from "../ui/theme/types.js";
-import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
 import type { RenderContext, StdinData } from "../types.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
+import type { ILinesColors } from "../ui/theme/types.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { createLinesStyles } from "./lines/styles.js";
 import type { LinesRenderData } from "./lines/types.js";
-import { StdinDataWidget } from "./core/stdin-data-widget.js";
 
 /**
  * Widget displaying lines added/removed in session
@@ -36,7 +36,7 @@ export class LinesWidget extends StdinDataWidget {
 
   constructor(colors?: ILinesColors) {
     super();
-    this.colors = colors ?? DEFAULT_THEME.lines!;
+    this.colors = colors ?? DEFAULT_THEME.lines;
     this.linesStyles = createLinesStyles(this.colors);
     this.styleFn = this.linesStyles.balanced!;
   }

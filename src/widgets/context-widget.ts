@@ -7,7 +7,7 @@
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
-import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
 import type { IContextColors } from "../ui/theme/types.js";
 import { colorize } from "../ui/utils/formatters.js";
 import { contextStyles } from "./context/styles.js";
@@ -29,7 +29,7 @@ export class ContextWidget extends StdinDataWidget {
 
   constructor(colors?: IContextColors) {
     super();
-    this.colors = colors ?? DEFAULT_THEME.context!;
+    this.colors = colors ?? DEFAULT_THEME.context;
   }
 
   setStyle(style: WidgetStyle = "balanced"): void {

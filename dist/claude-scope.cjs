@@ -644,18 +644,59 @@ var gray = "\x1B[90m";
 var lightGray = "\x1B[37m";
 var bold = "\x1B[1m";
 
-// src/ui/theme/default-theme.ts
-var DEFAULT_THEME = {
-  context: {
-    low: gray,
-    medium: gray,
-    high: gray
-  },
-  lines: {
-    added: gray,
-    removed: gray
+// src/ui/theme/gray-theme.ts
+var GRAY_THEME = {
+  name: "gray",
+  description: "Neutral gray theme for minimal color distraction",
+  colors: {
+    base: {
+      text: gray,
+      muted: gray,
+      accent: gray,
+      border: gray
+    },
+    semantic: {
+      success: gray,
+      warning: gray,
+      error: gray,
+      info: gray
+    },
+    git: {
+      branch: gray,
+      changes: gray
+    },
+    context: {
+      low: gray,
+      medium: gray,
+      high: gray,
+      bar: gray
+    },
+    lines: {
+      added: gray,
+      removed: gray
+    },
+    cost: {
+      amount: gray,
+      currency: gray
+    },
+    duration: {
+      value: gray,
+      unit: gray
+    },
+    model: {
+      name: gray,
+      version: gray
+    },
+    poker: {
+      participating: gray,
+      nonParticipating: gray,
+      result: gray
+    }
   }
 };
+
+// src/ui/theme/index.ts
+var DEFAULT_THEME = GRAY_THEME.colors;
 
 // src/ui/utils/formatters.ts
 function formatDuration(ms) {

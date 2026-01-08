@@ -5,9 +5,9 @@
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
-import { createLinesStyles } from "./lines/styles.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import { createLinesStyles } from "./lines/styles.js";
 /**
  * Widget displaying lines added/removed in session
  *
