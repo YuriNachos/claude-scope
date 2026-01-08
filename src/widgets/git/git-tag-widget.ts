@@ -7,18 +7,13 @@
  */
 
 import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
-import type { WidgetStyle } from "../../core/style-types.js";
+import type { StyleRendererFn } from "../../core/style-types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { IGit } from "../../providers/git-provider.js";
 import { createGit } from "../../providers/git-provider.js";
-import { GitTagBalancedRenderer } from "../git-tag/renderers/balanced.js";
-import { GitTagCompactRenderer } from "../git-tag/renderers/compact.js";
-import { GitTagFancyRenderer } from "../git-tag/renderers/fancy.js";
-import { GitTagIndicatorRenderer } from "../git-tag/renderers/indicator.js";
-import { GitTagLabeledRenderer } from "../git-tag/renderers/labeled.js";
-import { GitTagPlayfulRenderer } from "../git-tag/renderers/playful.js";
-import { GitTagVerboseRenderer } from "../git-tag/renderers/verbose.js";
-import type { GitTagRenderer } from "../git-tag/renderers/types.js";
+import { createStyleSetter } from "../../utils/create-style-setter.js";
+import { gitTagStyles } from "../git-tag/styles.js";
+import type { GitTagRenderData } from "../git-tag/types.js";
 
 /**
  * Widget displaying the latest git tag
@@ -42,7 +37,7 @@ export class GitTagWidget implements IWidget {
   private git: IGit | null = null;
   private enabled = true;
   private cwd: string | null = null;
-  private renderer: GitTagRenderer = new GitTagBalancedRenderer();
+  private styleFn: StyleRendererFn<GitTagRenderData> = gitTagStyles.balanced!;
 
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
@@ -53,33 +48,7 @@ export class GitTagWidget implements IWidget {
     this.gitFactory = gitFactory || createGit;
   }
 
-  setStyle(style: WidgetStyle): void {
-    switch (style) {
-      case "balanced":
-        this.renderer = new GitTagBalancedRenderer();
-        break;
-      case "compact":
-        this.renderer = new GitTagCompactRenderer();
-        break;
-      case "playful":
-        this.renderer = new GitTagPlayfulRenderer();
-        break;
-      case "verbose":
-        this.renderer = new GitTagVerboseRenderer();
-        break;
-      case "labeled":
-        this.renderer = new GitTagLabeledRenderer();
-        break;
-      case "indicator":
-        this.renderer = new GitTagIndicatorRenderer();
-        break;
-      case "fancy":
-        this.renderer = new GitTagFancyRenderer();
-        break;
-      default:
-        this.renderer = new GitTagBalancedRenderer();
-    }
-  }
+  setStyle = createStyleSetter(gitTagStyles, { value: this.styleFn });
 
   async initialize(context: WidgetContext): Promise<void> {
     this.enabled = context.config?.enabled !== false;
@@ -94,7 +63,8 @@ export class GitTagWidget implements IWidget {
       // Fetch the latest tag
       const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
 
-      return this.renderer.render({ tag: latestTag });
+      const renderData: GitTagRenderData = { tag: latestTag };
+      return this.styleFn(renderData);
     } catch {
       // Log specific error for debugging but return null (graceful degradation)
       return null;
