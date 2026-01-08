@@ -12,7 +12,6 @@ import { ModelWidget } from '../../src/widgets/model-widget.js';
 import { ContextWidget } from '../../src/widgets/context-widget.js';
 import { CostWidget } from '../../src/widgets/cost-widget.js';
 import { DurationWidget } from '../../src/widgets/duration-widget.js';
-import { GitChangesWidget } from '../../src/widgets/git/git-changes-widget.js';
 import { ConfigCountWidget } from '../../src/widgets/config-count-widget.js';
 import type { StdinData, RenderContext } from '../../src/types.js';
 
