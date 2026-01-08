@@ -1,0 +1,1 @@
+{"version":3,"file":"styles.d.ts","sourceRoot":"","sources":["../../../src/widgets/lines/styles.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAIH,OAAO,KAAK,EAAE,YAAY,EAAE,MAAM,yBAAyB,CAAC;AAC5D,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,YAAY,CAAC;AAClD,OAAO,KAAK,EAAE,QAAQ,EAAE,MAAM,2BAA2B,CAAC;AAE1D;;GAEG;AACH,wBAAgB,iBAAiB,CAAC,MAAM,EAAE,YAAY,GAAG,QAAQ,CAAC,eAAe,CAAC,CAoDjF"}
