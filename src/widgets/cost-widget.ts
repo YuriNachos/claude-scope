@@ -7,9 +7,11 @@
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
+import type { ICostColors, IThemeColors } from "../ui/theme/types.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { costStyles } from "./cost/styles.js";
 import type { CostRenderData } from "./cost/types.js";
-import { StdinDataWidget } from "./core/stdin-data-widget.js";
 
 export class CostWidget extends StdinDataWidget {
   readonly id = "cost";
@@ -21,7 +23,13 @@ export class CostWidget extends StdinDataWidget {
     0 // First line
   );
 
-  private styleFn: StyleRendererFn<CostRenderData> = costStyles.balanced!;
+  private colors: IThemeColors;
+  private styleFn: StyleRendererFn<CostRenderData, ICostColors> = costStyles.balanced!;
+
+  constructor(colors?: IThemeColors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
 
   setStyle(style: WidgetStyle = "balanced"): void {
     const fn = costStyles[style];
@@ -37,6 +45,6 @@ export class CostWidget extends StdinDataWidget {
       costUsd: data.cost.total_cost_usd,
     };
 
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.cost);
   }
 }

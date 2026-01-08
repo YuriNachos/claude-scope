@@ -2,29 +2,51 @@
  * Functional style renderers for CostWidget
  */
 
-import { formatCostUSD } from "../../ui/utils/formatters.js";
-import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
-import type { CostRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
+import type { ICostColors } from "../../ui/theme/types.js";
+import { colorize } from "../../ui/utils/colors.js";
+import { formatCostUSD } from "../../ui/utils/formatters.js";
+import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
+import type { CostRenderData } from "./types.js";
 
-export const costStyles: StyleMap<CostRenderData> = {
-  balanced: (data: CostRenderData) => {
-    return formatCostUSD(data.costUsd);
+export const costStyles: StyleMap<CostRenderData, ICostColors> = {
+  balanced: (data: CostRenderData, colors?: ICostColors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return formatted;
+
+    // Colorize the amount, keep currency symbol muted
+    const amountStr = data.costUsd.toFixed(2);
+    return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
   },
 
-  compact: (data: CostRenderData) => {
-    return formatCostUSD(data.costUsd);
+  compact: (data: CostRenderData, colors?: ICostColors) => {
+    return costStyles.balanced!(data, colors);
   },
 
-  playful: (data: CostRenderData) => {
-    return `💰 ${formatCostUSD(data.costUsd)}`;
+  playful: (data: CostRenderData, colors?: ICostColors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return `💰 ${formatted}`;
+
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return `💰 ${colored}`;
   },
 
-  labeled: (data: CostRenderData) => {
-    return withLabel("Cost", formatCostUSD(data.costUsd));
+  labeled: (data: CostRenderData, colors?: ICostColors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return withLabel("Cost", formatted);
+
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return withLabel("Cost", colored);
   },
 
-  indicator: (data: CostRenderData) => {
-    return withIndicator(formatCostUSD(data.costUsd));
+  indicator: (data: CostRenderData, colors?: ICostColors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return withIndicator(formatted);
+
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return withIndicator(colored);
   },
 };

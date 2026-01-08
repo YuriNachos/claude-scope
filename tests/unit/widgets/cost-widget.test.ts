@@ -6,6 +6,7 @@ import { describe, it } from "node:test";
 import { expect } from "chai";
 import { CostWidget } from "../../../src/widgets/cost-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
+import { stripAnsi } from "../../helpers/snapshot.js";
 
 describe("CostWidget", () => {
   it("should have correct id and metadata", () => {
@@ -30,7 +31,7 @@ describe("CostWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.equal("$0.00");
+    expect(stripAnsi(result || "")).to.equal("$0.00");
   });
 
   it("should format normal cost ($0.01 - $100)", async () => {
@@ -49,7 +50,7 @@ describe("CostWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.equal("$1.23");
+    expect(stripAnsi(result || "")).to.equal("$1.23");
   });
 
   it("should format large cost (>= $100)", async () => {
@@ -68,7 +69,7 @@ describe("CostWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.equal("$123.45");
+    expect(stripAnsi(result || "")).to.equal("$123.45");
   });
 
   it("should handle zero cost", async () => {
@@ -87,7 +88,7 @@ describe("CostWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.equal("$0.00");
+    expect(stripAnsi(result || "")).to.equal("$0.00");
   });
 
   describe("style renderers", () => {
@@ -111,7 +112,7 @@ describe("CostWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("$0.42");
+        expect(stripAnsi(result || "")).to.equal("$0.42");
       });
     });
 
@@ -123,7 +124,7 @@ describe("CostWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("$0.42");
+        expect(stripAnsi(result || "")).to.equal("$0.42");
       });
     });
 
@@ -135,7 +136,7 @@ describe("CostWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("💰 $0.42");
+        expect(stripAnsi(result || "")).to.equal("💰 $0.42");
       });
     });
 
@@ -147,7 +148,7 @@ describe("CostWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("Cost: $0.42");
+        expect(stripAnsi(result || "")).to.equal("Cost: $0.42");
       });
     });
 
@@ -159,7 +160,7 @@ describe("CostWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("● $0.42");
+        expect(stripAnsi(result || "")).to.equal("● $0.42");
       });
     });
 
@@ -169,10 +170,14 @@ describe("CostWidget", () => {
         await widget.update(createMockStdinData(createCostData(testCost)));
 
         widget.setStyle("balanced");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("$0.42");
+        expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+          "$0.42"
+        );
 
         widget.setStyle("playful");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("💰 $0.42");
+        expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+          "💰 $0.42"
+        );
       });
 
       it("should default to balanced for unknown styles", async () => {
@@ -183,7 +188,7 @@ describe("CostWidget", () => {
         widget.setStyle("unknown" as any);
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("$0.42");
+        expect(stripAnsi(result || "")).to.equal("$0.42");
       });
     });
   });

@@ -643,6 +643,9 @@ var red = "\x1B[31m";
 var gray = "\x1B[90m";
 var lightGray = "\x1B[37m";
 var bold = "\x1B[1m";
+function colorize(text, color) {
+  return `${color}${text}${reset}`;
+}
 
 // src/ui/theme/gray-theme.ts
 var GRAY_THEME = {
@@ -721,7 +724,7 @@ function formatDuration(ms) {
 function formatCostUSD(usd) {
   return `$${usd.toFixed(2)}`;
 }
-function colorize(text, color) {
+function colorize2(text, color) {
   return `${color}${text}${ANSI_COLORS.RESET}`;
 }
 
@@ -793,7 +796,7 @@ var ContextWidget = class extends StdinDataWidget {
     };
     const output = this.styleFn(renderData);
     const color = this.getContextColor(percent);
-    return colorize(output, color);
+    return colorize2(output, color);
   }
   getContextColor(percent) {
     const clampedPercent = Math.max(0, Math.min(100, percent));
@@ -809,20 +812,35 @@ var ContextWidget = class extends StdinDataWidget {
 
 // src/widgets/cost/styles.ts
 var costStyles = {
-  balanced: (data) => {
-    return formatCostUSD(data.costUsd);
+  balanced: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return formatted;
+    const amountStr = data.costUsd.toFixed(2);
+    return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
   },
-  compact: (data) => {
-    return formatCostUSD(data.costUsd);
+  compact: (data, colors) => {
+    return costStyles.balanced(data, colors);
   },
-  playful: (data) => {
-    return `\u{1F4B0} ${formatCostUSD(data.costUsd)}`;
+  playful: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return `\u{1F4B0} ${formatted}`;
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return `\u{1F4B0} ${colored}`;
   },
-  labeled: (data) => {
-    return withLabel("Cost", formatCostUSD(data.costUsd));
+  labeled: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return withLabel("Cost", formatted);
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return withLabel("Cost", colored);
   },
-  indicator: (data) => {
-    return withIndicator(formatCostUSD(data.costUsd));
+  indicator: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return withIndicator(formatted);
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return withIndicator(colored);
   }
 };
 
@@ -837,7 +855,12 @@ var CostWidget = class extends StdinDataWidget {
     0
     // First line
   );
+  colors;
   styleFn = costStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
   setStyle(style = "balanced") {
     const fn = costStyles[style];
     if (fn) {
@@ -849,7 +872,7 @@ var CostWidget = class extends StdinDataWidget {
     const renderData = {
       costUsd: data.cost.total_cost_usd
     };
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.cost);
   }
 };
 
@@ -857,39 +880,39 @@ var CostWidget = class extends StdinDataWidget {
 function createLinesStyles(colors) {
   return {
     balanced: (data) => {
-      const addedStr = colorize(`+${data.added}`, colors.added);
-      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      const addedStr = colorize2(`+${data.added}`, colors.added);
+      const removedStr = colorize2(`-${data.removed}`, colors.removed);
       return `${addedStr}/${removedStr}`;
     },
     compact: (data) => {
-      const addedStr = colorize(`+${data.added}`, colors.added);
-      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      const addedStr = colorize2(`+${data.added}`, colors.added);
+      const removedStr = colorize2(`-${data.removed}`, colors.removed);
       return `${addedStr}${removedStr}`;
     },
     playful: (data) => {
-      const addedStr = colorize(`\u2795${data.added}`, colors.added);
-      const removedStr = colorize(`\u2796${data.removed}`, colors.removed);
+      const addedStr = colorize2(`\u2795${data.added}`, colors.added);
+      const removedStr = colorize2(`\u2796${data.removed}`, colors.removed);
       return `${addedStr} ${removedStr}`;
     },
     verbose: (data) => {
       const parts = [];
       if (data.added > 0) {
-        parts.push(colorize(`+${data.added} added`, colors.added));
+        parts.push(colorize2(`+${data.added} added`, colors.added));
       }
       if (data.removed > 0) {
-        parts.push(colorize(`-${data.removed} removed`, colors.removed));
+        parts.push(colorize2(`-${data.removed} removed`, colors.removed));
       }
       return parts.join(", ");
     },
     labeled: (data) => {
-      const addedStr = colorize(`+${data.added}`, colors.added);
-      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      const addedStr = colorize2(`+${data.added}`, colors.added);
+      const removedStr = colorize2(`-${data.removed}`, colors.removed);
       const lines = `${addedStr}/${removedStr}`;
       return withLabel("Lines", lines);
     },
     indicator: (data) => {
-      const addedStr = colorize(`+${data.added}`, colors.added);
-      const removedStr = colorize(`-${data.removed}`, colors.removed);
+      const addedStr = colorize2(`+${data.added}`, colors.added);
+      const removedStr = colorize2(`-${data.removed}`, colors.removed);
       const lines = `${addedStr}/${removedStr}`;
       return withIndicator(lines);
     }
@@ -1774,8 +1797,8 @@ var pokerStyles = {
     const participatingSet = new Set(handResult?.participatingIndices || []);
     const handStr = holeCards.map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx))).join("");
     const boardStr = boardCards.map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const handLabel = colorize("Hand:", lightGray);
-    const boardLabel = colorize("Board:", lightGray);
+    const handLabel = colorize2("Hand:", lightGray);
+    const boardLabel = colorize2("Board:", lightGray);
     return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult)}`;
   },
   compact: (data) => {
@@ -1797,8 +1820,8 @@ var pokerStyles = {
     const participatingSet = new Set(handResult?.participatingIndices || []);
     const handStr = holeCards.map((hc, idx) => formatCardEmojiByParticipation(hc, participatingSet.has(idx))).join("");
     const boardStr = boardCards.map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const handLabel = colorize("Hand:", lightGray);
-    const boardLabel = colorize("Board:", lightGray);
+    const handLabel = colorize2("Hand:", lightGray);
+    const boardLabel = colorize2("Board:", lightGray);
     return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult)}`;
   }
 };

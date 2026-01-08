@@ -4,13 +4,19 @@
  * Displays total session cost
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { costStyles } from "./cost/styles.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import { costStyles } from "./cost/styles.js";
 export class CostWidget extends StdinDataWidget {
     id = "cost";
     metadata = createWidgetMetadata("Cost", "Displays session cost in USD", "1.0.0", "claude-scope", 0 // First line
     );
+    colors;
     styleFn = costStyles.balanced;
+    constructor(colors) {
+        super();
+        this.colors = colors ?? DEFAULT_THEME;
+    }
     setStyle(style = "balanced") {
         const fn = costStyles[style];
         if (fn) {
@@ -23,7 +29,7 @@ export class CostWidget extends StdinDataWidget {
         const renderData = {
             costUsd: data.cost.total_cost_usd,
         };
-        return this.styleFn(renderData);
+        return this.styleFn(renderData, this.colors.cost);
     }
 }
 //# sourceMappingURL=cost-widget.js.map

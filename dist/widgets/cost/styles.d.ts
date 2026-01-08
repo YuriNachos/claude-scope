@@ -1,7 +1,8 @@
 /**
  * Functional style renderers for CostWidget
  */
-import type { CostRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
-export declare const costStyles: StyleMap<CostRenderData>;
+import type { ICostColors } from "../../ui/theme/types.js";
+import type { CostRenderData } from "./types.js";
+export declare const costStyles: StyleMap<CostRenderData, ICostColors>;
 //# sourceMappingURL=styles.d.ts.map
