@@ -8,8 +8,7 @@ import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
-import type { IContextColors } from "../ui/theme/types.js";
-import { colorize } from "../ui/utils/formatters.js";
+import type { IContextColors, IThemeColors } from "../ui/theme/types.js";
 import { contextStyles } from "./context/styles.js";
 import type { ContextRenderData } from "./context/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
@@ -24,12 +23,12 @@ export class ContextWidget extends StdinDataWidget {
     0 // First line
   );
 
-  private colors: IContextColors;
-  private styleFn: StyleRendererFn<ContextRenderData> = contextStyles.balanced!;
+  private colors: IThemeColors;
+  private styleFn: StyleRendererFn<ContextRenderData, IContextColors> = contextStyles.balanced!;
 
-  constructor(colors?: IContextColors) {
+  constructor(colors?: IThemeColors) {
     super();
-    this.colors = colors ?? DEFAULT_THEME.context;
+    this.colors = colors ?? DEFAULT_THEME;
   }
 
   setStyle(style: WidgetStyle = "balanced"): void {
@@ -63,21 +62,7 @@ export class ContextWidget extends StdinDataWidget {
       percent,
     };
 
-    const output = this.styleFn(renderData);
-    const color = this.getContextColor(percent);
-
-    return colorize(output, color);
-  }
-
-  private getContextColor(percent: number): string {
-    const clampedPercent = Math.max(0, Math.min(100, percent));
-
-    if (clampedPercent < 50) {
-      return this.colors.low;
-    } else if (clampedPercent < 80) {
-      return this.colors.medium;
-    } else {
-      return this.colors.high;
-    }
+    // Style functions now handle colorization based on percent
+    return this.styleFn(renderData, this.colors.context);
   }
 }

@@ -722,6 +722,100 @@ var ModelWidget = class extends StdinDataWidget {
   }
 };
 
+// src/widgets/context/styles.ts
+function getContextColor(percent, colors) {
+  const clampedPercent = Math.max(0, Math.min(100, percent));
+  if (clampedPercent < 50) {
+    return colors.low;
+  } else if (clampedPercent < 80) {
+    return colors.medium;
+  } else {
+    return colors.high;
+  }
+}
+var contextStyles = {
+  balanced: (data, colors) => {
+    const bar = progressBar(data.percent, 10);
+    const output = `[${bar}] ${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  compact: (data, colors) => {
+    const output = `${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  playful: (data, colors) => {
+    const bar = progressBar(data.percent, 10);
+    const output = `\u{1F9E0} [${bar}] ${data.percent}%`;
+    if (!colors) return output;
+    return `\u{1F9E0} ` + colorize(`[${bar}] ${data.percent}%`, getContextColor(data.percent, colors));
+  },
+  verbose: (data, colors) => {
+    const usedFormatted = data.used.toLocaleString();
+    const maxFormatted = data.contextWindowSize.toLocaleString();
+    const output = `${usedFormatted} / ${maxFormatted} tokens (${data.percent}%)`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  symbolic: (data, colors) => {
+    const filled = Math.round(data.percent / 100 * 5);
+    const empty = 5 - filled;
+    const output = `${"\u25AE".repeat(filled)}${"\u25AF".repeat(empty)} ${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  "compact-verbose": (data, colors) => {
+    const usedK = data.used >= 1e3 ? `${Math.floor(data.used / 1e3)}K` : data.used.toString();
+    const maxK = data.contextWindowSize >= 1e3 ? `${Math.floor(data.contextWindowSize / 1e3)}K` : data.contextWindowSize.toString();
+    const output = `${data.percent}% (${usedK}/${maxK})`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  indicator: (data, colors) => {
+    const output = `\u25CF ${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  }
+};
+
+// src/widgets/context-widget.ts
+var ContextWidget = class extends StdinDataWidget {
+  id = "context";
+  metadata = createWidgetMetadata(
+    "Context",
+    "Displays context window usage with progress bar",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  colors;
+  styleFn = contextStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = contextStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  renderWithData(data, _context) {
+    const { current_usage, context_window_size } = data.context_window;
+    if (!current_usage) return null;
+    const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
+    const percent = Math.round(used / context_window_size * 100);
+    const renderData = {
+      used,
+      contextWindowSize: context_window_size,
+      percent
+    };
+    return this.styleFn(renderData, this.colors.context);
+  }
+};
+
 // src/ui/utils/formatters.ts
 function formatDuration(ms) {
   if (ms <= 0) return "0s";
@@ -748,88 +842,6 @@ function formatCostUSD(usd) {
 function colorize2(text, color) {
   return `${color}${text}${ANSI_COLORS.RESET}`;
 }
-
-// src/widgets/context/styles.ts
-var contextStyles = {
-  balanced: (data) => {
-    const bar = progressBar(data.percent, 10);
-    return `[${bar}] ${data.percent}%`;
-  },
-  compact: (data) => {
-    return `${data.percent}%`;
-  },
-  playful: (data) => {
-    const bar = progressBar(data.percent, 10);
-    return `\u{1F9E0} [${bar}] ${data.percent}%`;
-  },
-  verbose: (data) => {
-    const usedFormatted = data.used.toLocaleString();
-    const maxFormatted = data.contextWindowSize.toLocaleString();
-    return `${usedFormatted} / ${maxFormatted} tokens (${data.percent}%)`;
-  },
-  symbolic: (data) => {
-    const filled = Math.round(data.percent / 100 * 5);
-    const empty = 5 - filled;
-    return `${"\u25AE".repeat(filled)}${"\u25AF".repeat(empty)} ${data.percent}%`;
-  },
-  "compact-verbose": (data) => {
-    const usedK = data.used >= 1e3 ? `${Math.floor(data.used / 1e3)}K` : data.used.toString();
-    const maxK = data.contextWindowSize >= 1e3 ? `${Math.floor(data.contextWindowSize / 1e3)}K` : data.contextWindowSize.toString();
-    return `${data.percent}% (${usedK}/${maxK})`;
-  },
-  indicator: (data) => {
-    return `\u25CF ${data.percent}%`;
-  }
-};
-
-// src/widgets/context-widget.ts
-var ContextWidget = class extends StdinDataWidget {
-  id = "context";
-  metadata = createWidgetMetadata(
-    "Context",
-    "Displays context window usage with progress bar",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  colors;
-  styleFn = contextStyles.balanced;
-  constructor(colors) {
-    super();
-    this.colors = colors ?? DEFAULT_THEME.context;
-  }
-  setStyle(style = "balanced") {
-    const fn = contextStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  renderWithData(data, _context) {
-    const { current_usage, context_window_size } = data.context_window;
-    if (!current_usage) return null;
-    const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
-    const percent = Math.round(used / context_window_size * 100);
-    const renderData = {
-      used,
-      contextWindowSize: context_window_size,
-      percent
-    };
-    const output = this.styleFn(renderData);
-    const color = this.getContextColor(percent);
-    return colorize2(output, color);
-  }
-  getContextColor(percent) {
-    const clampedPercent = Math.max(0, Math.min(100, percent));
-    if (clampedPercent < 50) {
-      return this.colors.low;
-    } else if (clampedPercent < 80) {
-      return this.colors.medium;
-    } else {
-      return this.colors.high;
-    }
-  }
-};
 
 // src/widgets/cost/styles.ts
 var costStyles = {

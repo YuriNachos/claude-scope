@@ -2,9 +2,10 @@
  * Functional style renderers for ContextWidget
  *
  * All rendering logic as pure functions instead of classes.
- * Much more compact than the 8 separate renderer files.
+ * Style functions now handle colorization based on usage percent.
  */
-import type { ContextRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
-export declare const contextStyles: StyleMap<ContextRenderData>;
+import type { IContextColors } from "../../ui/theme/types.js";
+import type { ContextRenderData } from "./types.js";
+export declare const contextStyles: StyleMap<ContextRenderData, IContextColors>;
 //# sourceMappingURL=styles.d.ts.map

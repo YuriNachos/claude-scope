@@ -5,7 +5,6 @@
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
-import { colorize } from "../ui/utils/formatters.js";
 import { contextStyles } from "./context/styles.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 export class ContextWidget extends StdinDataWidget {
@@ -16,7 +15,7 @@ export class ContextWidget extends StdinDataWidget {
     styleFn = contextStyles.balanced;
     constructor(colors) {
         super();
-        this.colors = colors ?? DEFAULT_THEME.context;
+        this.colors = colors ?? DEFAULT_THEME;
     }
     setStyle(style = "balanced") {
         const fn = contextStyles[style];
@@ -43,21 +42,8 @@ export class ContextWidget extends StdinDataWidget {
             contextWindowSize: context_window_size,
             percent,
         };
-        const output = this.styleFn(renderData);
-        const color = this.getContextColor(percent);
-        return colorize(output, color);
-    }
-    getContextColor(percent) {
-        const clampedPercent = Math.max(0, Math.min(100, percent));
-        if (clampedPercent < 50) {
-            return this.colors.low;
-        }
-        else if (clampedPercent < 80) {
-            return this.colors.medium;
-        }
-        else {
-            return this.colors.high;
-        }
+        // Style functions now handle colorization based on percent
+        return this.styleFn(renderData, this.colors.context);
     }
 }
 //# sourceMappingURL=context-widget.js.map
