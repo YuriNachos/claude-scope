@@ -1,13 +1,13 @@
-import { describe, it } from "node:test";
 import assert from "node:assert";
+import { describe, it } from "node:test";
 import {
-  withLabel,
-  withIndicator,
-  withFancy,
-  withBrackets,
-  withAngleBrackets,
   formatTokens,
   progressBar,
+  withAngleBrackets,
+  withBrackets,
+  withFancy,
+  withIndicator,
+  withLabel,
 } from "../../../../src/ui/utils/style-utils.js";
 
 describe("style-utils", () => {
