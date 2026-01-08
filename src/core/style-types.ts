@@ -12,7 +12,8 @@ export type WidgetStyle =
   | "monochrome"
   | "compact-verbose"
   | "labeled"
-  | "indicator";
+  | "indicator"
+  | "emoji";
 
 export const DEFAULT_WIDGET_STYLE: WidgetStyle = "balanced";
 
@@ -43,6 +44,7 @@ export function isValidWidgetStyle(value: string): value is WidgetStyle {
     "compact-verbose",
     "labeled",
     "indicator",
+    "emoji",
   ].includes(value);
 }
 
