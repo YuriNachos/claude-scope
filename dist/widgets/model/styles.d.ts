@@ -1,7 +1,8 @@
 /**
  * Functional style renderers for ModelWidget
  */
-import type { ModelRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
-export declare const modelStyles: StyleMap<ModelRenderData>;
+import type { IModelColors } from "../../ui/theme/types.js";
+import type { ModelRenderData } from "./types.js";
+export declare const modelStyles: StyleMap<ModelRenderData, IModelColors>;
 //# sourceMappingURL=styles.d.ts.map

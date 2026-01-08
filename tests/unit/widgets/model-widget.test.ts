@@ -2,10 +2,11 @@
  * Unit tests for ModelWidget
  */
 
-import { describe, it, beforeEach } from "node:test";
+import { beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
 import { ModelWidget } from "../../../src/widgets/model-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
+import { stripAnsi } from "../../helpers/snapshot.js";
 
 describe("ModelWidget", () => {
   describe("initialization", () => {
@@ -38,7 +39,7 @@ describe("ModelWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.equal("Opus 4.5");
+      expect(stripAnsi(result || "")).to.equal("Opus 4.5");
     });
 
     it("should return different model names", async () => {
@@ -47,12 +48,16 @@ describe("ModelWidget", () => {
       await widget.update(
         createMockStdinData({ model: { id: "claude-sonnet-4-1", display_name: "Sonnet 4.1" } })
       );
-      expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("Sonnet 4.1");
+      expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+        "Sonnet 4.1"
+      );
 
       await widget.update(
         createMockStdinData({ model: { id: "claude-haiku-4-1", display_name: "Haiku 4.1" } })
       );
-      expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("Haiku 4.1");
+      expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+        "Haiku 4.1"
+      );
     });
 
     it("should handle model names with special characters", async () => {
@@ -63,7 +68,7 @@ describe("ModelWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.equal("Claude-3.5-Sonnet (Beta)");
+      expect(stripAnsi(result || "")).to.equal("Claude-3.5-Sonnet (Beta)");
     });
 
     it("should return null when render called before update", async () => {
@@ -85,7 +90,7 @@ describe("ModelWidget", () => {
       const result2 = await widget.render({ width: 100, timestamp: 0 });
 
       expect(result1).to.equal(result2);
-      expect(result1).to.equal("Test Model");
+      expect(stripAnsi(result1 || "")).to.equal("Test Model");
     });
   });
 
@@ -144,7 +149,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("Claude Opus 4.5");
+        expect(stripAnsi(result || "")).to.equal("Claude Opus 4.5");
       });
     });
 
@@ -156,7 +161,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("Opus 4.5");
+        expect(stripAnsi(result || "")).to.equal("Opus 4.5");
       });
 
       it('should handle names without "Claude " prefix', async () => {
@@ -166,7 +171,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("GPT-4");
+        expect(stripAnsi(result || "")).to.equal("GPT-4");
       });
     });
 
@@ -178,7 +183,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("🤖 Opus 4.5");
+        expect(stripAnsi(result || "")).to.equal("🤖 Opus 4.5");
       });
     });
 
@@ -190,7 +195,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("claude-opus-4-5-20251101");
+        expect(stripAnsi(result || "")).to.equal("claude-opus-4-5-20251101");
       });
     });
 
@@ -202,7 +207,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("◆ Opus 4.5");
+        expect(stripAnsi(result || "")).to.equal("◆ Opus 4.5");
       });
     });
 
@@ -214,7 +219,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("Model: Opus 4.5");
+        expect(stripAnsi(result || "")).to.equal("Model: Opus 4.5");
       });
     });
 
@@ -226,7 +231,7 @@ describe("ModelWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("● Opus 4.5");
+        expect(stripAnsi(result || "")).to.equal("● Opus 4.5");
       });
     });
 
@@ -236,13 +241,17 @@ describe("ModelWidget", () => {
         await widget.update(createMockStdinData({ model: testData }));
 
         widget.setStyle("balanced");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("Claude Opus 4.5");
+        expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+          "Claude Opus 4.5"
+        );
 
         widget.setStyle("compact");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("Opus 4.5");
+        expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+          "Opus 4.5"
+        );
 
         widget.setStyle("technical");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal(
+        expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
           "claude-opus-4-5-20251101"
         );
       });
@@ -255,7 +264,7 @@ describe("ModelWidget", () => {
         widget.setStyle("unknown" as any);
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("Claude Opus 4.5");
+        expect(stripAnsi(result || "")).to.equal("Claude Opus 4.5");
       });
     });
   });

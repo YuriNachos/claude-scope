@@ -7,9 +7,11 @@
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
+import type { IModelColors, IThemeColors } from "../ui/theme/types.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { modelStyles } from "./model/styles.js";
 import type { ModelRenderData } from "./model/types.js";
-import { StdinDataWidget } from "./core/stdin-data-widget.js";
 
 export class ModelWidget extends StdinDataWidget {
   readonly id = "model";
@@ -21,7 +23,13 @@ export class ModelWidget extends StdinDataWidget {
     0 // First line
   );
 
-  private styleFn: StyleRendererFn<ModelRenderData> = modelStyles.balanced!;
+  private colors: IThemeColors;
+  private styleFn: StyleRendererFn<ModelRenderData, IModelColors> = modelStyles.balanced!;
+
+  constructor(colors?: IThemeColors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
 
   setStyle(style: WidgetStyle = "balanced"): void {
     const fn = modelStyles[style];
@@ -35,6 +43,6 @@ export class ModelWidget extends StdinDataWidget {
       displayName: data.model.display_name,
       id: data.model.id,
     };
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.model);
   }
 }

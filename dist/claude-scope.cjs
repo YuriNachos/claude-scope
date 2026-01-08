@@ -524,119 +524,6 @@ var GitTagWidget = class {
   }
 };
 
-// src/widgets/model/styles.ts
-function getShortName(displayName) {
-  return displayName.replace(/^Claude\s+/, "");
-}
-var modelStyles = {
-  balanced: (data) => {
-    return data.displayName;
-  },
-  compact: (data) => {
-    return getShortName(data.displayName);
-  },
-  playful: (data) => {
-    return `\u{1F916} ${getShortName(data.displayName)}`;
-  },
-  technical: (data) => {
-    return data.id;
-  },
-  symbolic: (data) => {
-    return `\u25C6 ${getShortName(data.displayName)}`;
-  },
-  labeled: (data) => {
-    return withLabel("Model", getShortName(data.displayName));
-  },
-  indicator: (data) => {
-    return withIndicator(getShortName(data.displayName));
-  }
-};
-
-// src/widgets/core/stdin-data-widget.ts
-var StdinDataWidget = class {
-  /**
-   * Stored stdin data from last update
-   */
-  data = null;
-  /**
-   * Widget enabled state
-   */
-  enabled = true;
-  /**
-   * Initialize widget with context
-   * @param context - Widget initialization context
-   */
-  async initialize(context) {
-    this.enabled = context.config?.enabled !== false;
-  }
-  /**
-   * Update widget with new stdin data
-   * @param data - Stdin data from Claude Code
-   */
-  async update(data) {
-    this.data = data;
-  }
-  /**
-   * Get stored stdin data
-   * @returns Stored stdin data
-   * @throws Error if data has not been initialized (update not called)
-   */
-  getData() {
-    if (!this.data) {
-      throw new Error(`Widget ${this.id} data not initialized. Call update() first.`);
-    }
-    return this.data;
-  }
-  /**
-   * Check if widget is enabled
-   * @returns true if widget should render
-   */
-  isEnabled() {
-    return this.enabled;
-  }
-  /**
-   * Template method - final, subclasses implement renderWithData()
-   *
-   * Handles null data checks and calls renderWithData() hook.
-   *
-   * @param context - Render context
-   * @returns Rendered string, or null if widget should not display
-   */
-  async render(context) {
-    if (!this.data || !this.enabled) {
-      return null;
-    }
-    return this.renderWithData(this.data, context);
-  }
-};
-
-// src/widgets/model-widget.ts
-var ModelWidget = class extends StdinDataWidget {
-  id = "model";
-  metadata = createWidgetMetadata(
-    "Model",
-    "Displays the current Claude model name",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  styleFn = modelStyles.balanced;
-  setStyle(style = "balanced") {
-    const fn = modelStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  renderWithData(data, _context) {
-    const renderData = {
-      displayName: data.model.display_name,
-      id: data.model.id
-    };
-    return this.styleFn(renderData);
-  }
-};
-
 // src/ui/utils/colors.ts
 var reset = "\x1B[0m";
 var red = "\x1B[31m";
@@ -700,6 +587,140 @@ var GRAY_THEME = {
 
 // src/ui/theme/index.ts
 var DEFAULT_THEME = GRAY_THEME.colors;
+
+// src/widgets/core/stdin-data-widget.ts
+var StdinDataWidget = class {
+  /**
+   * Stored stdin data from last update
+   */
+  data = null;
+  /**
+   * Widget enabled state
+   */
+  enabled = true;
+  /**
+   * Initialize widget with context
+   * @param context - Widget initialization context
+   */
+  async initialize(context) {
+    this.enabled = context.config?.enabled !== false;
+  }
+  /**
+   * Update widget with new stdin data
+   * @param data - Stdin data from Claude Code
+   */
+  async update(data) {
+    this.data = data;
+  }
+  /**
+   * Get stored stdin data
+   * @returns Stored stdin data
+   * @throws Error if data has not been initialized (update not called)
+   */
+  getData() {
+    if (!this.data) {
+      throw new Error(`Widget ${this.id} data not initialized. Call update() first.`);
+    }
+    return this.data;
+  }
+  /**
+   * Check if widget is enabled
+   * @returns true if widget should render
+   */
+  isEnabled() {
+    return this.enabled;
+  }
+  /**
+   * Template method - final, subclasses implement renderWithData()
+   *
+   * Handles null data checks and calls renderWithData() hook.
+   *
+   * @param context - Render context
+   * @returns Rendered string, or null if widget should not display
+   */
+  async render(context) {
+    if (!this.data || !this.enabled) {
+      return null;
+    }
+    return this.renderWithData(this.data, context);
+  }
+};
+
+// src/widgets/model/styles.ts
+function getShortName(displayName) {
+  return displayName.replace(/^Claude\s+/, "");
+}
+var modelStyles = {
+  balanced: (data, colors) => {
+    if (!colors) return data.displayName;
+    return colorize(data.displayName, colors.name);
+  },
+  compact: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return shortName;
+    return colorize(shortName, colors.name);
+  },
+  playful: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return `\u{1F916} ${shortName}`;
+    return `\u{1F916} ${colorize(shortName, colors.name)}`;
+  },
+  technical: (data, colors) => {
+    if (!colors) return data.id;
+    const match = data.id.match(/^(.+?)-(\d[\d.]*)$/);
+    if (match) {
+      return colorize(match[1], colors.name) + colorize(`-${match[2]}`, colors.version);
+    }
+    return colorize(data.id, colors.name);
+  },
+  symbolic: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return `\u25C6 ${shortName}`;
+    return `\u25C6 ${colorize(shortName, colors.name)}`;
+  },
+  labeled: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return withLabel("Model", shortName);
+    return withLabel("Model", colorize(shortName, colors.name));
+  },
+  indicator: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return withIndicator(shortName);
+    return withIndicator(colorize(shortName, colors.name));
+  }
+};
+
+// src/widgets/model-widget.ts
+var ModelWidget = class extends StdinDataWidget {
+  id = "model";
+  metadata = createWidgetMetadata(
+    "Model",
+    "Displays the current Claude model name",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  colors;
+  styleFn = modelStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = modelStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  renderWithData(data, _context) {
+    const renderData = {
+      displayName: data.model.display_name,
+      id: data.model.id
+    };
+    return this.styleFn(renderData, this.colors.model);
+  }
+};
 
 // src/ui/utils/formatters.ts
 function formatDuration(ms) {

@@ -1,31 +1,56 @@
 /**
  * Functional style renderers for ModelWidget
  */
-import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
+import { colorize } from "../../ui/utils/colors.js";
+import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
 function getShortName(displayName) {
     return displayName.replace(/^Claude\s+/, "");
 }
 export const modelStyles = {
-    balanced: (data) => {
-        return data.displayName;
+    balanced: (data, colors) => {
+        if (!colors)
+            return data.displayName;
+        return colorize(data.displayName, colors.name);
     },
-    compact: (data) => {
-        return getShortName(data.displayName);
+    compact: (data, colors) => {
+        const shortName = getShortName(data.displayName);
+        if (!colors)
+            return shortName;
+        return colorize(shortName, colors.name);
     },
-    playful: (data) => {
-        return `🤖 ${getShortName(data.displayName)}`;
+    playful: (data, colors) => {
+        const shortName = getShortName(data.displayName);
+        if (!colors)
+            return `🤖 ${shortName}`;
+        return `🤖 ${colorize(shortName, colors.name)}`;
     },
-    technical: (data) => {
-        return data.id;
+    technical: (data, colors) => {
+        if (!colors)
+            return data.id;
+        // Colorize name part, keep version muted
+        const match = data.id.match(/^(.+?)-(\d[\d.]*)$/);
+        if (match) {
+            return colorize(match[1], colors.name) + colorize(`-${match[2]}`, colors.version);
+        }
+        return colorize(data.id, colors.name);
     },
-    symbolic: (data) => {
-        return `◆ ${getShortName(data.displayName)}`;
+    symbolic: (data, colors) => {
+        const shortName = getShortName(data.displayName);
+        if (!colors)
+            return `◆ ${shortName}`;
+        return `◆ ${colorize(shortName, colors.name)}`;
     },
-    labeled: (data) => {
-        return withLabel("Model", getShortName(data.displayName));
+    labeled: (data, colors) => {
+        const shortName = getShortName(data.displayName);
+        if (!colors)
+            return withLabel("Model", shortName);
+        return withLabel("Model", colorize(shortName, colors.name));
     },
-    indicator: (data) => {
-        return withIndicator(getShortName(data.displayName));
+    indicator: (data, colors) => {
+        const shortName = getShortName(data.displayName);
+        if (!colors)
+            return withIndicator(shortName);
+        return withIndicator(colorize(shortName, colors.name));
     },
 };
 //# sourceMappingURL=styles.js.map
