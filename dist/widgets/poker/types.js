@@ -17,10 +17,25 @@ export const SUIT_SYMBOLS = {
     clubs: "♣",
 };
 /**
+ * Emoji suit symbols (colorful versions with variation selector)
+ */
+export const EMOJI_SYMBOLS = {
+    spades: "\u2660\uFE0F", // ♠️
+    hearts: "\u2665\uFE0F", // ♥️
+    diamonds: "\u2666\uFE0F", // ♦️
+    clubs: "\u2663\uFE0F", // ♣️
+};
+/**
  * Get suit symbol for display
  */
 export function getSuitSymbol(suit) {
     return SUIT_SYMBOLS[suit];
+}
+/**
+ * Get emoji suit symbol for display
+ */
+export function getEmojiSymbol(suit) {
+    return EMOJI_SYMBOLS[suit];
 }
 /**
  * Check if suit is red (hearts or diamonds)
@@ -72,6 +87,12 @@ export function getRankValue(rank) {
  */
 export function formatCard(card) {
     return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+}
+/**
+ * Format card as string with emoji suit symbol
+ */
+export function formatCardEmoji(card) {
+    return `${card.rank}${EMOJI_SYMBOLS[card.suit]}`;
 }
 /**
  * Hand ranking values (higher = better)

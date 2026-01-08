@@ -16,9 +16,17 @@ export declare const Suit: {
  */
 export declare const SUIT_SYMBOLS: Record<Suit, string>;
 /**
+ * Emoji suit symbols (colorful versions with variation selector)
+ */
+export declare const EMOJI_SYMBOLS: Record<Suit, string>;
+/**
  * Get suit symbol for display
  */
 export declare function getSuitSymbol(suit: Suit): string;
+/**
+ * Get emoji suit symbol for display
+ */
+export declare function getEmojiSymbol(suit: Suit): string;
 /**
  * Check if suit is red (hearts or diamonds)
  */
@@ -60,6 +68,10 @@ export interface Card {
  * Format card as string with suit symbol
  */
 export declare function formatCard(card: Card): string;
+/**
+ * Format card as string with emoji suit symbol
+ */
+export declare function formatCardEmoji(card: Card): string;
 /**
  * Hand ranking values (higher = better)
  */

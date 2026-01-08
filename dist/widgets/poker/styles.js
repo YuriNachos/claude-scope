@@ -3,7 +3,7 @@
  */
 import { bold, gray, lightGray, red, reset } from "../../ui/utils/colors.js";
 import { colorize } from "../../ui/utils/formatters.js";
-import { formatCard, isRedSuit } from "./types.js";
+import { formatCard, formatCardEmoji, isRedSuit } from "./types.js";
 const HAND_ABBREVIATIONS = {
     "Royal Flush": "RF",
     "Straight Flush": "SF",
@@ -57,6 +57,18 @@ function formatCardTextCompact(card) {
     const rank = String(card.rank);
     const rankSymbol = rankSymbols[rank] ?? rank;
     return `${rankSymbol}${card.suit}`;
+}
+/**
+ * Format card with emoji suit symbols
+ */
+function formatCardEmojiByParticipation(cardData, isParticipating) {
+    const cardText = formatCardEmoji(cardData.card);
+    if (isParticipating) {
+        return `${bold}(${cardText})${reset} `;
+    }
+    else {
+        return `${cardText} `;
+    }
 }
 /**
  * Format hand result with emoji
@@ -116,6 +128,19 @@ export const pokerStyles = {
             .join("");
         const abbreviation = getHandAbbreviation(handResult);
         return `${handStr}| ${boardStr}→ ${abbreviation}`;
+    },
+    emoji: (data) => {
+        const { holeCards, boardCards, handResult } = data;
+        const participatingSet = new Set(handResult?.participatingIndices || []);
+        const handStr = holeCards
+            .map((hc, idx) => formatCardEmojiByParticipation(hc, participatingSet.has(idx)))
+            .join("");
+        const boardStr = boardCards
+            .map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2)))
+            .join("");
+        const handLabel = colorize("Hand:", lightGray);
+        const boardLabel = colorize("Board:", lightGray);
+        return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult)}`;
     },
 };
 //# sourceMappingURL=styles.js.map

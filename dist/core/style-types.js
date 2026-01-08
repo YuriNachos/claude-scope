@@ -15,6 +15,7 @@ export function isValidWidgetStyle(value) {
         "compact-verbose",
         "labeled",
         "indicator",
+        "emoji",
     ].includes(value);
 }
 //# sourceMappingURL=style-types.js.map

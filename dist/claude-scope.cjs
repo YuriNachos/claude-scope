@@ -1240,6 +1240,16 @@ var SUIT_SYMBOLS = {
   diamonds: "\u2666",
   clubs: "\u2663"
 };
+var EMOJI_SYMBOLS = {
+  spades: "\u2660\uFE0F",
+  // ♠️
+  hearts: "\u2665\uFE0F",
+  // ♥️
+  diamonds: "\u2666\uFE0F",
+  // ♦️
+  clubs: "\u2663\uFE0F"
+  // ♣️
+};
 function isRedSuit(suit) {
   return suit === "hearts" || suit === "diamonds";
 }
@@ -1278,6 +1288,9 @@ function getRankValue(rank) {
 }
 function formatCard(card) {
   return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+}
+function formatCardEmoji(card) {
+  return `${card.rank}${EMOJI_SYMBOLS[card.suit]}`;
 }
 
 // src/widgets/poker/deck.ts
@@ -1688,6 +1701,14 @@ function formatCardTextCompact(card) {
   const rankSymbol = rankSymbols[rank] ?? rank;
   return `${rankSymbol}${card.suit}`;
 }
+function formatCardEmojiByParticipation(cardData, isParticipating) {
+  const cardText = formatCardEmoji(cardData.card);
+  if (isParticipating) {
+    return `${bold}(${cardText})${reset} `;
+  } else {
+    return `${cardText} `;
+  }
+}
 function formatHandResult(handResult) {
   if (!handResult) {
     return "\u2014";
@@ -1729,6 +1750,15 @@ var pokerStyles = {
     const boardStr = boardCards.map((bc, idx) => formatCardCompact(bc, participatingSet.has(idx + 2))).join("");
     const abbreviation = getHandAbbreviation(handResult);
     return `${handStr}| ${boardStr}\u2192 ${abbreviation}`;
+  },
+  emoji: (data) => {
+    const { holeCards, boardCards, handResult } = data;
+    const participatingSet = new Set(handResult?.participatingIndices || []);
+    const handStr = holeCards.map((hc, idx) => formatCardEmojiByParticipation(hc, participatingSet.has(idx))).join("");
+    const boardStr = boardCards.map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2))).join("");
+    const handLabel = colorize("Hand:", lightGray);
+    const boardLabel = colorize("Board:", lightGray);
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult)}`;
   }
 };
 
