@@ -7,9 +7,11 @@
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
+import type { IDurationColors, IThemeColors } from "../ui/theme/types.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { durationStyles } from "./duration/styles.js";
 import type { DurationRenderData } from "./duration/types.js";
-import { StdinDataWidget } from "./core/stdin-data-widget.js";
 
 export class DurationWidget extends StdinDataWidget {
   readonly id = "duration";
@@ -21,7 +23,13 @@ export class DurationWidget extends StdinDataWidget {
     0 // First line
   );
 
-  private styleFn: StyleRendererFn<DurationRenderData> = durationStyles.balanced!;
+  private colors: IThemeColors;
+  private styleFn: StyleRendererFn<DurationRenderData, IDurationColors> = durationStyles.balanced!;
+
+  constructor(colors?: IThemeColors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
 
   setStyle(style: WidgetStyle = "balanced"): void {
     const fn = durationStyles[style];
@@ -37,6 +45,6 @@ export class DurationWidget extends StdinDataWidget {
       durationMs: data.cost.total_duration_ms,
     };
 
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.duration);
   }
 }

@@ -4,13 +4,19 @@
  * Displays elapsed session time
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { durationStyles } from "./duration/styles.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import { durationStyles } from "./duration/styles.js";
 export class DurationWidget extends StdinDataWidget {
     id = "duration";
     metadata = createWidgetMetadata("Duration", "Displays elapsed session time", "1.0.0", "claude-scope", 0 // First line
     );
+    colors;
     styleFn = durationStyles.balanced;
+    constructor(colors) {
+        super();
+        this.colors = colors ?? DEFAULT_THEME;
+    }
     setStyle(style = "balanced") {
         const fn = durationStyles[style];
         if (fn) {
@@ -23,7 +29,7 @@ export class DurationWidget extends StdinDataWidget {
         const renderData = {
             durationMs: data.cost.total_duration_ms,
         };
-        return this.styleFn(renderData);
+        return this.styleFn(renderData, this.colors.duration);
     }
 }
 //# sourceMappingURL=duration-widget.js.map

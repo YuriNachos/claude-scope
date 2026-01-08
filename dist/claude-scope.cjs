@@ -955,37 +955,77 @@ var LinesWidget = class extends StdinDataWidget {
 
 // src/widgets/duration/styles.ts
 var durationStyles = {
-  balanced: (data) => {
-    return formatDuration(data.durationMs);
+  balanced: (data, colors) => {
+    const formatted = formatDuration(data.durationMs);
+    if (!colors) return formatted;
+    return formatDurationWithColors(data.durationMs, colors);
   },
-  compact: (data) => {
+  compact: (data, colors) => {
     const totalSeconds = Math.floor(data.durationMs / 1e3);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor(totalSeconds % 3600 / 60);
-    if (hours > 0) {
-      return `${hours}h${minutes}m`;
+    if (!colors) {
+      if (hours > 0) {
+        return `${hours}h${minutes}m`;
+      }
+      return `${minutes}m`;
     }
-    return `${minutes}m`;
+    if (hours > 0) {
+      return colorize(`${hours}`, colors.value) + colorize("h", colors.unit) + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
+    }
+    return colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
   },
-  playful: (data) => {
+  playful: (data, colors) => {
     const totalSeconds = Math.floor(data.durationMs / 1e3);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor(totalSeconds % 3600 / 60);
-    if (hours > 0) {
-      return `\u231B ${hours}h ${minutes}m`;
+    if (!colors) {
+      if (hours > 0) {
+        return `\u231B ${hours}h ${minutes}m`;
+      }
+      return `\u231B ${minutes}m`;
     }
-    return `\u231B ${minutes}m`;
+    if (hours > 0) {
+      const colored = colorize(`${hours}`, colors.value) + colorize("h", colors.unit) + colorize(` ${minutes}`, colors.value) + colorize("m", colors.unit);
+      return `\u231B ${colored}`;
+    }
+    return `\u231B ` + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
   },
-  technical: (data) => {
-    return `${Math.floor(data.durationMs)}ms`;
+  technical: (data, colors) => {
+    const value = `${Math.floor(data.durationMs)}ms`;
+    if (!colors) return value;
+    return colorize(`${Math.floor(data.durationMs)}`, colors.value) + colorize("ms", colors.unit);
   },
-  labeled: (data) => {
-    return withLabel("Time", formatDuration(data.durationMs));
+  labeled: (data, colors) => {
+    const formatted = formatDuration(data.durationMs);
+    if (!colors) return withLabel("Time", formatted);
+    const colored = formatDurationWithColors(data.durationMs, colors);
+    return withLabel("Time", colored);
   },
-  indicator: (data) => {
-    return withIndicator(formatDuration(data.durationMs));
+  indicator: (data, colors) => {
+    const formatted = formatDuration(data.durationMs);
+    if (!colors) return withIndicator(formatted);
+    const colored = formatDurationWithColors(data.durationMs, colors);
+    return withIndicator(colored);
   }
 };
+function formatDurationWithColors(ms, colors) {
+  const totalSeconds = Math.floor(ms / 1e3);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor(totalSeconds % 3600 / 60);
+  const seconds = totalSeconds % 60;
+  const parts = [];
+  if (hours > 0) {
+    parts.push(colorize(`${hours}`, colors.value) + colorize("h", colors.unit));
+  }
+  if (minutes > 0) {
+    parts.push(colorize(`${minutes}`, colors.value) + colorize("m", colors.unit));
+  }
+  if (seconds > 0 || parts.length === 0) {
+    parts.push(colorize(`${seconds}`, colors.value) + colorize("s", colors.unit));
+  }
+  return parts.join(" ");
+}
 
 // src/widgets/duration-widget.ts
 var DurationWidget = class extends StdinDataWidget {
@@ -998,7 +1038,12 @@ var DurationWidget = class extends StdinDataWidget {
     0
     // First line
   );
+  colors;
   styleFn = durationStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
   setStyle(style = "balanced") {
     const fn = durationStyles[style];
     if (fn) {
@@ -1010,7 +1055,7 @@ var DurationWidget = class extends StdinDataWidget {
     const renderData = {
       durationMs: data.cost.total_duration_ms
     };
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.colors.duration);
   }
 };
 
