@@ -2,7 +2,7 @@
  * Functional style renderers for GitWidget
  */
 
-import { withLabel, withIndicator, withBrackets } from "../../ui/utils/style-utils.js";
+import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
 import type { GitRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
 
@@ -31,7 +31,4 @@ export const gitStyles: StyleMap<GitRenderData> = {
     return withIndicator(data.branch);
   },
 
-  fancy: (data: GitRenderData) => {
-    return withBrackets(data.branch);
-  },
 };
