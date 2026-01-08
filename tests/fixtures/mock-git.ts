@@ -62,7 +62,7 @@ export class MockGit implements IGit {
   }
 
   async diffSummary(): Promise<GitDiffSummary> {
-    return { files: this._diffFiles };
+    return { fileCount: this._diffFiles.length, files: this._diffFiles };
   }
 
   async latestTag(): Promise<string | null> {
