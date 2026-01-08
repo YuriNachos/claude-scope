@@ -224,4 +224,118 @@ describe('GitWidget', () => {
       await matchSnapshot('git-widget-feature-branch', stripAnsi(result || ''));
     });
   });
+
+  describe('style renderers', () => {
+    const testBranch = 'main';
+
+    const createMockWidget = (branch: string) => {
+      const mockGit = new MockGit();
+      mockGit.setBranch(branch);
+      const widget = new GitWidget(() => mockGit);
+      void widget.update({ cwd: '/test/dir' } as any);
+      return widget;
+    };
+
+    describe('balanced style', () => {
+      it('should render branch name', async () => {
+        const widget = createMockWidget(testBranch);
+        widget.setStyle('balanced');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('main');
+      });
+    });
+
+    describe('compact style', () => {
+      it('should render branch name (same as balanced)', async () => {
+        const widget = createMockWidget(testBranch);
+        widget.setStyle('compact');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('main');
+      });
+    });
+
+    describe('playful style', () => {
+      it('should render with branch emoji', async () => {
+        const widget = createMockWidget(testBranch);
+        widget.setStyle('playful');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('🔀 main');
+      });
+    });
+
+    describe('verbose style', () => {
+      it('should render with full branch info', async () => {
+        const widget = createMockWidget(testBranch);
+        widget.setStyle('verbose');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('branch: main (HEAD)');
+      });
+    });
+
+    describe('indicator style', () => {
+      it('should render with bullet indicator', async () => {
+        const widget = createMockWidget(testBranch);
+        widget.setStyle('indicator');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('● main');
+      });
+    });
+
+    describe('labeled style', () => {
+      it('should render with label prefix', async () => {
+        const widget = createMockWidget(testBranch);
+        widget.setStyle('labeled');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('Git: main');
+      });
+    });
+
+    describe('fancy style', () => {
+      it('should render in brackets', async () => {
+        const widget = createMockWidget(testBranch);
+        widget.setStyle('fancy');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('[main]');
+      });
+    });
+
+    describe('style switching', () => {
+      it('should switch between styles dynamically', async () => {
+        const widget = createMockWidget(testBranch);
+
+        widget.setStyle('balanced');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('main');
+
+        widget.setStyle('playful');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('🔀 main');
+
+        widget.setStyle('fancy');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('[main]');
+      });
+
+      it('should default to balanced for unknown styles', async () => {
+        const widget = createMockWidget(testBranch);
+
+        // @ts-expect-error - testing invalid style
+        widget.setStyle('unknown' as any);
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('main');
+      });
+    });
+  });
 });
