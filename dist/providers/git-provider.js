@@ -44,18 +44,20 @@ export class NativeGit {
             });
             // Parse output like: " 5 file(s) changed, 12 insertions(+), 3 deletions(-)"
             // or: " 2 insertions(+), 1 deletion(-)"
+            const fileMatch = stdout.match(/(\d+)\s+file(s?)\s+changed/);
             const insertionMatch = stdout.match(/(\d+)\s+insertion/);
             const deletionMatch = stdout.match(/(\d+)\s+deletion/);
+            const fileCount = fileMatch ? parseInt(fileMatch[1], 10) : 0;
             const insertions = insertionMatch ? parseInt(insertionMatch[1], 10) : 0;
             const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
             // Return a single "file" entry representing total changes
             // This matches the simple-git behavior we had before
             const files = insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
-            return { files };
+            return { fileCount, files };
         }
         catch {
             // Not in a git repo or git not available
-            return { files: [] };
+            return { fileCount: 0, files: [] };
         }
     }
     async latestTag() {

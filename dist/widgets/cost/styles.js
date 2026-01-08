@@ -2,7 +2,7 @@
  * Functional style renderers for CostWidget
  */
 import { formatCostUSD } from "../../ui/utils/formatters.js";
-import { withLabel, withIndicator, withFancy } from "../../ui/utils/style-utils.js";
+import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
 export const costStyles = {
     balanced: (data) => {
         return formatCostUSD(data.costUsd);
@@ -18,9 +18,6 @@ export const costStyles = {
     },
     indicator: (data) => {
         return withIndicator(formatCostUSD(data.costUsd));
-    },
-    fancy: (data) => {
-        return withFancy(formatCostUSD(data.costUsd));
     },
 };
 //# sourceMappingURL=styles.js.map

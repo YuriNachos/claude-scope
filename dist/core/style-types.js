@@ -4,6 +4,7 @@ export function getDefaultStyleConfig(style = DEFAULT_WIDGET_STYLE) {
 }
 export function isValidWidgetStyle(value) {
     return [
+        "minimal",
         "balanced",
         "compact",
         "playful",
@@ -14,7 +15,6 @@ export function isValidWidgetStyle(value) {
         "compact-verbose",
         "labeled",
         "indicator",
-        "fancy",
     ].includes(value);
 }
 //# sourceMappingURL=style-types.js.map

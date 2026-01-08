@@ -248,14 +248,16 @@ var NativeGit = class {
       const { stdout } = await execFileAsync("git", args, {
         cwd: this.cwd
       });
+      const fileMatch = stdout.match(/(\d+)\s+file(s?)\s+changed/);
       const insertionMatch = stdout.match(/(\d+)\s+insertion/);
       const deletionMatch = stdout.match(/(\d+)\s+deletion/);
+      const fileCount = fileMatch ? parseInt(fileMatch[1], 10) : 0;
       const insertions = insertionMatch ? parseInt(insertionMatch[1], 10) : 0;
       const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
       const files = insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
-      return { files };
+      return { fileCount, files };
     } catch {
-      return { files: [] };
+      return { fileCount: 0, files: [] };
     }
   }
   async latestTag() {
@@ -281,15 +283,6 @@ function withLabel(prefix, value) {
 function withIndicator(value) {
   return `\u25CF ${value}`;
 }
-function withFancy(value) {
-  return `\xAB${value}\xBB`;
-}
-function withBrackets(value) {
-  return `[${value}]`;
-}
-function withAngleBrackets(value) {
-  return `\u27E8${value}\u27E9`;
-}
 function progressBar(percent, width = 10) {
   const clamped = Math.max(0, Math.min(100, percent));
   const filled = Math.round(clamped / 100 * width);
@@ -299,26 +292,75 @@ function progressBar(percent, width = 10) {
 
 // src/widgets/git/styles.ts
 var gitStyles = {
+  minimal: (data) => {
+    return data.branch;
+  },
   balanced: (data) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        return `${data.branch} [${parts.join(" ")}]`;
+      }
+    }
     return data.branch;
   },
   compact: (data) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        return `${data.branch} ${parts.join("/")}`;
+      }
+    }
     return data.branch;
   },
   playful: (data) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`\u2B06${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`\u2B07${data.changes.deletions}`);
+      if (parts.length > 0) {
+        return `\u{1F500} ${data.branch} ${parts.join(" ")}`;
+      }
+    }
     return `\u{1F500} ${data.branch}`;
   },
   verbose: (data) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions} insertions`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions} deletions`);
+      if (parts.length > 0) {
+        return `branch: ${data.branch} [${parts.join(", ")}]`;
+      }
+    }
     return `branch: ${data.branch} (HEAD)`;
   },
   labeled: (data) => {
-    return withLabel("Git", data.branch);
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        const changes = `${data.changes.files} files: ${parts.join("/")}`;
+        return `Git: ${data.branch} [${changes}]`;
+      }
+    }
+    return `Git: ${data.branch}`;
   },
   indicator: (data) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        return `\u25CF ${data.branch} [${parts.join(" ")}]`;
+      }
+    }
     return withIndicator(data.branch);
-  },
-  fancy: (data) => {
-    return withBrackets(data.branch);
   }
 };
 
@@ -365,7 +407,23 @@ var GitWidget = class {
       if (!branch) {
         return null;
       }
-      const renderData = { branch };
+      let changes;
+      try {
+        const diffSummary = await this.git.diffSummary();
+        if (diffSummary.fileCount > 0) {
+          let insertions = 0;
+          let deletions = 0;
+          for (const file of diffSummary.files) {
+            insertions += file.insertions || 0;
+            deletions += file.deletions || 0;
+          }
+          if (insertions > 0 || deletions > 0) {
+            changes = { files: diffSummary.fileCount, insertions, deletions };
+          }
+        }
+      } catch {
+      }
+      const renderData = { branch, changes };
       return this.styleFn(renderData);
     } catch {
       return null;
@@ -405,9 +463,6 @@ var gitTagStyles = {
   },
   indicator: (data) => {
     return withIndicator(data.tag || "\u2014");
-  },
-  fancy: (data) => {
-    return withAngleBrackets(data.tag || "\u2014");
   }
 };
 
@@ -494,9 +549,6 @@ var modelStyles = {
   },
   indicator: (data) => {
     return withIndicator(getShortName(data.displayName));
-  },
-  fancy: (data) => {
-    return withBrackets(getShortName(data.displayName));
   }
 };
 
@@ -662,9 +714,6 @@ var contextStyles = {
   },
   indicator: (data) => {
     return `\u25CF ${data.percent}%`;
-  },
-  fancy: (data) => {
-    return `\u27E8${data.percent}%\u27E9`;
   }
 };
 
@@ -733,9 +782,6 @@ var costStyles = {
   },
   indicator: (data) => {
     return withIndicator(formatCostUSD(data.costUsd));
-  },
-  fancy: (data) => {
-    return withFancy(formatCostUSD(data.costUsd));
   }
 };
 
@@ -805,12 +851,6 @@ function createLinesStyles(colors) {
       const removedStr = colorize(`-${data.removed}`, colors.removed);
       const lines = `${addedStr}/${removedStr}`;
       return withIndicator(lines);
-    },
-    fancy: (data) => {
-      const addedStr = colorize(`+${data.added}`, colors.added);
-      const removedStr = colorize(`-${data.removed}`, colors.removed);
-      const lines = `${addedStr}|${removedStr}`;
-      return withAngleBrackets(lines);
     }
   };
 }
@@ -880,9 +920,6 @@ var durationStyles = {
   },
   indicator: (data) => {
     return withIndicator(formatDuration(data.durationMs));
-  },
-  fancy: (data) => {
-    return withAngleBrackets(formatDuration(data.durationMs));
   }
 };
 
@@ -910,146 +947,6 @@ var DurationWidget = class extends StdinDataWidget {
       durationMs: data.cost.total_duration_ms
     };
     return this.styleFn(renderData);
-  }
-};
-
-// src/widgets/git-changes/styles.ts
-var gitChangesStyles = {
-  balanced: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions}`);
-    if (data.deletions > 0) parts.push(`-${data.deletions}`);
-    return parts.join(" ");
-  },
-  compact: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions}`);
-    if (data.deletions > 0) parts.push(`-${data.deletions}`);
-    return parts.join("/");
-  },
-  playful: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`\u2B06${data.insertions}`);
-    if (data.deletions > 0) parts.push(`\u2B07${data.deletions}`);
-    return parts.join(" ");
-  },
-  verbose: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions} insertions`);
-    if (data.deletions > 0) parts.push(`-${data.deletions} deletions`);
-    return parts.join(", ");
-  },
-  technical: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`${data.insertions}`);
-    if (data.deletions > 0) parts.push(`${data.deletions}`);
-    return parts.join("/");
-  },
-  symbolic: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`\u25B2${data.insertions}`);
-    if (data.deletions > 0) parts.push(`\u25BC${data.deletions}`);
-    return parts.join(" ");
-  },
-  labeled: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions}`);
-    if (data.deletions > 0) parts.push(`-${data.deletions}`);
-    const changes = parts.join(" ");
-    return withLabel("Diff", changes);
-  },
-  indicator: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions}`);
-    if (data.deletions > 0) parts.push(`-${data.deletions}`);
-    const changes = parts.join(" ");
-    return withIndicator(changes);
-  },
-  fancy: (data) => {
-    const parts = [];
-    if (data.insertions > 0) parts.push(`+${data.insertions}`);
-    if (data.deletions > 0) parts.push(`-${data.deletions}`);
-    const changes = parts.join("|");
-    return withAngleBrackets(changes);
-  }
-};
-
-// src/widgets/git/git-changes-widget.ts
-var GitChangesWidget = class {
-  id = "git-changes";
-  metadata = createWidgetMetadata(
-    "Git Changes",
-    "Displays git diff statistics",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  gitFactory;
-  git = null;
-  enabled = true;
-  cwd = null;
-  styleFn = gitChangesStyles.balanced;
-  /**
-   * @param gitFactory - Optional factory function for creating IGit instances
-   *                     If not provided, uses default createGit (production)
-   *                     Tests can inject MockGit factory here
-   */
-  constructor(gitFactory) {
-    this.gitFactory = gitFactory || createGit;
-  }
-  setStyle(style = "balanced") {
-    const fn = gitChangesStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  async initialize(context) {
-    this.enabled = context.config?.enabled !== false;
-  }
-  async update(data) {
-    if (data.cwd !== this.cwd) {
-      this.cwd = data.cwd;
-      this.git = this.gitFactory(data.cwd);
-    }
-  }
-  async render(context) {
-    if (!this.enabled || !this.git || !this.cwd) {
-      return null;
-    }
-    let changes;
-    try {
-      const summary = await this.git.diffSummary(["--shortstat"]);
-      let insertions = 0;
-      let deletions = 0;
-      if (summary.files && summary.files.length > 0) {
-        for (const file of summary.files) {
-          if (typeof file.insertions === "number") {
-            insertions += file.insertions;
-          }
-          if (typeof file.deletions === "number") {
-            deletions += file.deletions;
-          }
-        }
-      }
-      if (insertions === 0 && deletions === 0) {
-        return null;
-      }
-      changes = { insertions, deletions };
-    } catch {
-      return null;
-    }
-    if (!changes) return null;
-    if (changes.insertions === 0 && changes.deletions === 0) {
-      return null;
-    }
-    const renderData = changes;
-    return this.styleFn(renderData);
-  }
-  isEnabled() {
-    return this.enabled;
-  }
-  async cleanup() {
   }
 };
 
@@ -2158,7 +2055,6 @@ async function main() {
     await registry.register(new DurationWidget());
     await registry.register(new GitWidget());
     await registry.register(new GitTagWidget());
-    await registry.register(new GitChangesWidget());
     await registry.register(new ConfigCountWidget());
     await registry.register(new PokerWidget());
     await registry.register(new EmptyLineWidget());

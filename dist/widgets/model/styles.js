@@ -1,7 +1,7 @@
 /**
  * Functional style renderers for ModelWidget
  */
-import { withLabel, withIndicator, withBrackets } from "../../ui/utils/style-utils.js";
+import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
 function getShortName(displayName) {
     return displayName.replace(/^Claude\s+/, "");
 }
@@ -26,9 +26,6 @@ export const modelStyles = {
     },
     indicator: (data) => {
         return withIndicator(getShortName(data.displayName));
-    },
-    fancy: (data) => {
-        return withBrackets(getShortName(data.displayName));
     },
 };
 //# sourceMappingURL=styles.js.map

@@ -26,6 +26,8 @@ export interface GitDiffFile {
  * Result of git diff --shortstat operation
  */
 export interface GitDiffSummary {
+    /** Number of changed files */
+    fileCount: number;
     /** Array of changed files with statistics */
     files: GitDiffFile[];
 }

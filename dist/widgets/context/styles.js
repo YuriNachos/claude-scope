@@ -35,8 +35,5 @@ export const contextStyles = {
     indicator: (data) => {
         return `● ${data.percent}%`;
     },
-    fancy: (data) => {
-        return `⟨${data.percent}%⟩`;
-    },
 };
 //# sourceMappingURL=styles.js.map

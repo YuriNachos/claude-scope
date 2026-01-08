@@ -2,7 +2,7 @@
  * Functional style renderers for DurationWidget
  */
 import { formatDuration } from "../../ui/utils/formatters.js";
-import { withIndicator, withAngleBrackets, withLabel } from "../../ui/utils/style-utils.js";
+import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
 export const durationStyles = {
     balanced: (data) => {
         return formatDuration(data.durationMs);
@@ -33,9 +33,6 @@ export const durationStyles = {
     },
     indicator: (data) => {
         return withIndicator(formatDuration(data.durationMs));
-    },
-    fancy: (data) => {
-        return withAngleBrackets(formatDuration(data.durationMs));
     },
 };
 //# sourceMappingURL=styles.js.map
