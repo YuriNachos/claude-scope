@@ -31,15 +31,15 @@ export const contextStyles: StyleMap<ContextRenderData> = {
   },
 
   symbolic: (data: ContextRenderData) => {
-    const filled = Math.round(data.percent / 10);
-    const empty = 10 - filled;
+    const filled = Math.round((data.percent / 100) * 5);
+    const empty = 5 - filled;
     return `${"▮".repeat(filled)}${"▯".repeat(empty)} ${data.percent}%`;
   },
 
   "compact-verbose": (data: ContextRenderData) => {
-    const usedK = Math.floor(data.used / 1000);
-    const maxK = Math.floor(data.contextWindowSize / 1000);
-    return `${data.percent}% (${usedK}K/${maxK}K)`;
+    const usedK = data.used >= 1000 ? `${Math.floor(data.used / 1000)}K` : data.used.toString();
+    const maxK = data.contextWindowSize >= 1000 ? `${Math.floor(data.contextWindowSize / 1000)}K` : data.contextWindowSize.toString();
+    return `${data.percent}% (${usedK}/${maxK})`;
   },
 
   indicator: (data: ContextRenderData) => {
