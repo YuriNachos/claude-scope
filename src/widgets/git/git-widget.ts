@@ -7,11 +7,10 @@
  */
 
 import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
-import type { StyleRendererFn } from "../../core/style-types.js";
+import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { IGit } from "../../providers/git-provider.js";
 import { createGit } from "../../providers/git-provider.js";
-import { createStyleSetter } from "../../utils/create-style-setter.js";
 import { gitStyles } from "./styles.js";
 import type { GitRenderData } from "./types.js";
 
@@ -48,7 +47,12 @@ export class GitWidget implements IWidget {
     this.gitFactory = gitFactory || createGit;
   }
 
-  setStyle = createStyleSetter(gitStyles, { value: this.styleFn });
+  setStyle(style: WidgetStyle = "balanced"): void {
+    const fn = gitStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
 
   async initialize(context: WidgetContext): Promise<void> {
     this.enabled = context.config?.enabled !== false;

@@ -4,10 +4,9 @@
  * Displays random Texas Hold'em hands for entertainment
  */
 
-import type { StyleRendererFn } from "../core/style-types.js";
+import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
-import { createStyleSetter } from "../utils/create-style-setter.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { Deck } from "./poker/deck.js";
 import { evaluateHand } from "./poker/hand-evaluator.js";
@@ -33,7 +32,12 @@ export class PokerWidget extends StdinDataWidget {
   private readonly THROTTLE_MS = 5000; // 5 seconds
   private styleFn: StyleRendererFn<PokerRenderData> = pokerStyles.balanced!;
 
-  setStyle = createStyleSetter(pokerStyles, { value: this.styleFn }, DEFAULT_WIDGET_STYLE);
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
+    const fn = pokerStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
 
   /**
    * Generate new poker hand on each update

@@ -8,11 +8,10 @@
  */
 
 import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
-import type { StyleRendererFn } from "../../core/style-types.js";
+import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { IGit } from "../../providers/git-provider.js";
 import { createGit } from "../../providers/git-provider.js";
-import { createStyleSetter } from "../../utils/create-style-setter.js";
 import { gitChangesStyles } from "../git-changes/styles.js";
 import type { GitChangesRenderData } from "../git-changes/types.js";
 
@@ -49,7 +48,12 @@ export class GitChangesWidget implements IWidget {
     this.gitFactory = gitFactory || createGit;
   }
 
-  setStyle = createStyleSetter(gitChangesStyles, { value: this.styleFn });
+  setStyle(style: WidgetStyle = "balanced"): void {
+    const fn = gitChangesStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
 
   async initialize(context: WidgetContext): Promise<void> {
     this.enabled = context.config?.enabled !== false;

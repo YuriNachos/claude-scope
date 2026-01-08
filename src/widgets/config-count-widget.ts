@@ -6,10 +6,9 @@
  */
 
 import type { IWidget, RenderContext, StdinData } from "../core/types.js";
-import type { StyleRendererFn } from "../core/style-types.js";
+import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { ConfigProvider, type ConfigCounts } from "../providers/config-provider.js";
-import { createStyleSetter } from "../utils/create-style-setter.js";
 import { configCountStyles } from "./config-count/styles.js";
 import type { ConfigCountRenderData } from "./config-count/types.js";
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
@@ -36,7 +35,12 @@ export class ConfigCountWidget implements IWidget {
   private cwd?: string;
   private styleFn: StyleRendererFn<ConfigCountRenderData> = configCountStyles.balanced!;
 
-  setStyle = createStyleSetter(configCountStyles, { value: this.styleFn }, DEFAULT_WIDGET_STYLE);
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
+    const fn = configCountStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
 
   async initialize(): Promise<void> {
     // No initialization needed

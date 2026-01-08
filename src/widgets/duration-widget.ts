@@ -4,10 +4,9 @@
  * Displays elapsed session time
  */
 
-import type { StyleRendererFn } from "../core/style-types.js";
+import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
-import { createStyleSetter } from "../utils/create-style-setter.js";
 import { durationStyles } from "./duration/styles.js";
 import type { DurationRenderData } from "./duration/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
@@ -24,7 +23,12 @@ export class DurationWidget extends StdinDataWidget {
 
   private styleFn: StyleRendererFn<DurationRenderData> = durationStyles.balanced!;
 
-  setStyle = createStyleSetter(durationStyles, { value: this.styleFn });
+  setStyle(style: WidgetStyle = "balanced"): void {
+    const fn = durationStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     if (!data.cost || data.cost.total_duration_ms === undefined) return null;

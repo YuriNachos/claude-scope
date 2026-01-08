@@ -5,12 +5,11 @@
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
 
-import type { StyleRendererFn, StyleMap } from "../core/style-types.js";
+import type { StyleRendererFn, StyleMap, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { ILinesColors } from "../ui/theme/types.js";
 import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
 import type { RenderContext, StdinData } from "../types.js";
-import { createStyleSetter } from "../utils/create-style-setter.js";
 import { createLinesStyles } from "./lines/styles.js";
 import type { LinesRenderData } from "./lines/types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
@@ -42,7 +41,12 @@ export class LinesWidget extends StdinDataWidget {
     this.styleFn = this.linesStyles.balanced!;
   }
 
-  setStyle = createStyleSetter(this.linesStyles, { value: this.styleFn }, "balanced");
+  setStyle(style: WidgetStyle = "balanced"): void {
+    const fn = this.linesStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     const added = data.cost?.total_lines_added ?? 0;
