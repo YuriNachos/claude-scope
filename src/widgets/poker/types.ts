@@ -24,10 +24,27 @@ export const SUIT_SYMBOLS: Record<Suit, string> = {
 };
 
 /**
+ * Emoji suit symbols (colorful versions with variation selector)
+ */
+export const EMOJI_SYMBOLS: Record<Suit, string> = {
+  spades: "\u2660\uFE0F", // ♠️
+  hearts: "\u2665\uFE0F", // ♥️
+  diamonds: "\u2666\uFE0F", // ♦️
+  clubs: "\u2663\uFE0F", // ♣️
+};
+
+/**
  * Get suit symbol for display
  */
 export function getSuitSymbol(suit: Suit): string {
   return SUIT_SYMBOLS[suit];
+}
+
+/**
+ * Get emoji suit symbol for display
+ */
+export function getEmojiSymbol(suit: Suit): string {
+  return EMOJI_SYMBOLS[suit];
 }
 
 /**
@@ -96,6 +113,13 @@ export interface Card {
  */
 export function formatCard(card: Card): string {
   return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
+}
+
+/**
+ * Format card as string with emoji suit symbol
+ */
+export function formatCardEmoji(card: Card): string {
+  return `${card.rank}${EMOJI_SYMBOLS[card.suit]}`;
 }
 
 /**
