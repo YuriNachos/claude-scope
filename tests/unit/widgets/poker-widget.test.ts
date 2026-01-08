@@ -337,4 +337,71 @@ describe('PokerWidget', () => {
       assert.ok(widget.lastUpdateTimestamp > 0);
     });
   });
+
+  describe('style renderers', () => {
+    it('should render balanced style (default)', async () => {
+      const widget = new PokerWidget();
+      widget.setStyle('balanced');
+      await widget.update(createMockStdinData({}));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      assert.ok(result);
+      assert.ok(result?.includes('Hand:'));
+      assert.ok(result?.includes('Board:'));
+      assert.ok(result?.includes('→'));
+    });
+
+    it('should render compact style (same as balanced)', async () => {
+      const widget = new PokerWidget();
+      widget.setStyle('compact');
+      await widget.update(createMockStdinData({}));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      assert.ok(result);
+      assert.ok(result?.includes('Hand:'));
+      assert.ok(result?.includes('Board:'));
+    });
+
+    it('should render playful style (same as balanced)', async () => {
+      const widget = new PokerWidget();
+      widget.setStyle('playful');
+      await widget.update(createMockStdinData({}));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      assert.ok(result);
+      assert.ok(result?.includes('Hand:'));
+      assert.ok(result?.includes('Board:'));
+    });
+
+    it('should render compact-verbose style without labels', async () => {
+      const widget = new PokerWidget();
+      widget.setStyle('compact-verbose');
+      await widget.update(createMockStdinData({}));
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      const cleanResult = stripAnsi(result || '');
+
+      assert.ok(result);
+      // Should not have labels
+      assert.ok(!cleanResult.includes('Hand:'));
+      assert.ok(!cleanResult.includes('Board:'));
+      // Should have arrow separator
+      assert.ok(cleanResult.includes('→'));
+    });
+
+    it('should default to balanced for unknown styles', async () => {
+      const widget = new PokerWidget();
+      await widget.update(createMockStdinData({}));
+
+      // @ts-expect-error - testing invalid style
+      widget.setStyle('unknown' as any);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      assert.ok(result);
+      assert.ok(result?.includes('Hand:'));
+    });
+  });
 });
