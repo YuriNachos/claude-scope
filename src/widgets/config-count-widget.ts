@@ -5,9 +5,12 @@
  * Data source: ConfigProvider scans filesystem.
  */
 
-import type { IWidget, RenderContext, StdinData } from "../core/types.js";
+import type { IWidget, RenderContext, StdinData, WidgetStyle } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { ConfigProvider, type ConfigCounts } from "../providers/config-provider.js";
+import { ConfigCountBalancedRenderer } from "./config-count/renderers/balanced.js";
+import type { ConfigCountRenderData } from "./config-count/renderers/types.js";
+import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 
 /**
  * Widget displaying configuration counts
@@ -29,6 +32,7 @@ export class ConfigCountWidget implements IWidget {
   private configProvider = new ConfigProvider();
   private configs?: ConfigCounts;
   private cwd?: string;
+  private renderer = new ConfigCountBalancedRenderer();
 
   async initialize(): Promise<void> {
     // No initialization needed
@@ -49,32 +53,32 @@ export class ConfigCountWidget implements IWidget {
     return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
   }
 
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
+    switch (style) {
+      case "balanced":
+        this.renderer = new ConfigCountBalancedRenderer();
+        break;
+      // Other renderers will be added in subsequent commits
+      default:
+        this.renderer = new ConfigCountBalancedRenderer();
+        break;
+    }
+  }
+
   async render(context: RenderContext): Promise<string | null> {
     if (!this.configs) {
       return null;
     }
 
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
+    const renderData: ConfigCountRenderData = {
+      claudeMdCount,
+      rulesCount,
+      mcpCount,
+      hooksCount
+    };
 
-    const parts: string[] = [];
-
-    if (claudeMdCount > 0) {
-      parts.push(`📄 ${claudeMdCount} CLAUDE.md`);
-    }
-
-    if (rulesCount > 0) {
-      parts.push(`📜 ${rulesCount} rules`);
-    }
-
-    if (mcpCount > 0) {
-      parts.push(`🔌 ${mcpCount} MCPs`);
-    }
-
-    if (hooksCount > 0) {
-      parts.push(`🪝 ${hooksCount} hooks`);
-    }
-
-    return parts.join(" │ ") || null;
+    return this.renderer.render(renderData);
   }
 
   async cleanup(): Promise<void> {
