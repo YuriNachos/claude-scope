@@ -6,6 +6,7 @@
  * because it requires async git operations with custom lifecycle management.
  */
 import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
+import type { WidgetStyle } from "../../core/style-types.js";
 import type { IGit } from "../../providers/git-provider.js";
 /**
  * Widget displaying the latest git tag
@@ -22,13 +23,14 @@ export declare class GitTagWidget implements IWidget {
     private git;
     private enabled;
     private cwd;
-    private latestTag;
+    private renderer;
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
      *                     If not provided, uses default createGit (production)
      *                     Tests can inject MockGit factory here
      */
     constructor(gitFactory?: (cwd: string) => IGit);
+    setStyle(style: WidgetStyle): void;
     initialize(context: WidgetContext): Promise<void>;
     render(context: RenderContext): Promise<string | null>;
     update(data: StdinData): Promise<void>;

@@ -4,6 +4,7 @@
  * Displays random Texas Hold'em hands for entertainment
  */
 import type { RenderContext, StdinData } from "../types.js";
+import type { WidgetStyle } from "../core/style-types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 export declare class PokerWidget extends StdinDataWidget {
     readonly id = "poker";
@@ -13,10 +14,12 @@ export declare class PokerWidget extends StdinDataWidget {
     private handResult;
     private lastUpdateTimestamp;
     private readonly THROTTLE_MS;
+    private renderer;
     /**
      * Generate new poker hand on each update
      */
     update(data: StdinData): Promise<void>;
+    setStyle(style?: WidgetStyle): void;
     /**
      * Format card with appropriate color (red for ♥♦, gray for ♠♣)
      */
@@ -28,5 +31,7 @@ export declare class PokerWidget extends StdinDataWidget {
      */
     private formatCardByParticipation;
     protected renderWithData(_data: StdinData, _context: RenderContext): string | null;
+    private getHandName;
+    private getHandEmoji;
 }
 //# sourceMappingURL=poker-widget.d.ts.map

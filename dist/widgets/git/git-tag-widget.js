@@ -7,7 +7,13 @@
  */
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { createGit } from "../../providers/git-provider.js";
-import { green, gray, reset } from "../../ui/utils/colors.js";
+import { GitTagBalancedRenderer } from "../git-tag/renderers/balanced.js";
+import { GitTagCompactRenderer } from "../git-tag/renderers/compact.js";
+import { GitTagFancyRenderer } from "../git-tag/renderers/fancy.js";
+import { GitTagIndicatorRenderer } from "../git-tag/renderers/indicator.js";
+import { GitTagLabeledRenderer } from "../git-tag/renderers/labeled.js";
+import { GitTagPlayfulRenderer } from "../git-tag/renderers/playful.js";
+import { GitTagVerboseRenderer } from "../git-tag/renderers/verbose.js";
 /**
  * Widget displaying the latest git tag
  *
@@ -24,7 +30,7 @@ export class GitTagWidget {
     git = null;
     enabled = true;
     cwd = null;
-    latestTag = null;
+    renderer = new GitTagBalancedRenderer();
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
      *                     If not provided, uses default createGit (production)
@@ -32,6 +38,33 @@ export class GitTagWidget {
      */
     constructor(gitFactory) {
         this.gitFactory = gitFactory || createGit;
+    }
+    setStyle(style) {
+        switch (style) {
+            case "balanced":
+                this.renderer = new GitTagBalancedRenderer();
+                break;
+            case "compact":
+                this.renderer = new GitTagCompactRenderer();
+                break;
+            case "playful":
+                this.renderer = new GitTagPlayfulRenderer();
+                break;
+            case "verbose":
+                this.renderer = new GitTagVerboseRenderer();
+                break;
+            case "labeled":
+                this.renderer = new GitTagLabeledRenderer();
+                break;
+            case "indicator":
+                this.renderer = new GitTagIndicatorRenderer();
+                break;
+            case "fancy":
+                this.renderer = new GitTagFancyRenderer();
+                break;
+            default:
+                this.renderer = new GitTagBalancedRenderer();
+        }
     }
     async initialize(context) {
         this.enabled = context.config?.enabled !== false;
@@ -42,12 +75,8 @@ export class GitTagWidget {
         }
         try {
             // Fetch the latest tag
-            this.latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
-            if (!this.latestTag) {
-                return `${gray}Tag:${reset} no tag`;
-            }
-            const tagValue = `${green}${this.latestTag}${reset}`;
-            return `${gray}Tag:${reset} ${tagValue}`;
+            const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
+            return this.renderer.render({ tag: latestTag });
         }
         catch {
             // Log specific error for debugging but return null (graceful degradation)

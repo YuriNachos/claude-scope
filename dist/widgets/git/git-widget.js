@@ -7,6 +7,13 @@
  */
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { createGit } from "../../providers/git-provider.js";
+import { GitBalancedRenderer } from "./renderers/balanced.js";
+import { GitCompactRenderer } from "./renderers/compact.js";
+import { GitFancyRenderer } from "./renderers/fancy.js";
+import { GitIndicatorRenderer } from "./renderers/indicator.js";
+import { GitLabeledRenderer } from "./renderers/labeled.js";
+import { GitPlayfulRenderer } from "./renderers/playful.js";
+import { GitVerboseRenderer } from "./renderers/verbose.js";
 /**
  * Widget displaying git branch information
  *
@@ -23,6 +30,7 @@ export class GitWidget {
     git = null;
     enabled = true;
     cwd = null;
+    renderer = new GitBalancedRenderer();
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
      *                     If not provided, uses default createGit (production)
@@ -30,6 +38,33 @@ export class GitWidget {
      */
     constructor(gitFactory) {
         this.gitFactory = gitFactory || createGit;
+    }
+    setStyle(style) {
+        switch (style) {
+            case "balanced":
+                this.renderer = new GitBalancedRenderer();
+                break;
+            case "compact":
+                this.renderer = new GitCompactRenderer();
+                break;
+            case "playful":
+                this.renderer = new GitPlayfulRenderer();
+                break;
+            case "verbose":
+                this.renderer = new GitVerboseRenderer();
+                break;
+            case "indicator":
+                this.renderer = new GitIndicatorRenderer();
+                break;
+            case "labeled":
+                this.renderer = new GitLabeledRenderer();
+                break;
+            case "fancy":
+                this.renderer = new GitFancyRenderer();
+                break;
+            default:
+                this.renderer = new GitBalancedRenderer();
+        }
     }
     async initialize(context) {
         this.enabled = context.config?.enabled !== false;
@@ -44,7 +79,7 @@ export class GitWidget {
             if (!branch) {
                 return null;
             }
-            return branch;
+            return this.renderer.render({ branch });
         }
         catch {
             // Log specific error for debugging but return null (graceful degradation)

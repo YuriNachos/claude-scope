@@ -5,6 +5,7 @@
  * Data source: ConfigProvider scans filesystem.
  */
 import type { IWidget, RenderContext, StdinData } from "../core/types.js";
+import type { WidgetStyle } from "../core/style-types.js";
 /**
  * Widget displaying configuration counts
  *
@@ -18,9 +19,11 @@ export declare class ConfigCountWidget implements IWidget {
     private configProvider;
     private configs?;
     private cwd?;
+    private renderer;
     initialize(): Promise<void>;
     update(data: StdinData): Promise<void>;
     isEnabled(): boolean;
+    setStyle(style?: WidgetStyle): void;
     render(context: RenderContext): Promise<string | null>;
     cleanup(): Promise<void>;
 }

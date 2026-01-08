@@ -5,6 +5,7 @@
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import type { WidgetStyle } from "../core/style-types.js";
 import type { ILinesColors } from "../ui/theme/types.js";
 import type { RenderContext, StdinData } from "../types.js";
 /**
@@ -17,7 +18,9 @@ export declare class LinesWidget extends StdinDataWidget {
     readonly id = "lines";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
     private colors;
+    private renderer;
     constructor(colors?: ILinesColors);
-    protected renderWithData(data: StdinData, context: RenderContext): string | null;
+    setStyle(style: WidgetStyle): void;
+    protected renderWithData(data: StdinData, _context: RenderContext): string | null;
 }
 //# sourceMappingURL=lines-widget.d.ts.map

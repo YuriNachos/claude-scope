@@ -273,6 +273,87 @@ function createGit(cwd) {
   return new NativeGit(cwd);
 }
 
+// src/core/style-renderer.ts
+var BaseStyleRenderer = class {
+};
+
+// src/widgets/git/renderers/balanced.ts
+var GitBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return data.branch;
+  }
+};
+
+// src/widgets/git/renderers/compact.ts
+var GitCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return data.branch;
+  }
+};
+
+// src/ui/utils/style-utils.ts
+function withLabel(prefix, value) {
+  if (prefix === "") return value;
+  return `${prefix}: ${value}`;
+}
+function withIndicator(value) {
+  return `\u25CF ${value}`;
+}
+function withFancy(value) {
+  return `\xAB${value}\xBB`;
+}
+function withBrackets(value) {
+  return `[${value}]`;
+}
+function withAngleBrackets(value) {
+  return `\u27E8${value}\u27E9`;
+}
+function formatTokens(n) {
+  if (n < 1e3) return n.toString();
+  return `${Math.floor(n / 1e3)}K`;
+}
+function progressBar(percent, width = 10) {
+  const clamped = Math.max(0, Math.min(100, percent));
+  const filled = Math.round(clamped / 100 * width);
+  const empty = width - filled;
+  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
+}
+
+// src/widgets/git/renderers/fancy.ts
+var GitFancyRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withBrackets(data.branch);
+  }
+};
+
+// src/widgets/git/renderers/indicator.ts
+var GitIndicatorRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withIndicator(data.branch);
+  }
+};
+
+// src/widgets/git/renderers/labeled.ts
+var GitLabeledRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withLabel("Git", data.branch);
+  }
+};
+
+// src/widgets/git/renderers/playful.ts
+var GitPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `\u{1F500} ${data.branch}`;
+  }
+};
+
+// src/widgets/git/renderers/verbose.ts
+var GitVerboseRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `branch: ${data.branch} (HEAD)`;
+  }
+};
+
 // src/widgets/git/git-widget.ts
 var GitWidget = class {
   id = "git";
@@ -288,6 +369,7 @@ var GitWidget = class {
   git = null;
   enabled = true;
   cwd = null;
+  renderer = new GitBalancedRenderer();
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
@@ -295,6 +377,33 @@ var GitWidget = class {
    */
   constructor(gitFactory) {
     this.gitFactory = gitFactory || createGit;
+  }
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new GitBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new GitCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new GitPlayfulRenderer();
+        break;
+      case "verbose":
+        this.renderer = new GitVerboseRenderer();
+        break;
+      case "indicator":
+        this.renderer = new GitIndicatorRenderer();
+        break;
+      case "labeled":
+        this.renderer = new GitLabeledRenderer();
+        break;
+      case "fancy":
+        this.renderer = new GitFancyRenderer();
+        break;
+      default:
+        this.renderer = new GitBalancedRenderer();
+    }
   }
   async initialize(context) {
     this.enabled = context.config?.enabled !== false;
@@ -309,7 +418,7 @@ var GitWidget = class {
       if (!branch) {
         return null;
       }
-      return branch;
+      return this.renderer.render({ branch });
     } catch {
       return null;
     }
@@ -327,13 +436,56 @@ var GitWidget = class {
   }
 };
 
-// src/ui/utils/colors.ts
-var reset = "\x1B[0m";
-var red = "\x1B[31m";
-var green = "\x1B[32m";
-var gray = "\x1B[90m";
-var lightGray = "\x1B[37m";
-var bold = "\x1B[1m";
+// src/widgets/git-tag/renderers/balanced.ts
+var GitTagBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return data.tag || "\u2014";
+  }
+};
+
+// src/widgets/git-tag/renderers/compact.ts
+var GitTagCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    if (!data.tag) return "\u2014";
+    return data.tag.replace(/^v/, "");
+  }
+};
+
+// src/widgets/git-tag/renderers/fancy.ts
+var GitTagFancyRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withAngleBrackets(data.tag || "\u2014");
+  }
+};
+
+// src/widgets/git-tag/renderers/indicator.ts
+var GitTagIndicatorRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withIndicator(data.tag || "\u2014");
+  }
+};
+
+// src/widgets/git-tag/renderers/labeled.ts
+var GitTagLabeledRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withLabel("Tag", data.tag || "none");
+  }
+};
+
+// src/widgets/git-tag/renderers/playful.ts
+var GitTagPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `\u{1F3F7}\uFE0F ${data.tag || "\u2014"}`;
+  }
+};
+
+// src/widgets/git-tag/renderers/verbose.ts
+var GitTagVerboseRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    if (!data.tag) return "version: none";
+    return `version ${data.tag}`;
+  }
+};
 
 // src/widgets/git/git-tag-widget.ts
 var GitTagWidget = class {
@@ -350,7 +502,7 @@ var GitTagWidget = class {
   git = null;
   enabled = true;
   cwd = null;
-  latestTag = null;
+  renderer = new GitTagBalancedRenderer();
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
@@ -358,6 +510,33 @@ var GitTagWidget = class {
    */
   constructor(gitFactory) {
     this.gitFactory = gitFactory || createGit;
+  }
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new GitTagBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new GitTagCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new GitTagPlayfulRenderer();
+        break;
+      case "verbose":
+        this.renderer = new GitTagVerboseRenderer();
+        break;
+      case "labeled":
+        this.renderer = new GitTagLabeledRenderer();
+        break;
+      case "indicator":
+        this.renderer = new GitTagIndicatorRenderer();
+        break;
+      case "fancy":
+        this.renderer = new GitTagFancyRenderer();
+        break;
+      default:
+        this.renderer = new GitTagBalancedRenderer();
+    }
   }
   async initialize(context) {
     this.enabled = context.config?.enabled !== false;
@@ -367,12 +546,8 @@ var GitTagWidget = class {
       return null;
     }
     try {
-      this.latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
-      if (!this.latestTag) {
-        return `${gray}Tag:${reset} no tag`;
-      }
-      const tagValue = `${green}${this.latestTag}${reset}`;
-      return `${gray}Tag:${reset} ${tagValue}`;
+      const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
+      return this.renderer.render({ tag: latestTag });
     } catch {
       return null;
     }
@@ -446,10 +621,6 @@ var StdinDataWidget = class {
     }
     return this.renderWithData(this.data, context);
   }
-};
-
-// src/core/style-renderer.ts
-var BaseStyleRenderer = class {
 };
 
 // src/widgets/model/renderers/balanced.ts
@@ -564,6 +735,13 @@ var ModelWidget = class extends StdinDataWidget {
   }
 };
 
+// src/ui/utils/colors.ts
+var reset = "\x1B[0m";
+var red = "\x1B[31m";
+var gray = "\x1B[90m";
+var lightGray = "\x1B[37m";
+var bold = "\x1B[1m";
+
 // src/ui/theme/default-theme.ts
 var DEFAULT_THEME = {
   context: {
@@ -602,24 +780,6 @@ function formatCostUSD(usd) {
 }
 function colorize(text, color) {
   return `${color}${text}${ANSI_COLORS.RESET}`;
-}
-
-// src/ui/utils/style-utils.ts
-function withIndicator(value) {
-  return `\u25CF ${value}`;
-}
-function withAngleBrackets(value) {
-  return `\u27E8${value}\u27E9`;
-}
-function formatTokens(n) {
-  if (n < 1e3) return n.toString();
-  return `${Math.floor(n / 1e3)}K`;
-}
-function progressBar(percent, width = 10) {
-  const clamped = Math.max(0, Math.min(100, percent));
-  const filled = Math.round(clamped / 100 * width);
-  const empty = width - filled;
-  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
 }
 
 // src/widgets/context/renderers/balanced.ts
@@ -761,6 +921,48 @@ var ContextWidget = class extends StdinDataWidget {
   }
 };
 
+// src/widgets/cost/renderers/balanced.ts
+var CostBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return formatCostUSD(data.costUsd);
+  }
+};
+
+// src/widgets/cost/renderers/compact.ts
+var CostCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return formatCostUSD(data.costUsd);
+  }
+};
+
+// src/widgets/cost/renderers/fancy.ts
+var CostFancyRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withFancy(formatCostUSD(data.costUsd));
+  }
+};
+
+// src/widgets/cost/renderers/indicator.ts
+var CostIndicatorRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `\u25CF ${formatCostUSD(data.costUsd)}`;
+  }
+};
+
+// src/widgets/cost/renderers/labeled.ts
+var CostLabeledRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `Cost: ${formatCostUSD(data.costUsd)}`;
+  }
+};
+
+// src/widgets/cost/renderers/playful.ts
+var CostPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `\u{1F4B0} ${formatCostUSD(data.costUsd)}`;
+  }
+};
+
 // src/widgets/cost-widget.ts
 var CostWidget = class extends StdinDataWidget {
   id = "cost";
@@ -772,9 +974,136 @@ var CostWidget = class extends StdinDataWidget {
     0
     // First line
   );
-  renderWithData(data, context) {
+  renderer = new CostBalancedRenderer();
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new CostBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new CostCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new CostPlayfulRenderer();
+        break;
+      case "labeled":
+        this.renderer = new CostLabeledRenderer();
+        break;
+      case "indicator":
+        this.renderer = new CostIndicatorRenderer();
+        break;
+      case "fancy":
+        this.renderer = new CostFancyRenderer();
+        break;
+      default:
+        this.renderer = new CostBalancedRenderer();
+    }
+  }
+  renderWithData(data, _context) {
     if (!data.cost || data.cost.total_cost_usd === void 0) return null;
-    return formatCostUSD(data.cost.total_cost_usd);
+    const renderData = {
+      costUsd: data.cost.total_cost_usd
+    };
+    return this.renderer.render(renderData);
+  }
+};
+
+// src/widgets/lines/renderers/balanced.ts
+var LinesBalancedRenderer = class extends BaseStyleRenderer {
+  constructor(colors) {
+    super();
+    this.colors = colors;
+  }
+  render(data) {
+    const addedStr = colorize(`+${data.added}`, this.colors.added);
+    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
+    return `${addedStr}/${removedStr}`;
+  }
+};
+
+// src/widgets/lines/renderers/compact.ts
+var LinesCompactRenderer = class extends BaseStyleRenderer {
+  constructor(colors) {
+    super();
+    this.colors = colors;
+  }
+  render(data) {
+    const addedStr = colorize(`+${data.added}`, this.colors.added);
+    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
+    return `${addedStr}${removedStr}`;
+  }
+};
+
+// src/widgets/lines/renderers/fancy.ts
+var LinesFancyRenderer = class extends BaseStyleRenderer {
+  constructor(colors) {
+    super();
+    this.colors = colors;
+  }
+  render(data) {
+    const addedStr = colorize(`+${data.added}`, this.colors.added);
+    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
+    const lines = `${addedStr}|${removedStr}`;
+    return withAngleBrackets(lines);
+  }
+};
+
+// src/widgets/lines/renderers/indicator.ts
+var LinesIndicatorRenderer = class extends BaseStyleRenderer {
+  constructor(colors) {
+    super();
+    this.colors = colors;
+  }
+  render(data) {
+    const addedStr = colorize(`+${data.added}`, this.colors.added);
+    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
+    const lines = `${addedStr}/${removedStr}`;
+    return withIndicator(lines);
+  }
+};
+
+// src/widgets/lines/renderers/labeled.ts
+var LinesLabeledRenderer = class extends BaseStyleRenderer {
+  constructor(colors) {
+    super();
+    this.colors = colors;
+  }
+  render(data) {
+    const addedStr = colorize(`+${data.added}`, this.colors.added);
+    const removedStr = colorize(`-${data.removed}`, this.colors.removed);
+    const lines = `${addedStr}/${removedStr}`;
+    return withLabel("Lines", lines);
+  }
+};
+
+// src/widgets/lines/renderers/playful.ts
+var LinesPlayfulRenderer = class extends BaseStyleRenderer {
+  constructor(colors) {
+    super();
+    this.colors = colors;
+  }
+  render(data) {
+    const addedStr = colorize(`\u2795${data.added}`, this.colors.added);
+    const removedStr = colorize(`\u2796${data.removed}`, this.colors.removed);
+    return `${addedStr} ${removedStr}`;
+  }
+};
+
+// src/widgets/lines/renderers/verbose.ts
+var LinesVerboseRenderer = class extends BaseStyleRenderer {
+  constructor(colors) {
+    super();
+    this.colors = colors;
+  }
+  render(data) {
+    const parts = [];
+    if (data.added > 0) {
+      parts.push(colorize(`+${data.added} added`, this.colors.added));
+    }
+    if (data.removed > 0) {
+      parts.push(colorize(`-${data.removed} removed`, this.colors.removed));
+    }
+    return parts.join(", ");
   }
 };
 
@@ -790,16 +1119,105 @@ var LinesWidget = class extends StdinDataWidget {
     // First line
   );
   colors;
+  renderer;
   constructor(colors) {
     super();
     this.colors = colors ?? DEFAULT_THEME.lines;
+    this.renderer = new LinesBalancedRenderer(this.colors);
   }
-  renderWithData(data, context) {
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new LinesBalancedRenderer(this.colors);
+        break;
+      case "compact":
+        this.renderer = new LinesCompactRenderer(this.colors);
+        break;
+      case "playful":
+        this.renderer = new LinesPlayfulRenderer(this.colors);
+        break;
+      case "verbose":
+        this.renderer = new LinesVerboseRenderer(this.colors);
+        break;
+      case "labeled":
+        this.renderer = new LinesLabeledRenderer(this.colors);
+        break;
+      case "indicator":
+        this.renderer = new LinesIndicatorRenderer(this.colors);
+        break;
+      case "fancy":
+        this.renderer = new LinesFancyRenderer(this.colors);
+        break;
+      default:
+        this.renderer = new LinesBalancedRenderer(this.colors);
+    }
+  }
+  renderWithData(data, _context) {
     const added = data.cost?.total_lines_added ?? 0;
     const removed = data.cost?.total_lines_removed ?? 0;
-    const addedStr = colorize(`+${added}`, this.colors.added);
-    const removedStr = colorize(`-${removed}`, this.colors.removed);
-    return `${addedStr}/${removedStr}`;
+    const renderData = { added, removed };
+    return this.renderer.render(renderData);
+  }
+};
+
+// src/widgets/duration/renderers/balanced.ts
+var DurationBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return formatDuration(data.durationMs);
+  }
+};
+
+// src/widgets/duration/renderers/compact.ts
+var DurationCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const totalSeconds = Math.floor(data.durationMs / 1e3);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds % 3600 / 60);
+    if (hours > 0) {
+      return `${hours}h${minutes}m`;
+    }
+    return `${minutes}m`;
+  }
+};
+
+// src/widgets/duration/renderers/fancy.ts
+var DurationFancyRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withAngleBrackets(formatDuration(data.durationMs));
+  }
+};
+
+// src/widgets/duration/renderers/indicator.ts
+var DurationIndicatorRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return withIndicator(formatDuration(data.durationMs));
+  }
+};
+
+// src/widgets/duration/renderers/labeled.ts
+var DurationLabeledRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `Time: ${formatDuration(data.durationMs)}`;
+  }
+};
+
+// src/widgets/duration/renderers/playful.ts
+var DurationPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const totalSeconds = Math.floor(data.durationMs / 1e3);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds % 3600 / 60);
+    if (hours > 0) {
+      return `\u231B ${hours}h ${minutes}m`;
+    }
+    return `\u231B ${minutes}m`;
+  }
+};
+
+// src/widgets/duration/renderers/technical.ts
+var DurationTechnicalRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    return `${Math.floor(data.durationMs)}ms`;
   }
 };
 
@@ -814,9 +1232,133 @@ var DurationWidget = class extends StdinDataWidget {
     0
     // First line
   );
-  renderWithData(data, context) {
+  renderer = new DurationBalancedRenderer();
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new DurationBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new DurationCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new DurationPlayfulRenderer();
+        break;
+      case "technical":
+        this.renderer = new DurationTechnicalRenderer();
+        break;
+      case "labeled":
+        this.renderer = new DurationLabeledRenderer();
+        break;
+      case "indicator":
+        this.renderer = new DurationIndicatorRenderer();
+        break;
+      case "fancy":
+        this.renderer = new DurationFancyRenderer();
+        break;
+      default:
+        this.renderer = new DurationBalancedRenderer();
+    }
+  }
+  renderWithData(data, _context) {
     if (!data.cost || data.cost.total_duration_ms === void 0) return null;
-    return formatDuration(data.cost.total_duration_ms);
+    const renderData = {
+      durationMs: data.cost.total_duration_ms
+    };
+    return this.renderer.render(renderData);
+  }
+};
+
+// src/widgets/git-changes/renderers/balanced.ts
+var GitChangesBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`+${data.insertions}`);
+    if (data.deletions > 0) parts.push(`-${data.deletions}`);
+    return parts.join(" ");
+  }
+};
+
+// src/widgets/git-changes/renderers/compact.ts
+var GitChangesCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`+${data.insertions}`);
+    if (data.deletions > 0) parts.push(`-${data.deletions}`);
+    return parts.join("/");
+  }
+};
+
+// src/widgets/git-changes/renderers/fancy.ts
+var GitChangesFancyRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`+${data.insertions}`);
+    if (data.deletions > 0) parts.push(`-${data.deletions}`);
+    const changes = parts.join("|");
+    return withAngleBrackets(changes);
+  }
+};
+
+// src/widgets/git-changes/renderers/indicator.ts
+var GitChangesIndicatorRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`+${data.insertions}`);
+    if (data.deletions > 0) parts.push(`-${data.deletions}`);
+    const changes = parts.join(" ");
+    return withIndicator(changes);
+  }
+};
+
+// src/widgets/git-changes/renderers/labeled.ts
+var GitChangesLabeledRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`+${data.insertions}`);
+    if (data.deletions > 0) parts.push(`-${data.deletions}`);
+    const changes = parts.join(" ");
+    return withLabel("Diff", changes);
+  }
+};
+
+// src/widgets/git-changes/renderers/playful.ts
+var GitChangesPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`\u2B06${data.insertions}`);
+    if (data.deletions > 0) parts.push(`\u2B07${data.deletions}`);
+    return parts.join(" ");
+  }
+};
+
+// src/widgets/git-changes/renderers/symbolic.ts
+var GitChangesSymbolicRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`\u25B2${data.insertions}`);
+    if (data.deletions > 0) parts.push(`\u25BC${data.deletions}`);
+    return parts.join(" ");
+  }
+};
+
+// src/widgets/git-changes/renderers/technical.ts
+var GitChangesTechnicalRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`${data.insertions}`);
+    if (data.deletions > 0) parts.push(`${data.deletions}`);
+    return parts.join("/");
+  }
+};
+
+// src/widgets/git-changes/renderers/verbose.ts
+var GitChangesVerboseRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const parts = [];
+    if (data.insertions > 0) parts.push(`+${data.insertions} insertions`);
+    if (data.deletions > 0) parts.push(`-${data.deletions} deletions`);
+    return parts.join(", ");
   }
 };
 
@@ -835,6 +1377,7 @@ var GitChangesWidget = class {
   git = null;
   enabled = true;
   cwd = null;
+  renderer = new GitChangesBalancedRenderer();
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
@@ -842,6 +1385,39 @@ var GitChangesWidget = class {
    */
   constructor(gitFactory) {
     this.gitFactory = gitFactory || createGit;
+  }
+  setStyle(style) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new GitChangesBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new GitChangesCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new GitChangesPlayfulRenderer();
+        break;
+      case "verbose":
+        this.renderer = new GitChangesVerboseRenderer();
+        break;
+      case "technical":
+        this.renderer = new GitChangesTechnicalRenderer();
+        break;
+      case "symbolic":
+        this.renderer = new GitChangesSymbolicRenderer();
+        break;
+      case "labeled":
+        this.renderer = new GitChangesLabeledRenderer();
+        break;
+      case "indicator":
+        this.renderer = new GitChangesIndicatorRenderer();
+        break;
+      case "fancy":
+        this.renderer = new GitChangesFancyRenderer();
+        break;
+      default:
+        this.renderer = new GitChangesBalancedRenderer();
+    }
   }
   async initialize(context) {
     this.enabled = context.config?.enabled !== false;
@@ -882,10 +1458,7 @@ var GitChangesWidget = class {
     if (changes.insertions === 0 && changes.deletions === 0) {
       return null;
     }
-    const parts = [];
-    if (changes.insertions > 0) parts.push(`+${changes.insertions}`);
-    if (changes.deletions > 0) parts.push(`-${changes.deletions}`);
-    return parts.join(",");
+    return this.renderer.render(changes);
   }
   isEnabled() {
     return this.enabled;
@@ -1041,6 +1614,94 @@ var ConfigProvider = class {
   }
 };
 
+// src/widgets/config-count/renderers/balanced.ts
+var ConfigCountBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
+    const parts = [];
+    if (claudeMdCount > 0) {
+      parts.push(`CLAUDE.md:${claudeMdCount}`);
+    }
+    if (rulesCount > 0) {
+      parts.push(`rules:${rulesCount}`);
+    }
+    if (mcpCount > 0) {
+      parts.push(`MCPs:${mcpCount}`);
+    }
+    if (hooksCount > 0) {
+      parts.push(`hooks:${hooksCount}`);
+    }
+    return parts.join(" \u2502 ");
+  }
+};
+
+// src/widgets/config-count/renderers/compact.ts
+var ConfigCountCompactRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
+    const parts = [];
+    if (claudeMdCount > 0) {
+      parts.push(`${claudeMdCount} docs`);
+    }
+    if (rulesCount > 0) {
+      parts.push(`${rulesCount} rules`);
+    }
+    if (mcpCount > 0) {
+      parts.push(`${mcpCount} MCPs`);
+    }
+    if (hooksCount > 0) {
+      const hookLabel = hooksCount === 1 ? "hook" : "hooks";
+      parts.push(`${hooksCount} ${hookLabel}`);
+    }
+    return parts.join(" \u2502 ");
+  }
+};
+
+// src/widgets/config-count/renderers/playful.ts
+var ConfigCountPlayfulRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
+    const parts = [];
+    if (claudeMdCount > 0) {
+      parts.push(`\u{1F4C4} CLAUDE.md:${claudeMdCount}`);
+    }
+    if (rulesCount > 0) {
+      parts.push(`\u{1F4DC} rules:${rulesCount}`);
+    }
+    if (mcpCount > 0) {
+      parts.push(`\u{1F50C} MCPs:${mcpCount}`);
+    }
+    if (hooksCount > 0) {
+      parts.push(`\u{1FA9D} hooks:${hooksCount}`);
+    }
+    return parts.join(" \u2502 ");
+  }
+};
+
+// src/widgets/config-count/renderers/verbose.ts
+var ConfigCountVerboseRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
+    const parts = [];
+    if (claudeMdCount > 0) {
+      parts.push(`${claudeMdCount} CLAUDE.md`);
+    }
+    if (rulesCount > 0) {
+      parts.push(`${rulesCount} rules`);
+    }
+    if (mcpCount > 0) {
+      parts.push(`${mcpCount} MCP servers`);
+    }
+    if (hooksCount > 0) {
+      parts.push(`${hooksCount} hook`);
+    }
+    return parts.join(" \u2502 ");
+  }
+};
+
+// src/core/style-types.ts
+var DEFAULT_WIDGET_STYLE = "balanced";
+
 // src/widgets/config-count-widget.ts
 var ConfigCountWidget = class {
   id = "config-count";
@@ -1055,6 +1716,7 @@ var ConfigCountWidget = class {
   configProvider = new ConfigProvider();
   configs;
   cwd;
+  renderer = new ConfigCountBalancedRenderer();
   async initialize() {
   }
   async update(data) {
@@ -1068,25 +1730,37 @@ var ConfigCountWidget = class {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
     return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
   }
+  setStyle(style = DEFAULT_WIDGET_STYLE) {
+    switch (style) {
+      case "balanced":
+        this.renderer = new ConfigCountBalancedRenderer();
+        break;
+      case "compact":
+        this.renderer = new ConfigCountCompactRenderer();
+        break;
+      case "playful":
+        this.renderer = new ConfigCountPlayfulRenderer();
+        break;
+      case "verbose":
+        this.renderer = new ConfigCountVerboseRenderer();
+        break;
+      default:
+        this.renderer = new ConfigCountBalancedRenderer();
+        break;
+    }
+  }
   async render(context) {
     if (!this.configs) {
       return null;
     }
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
-    const parts = [];
-    if (claudeMdCount > 0) {
-      parts.push(`\u{1F4C4} ${claudeMdCount} CLAUDE.md`);
-    }
-    if (rulesCount > 0) {
-      parts.push(`\u{1F4DC} ${rulesCount} rules`);
-    }
-    if (mcpCount > 0) {
-      parts.push(`\u{1F50C} ${mcpCount} MCPs`);
-    }
-    if (hooksCount > 0) {
-      parts.push(`\u{1FA9D} ${hooksCount} hooks`);
-    }
-    return parts.join(" \u2502 ") || null;
+    const renderData = {
+      claudeMdCount,
+      rulesCount,
+      mcpCount,
+      hooksCount
+    };
+    return this.renderer.render(renderData);
   }
   async cleanup() {
   }
@@ -1512,6 +2186,92 @@ function evaluateHand(hole, board) {
   };
 }
 
+// src/widgets/poker/renderers/balanced.ts
+var PokerBalancedRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const { holeCards, boardCards, handResult } = data;
+    const participatingSet = new Set(handResult?.participatingIndices || []);
+    const handStr = holeCards.map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx))).join("");
+    const boardStr = boardCards.map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
+    const handLabel = colorize("Hand:", lightGray);
+    const boardLabel = colorize("Board:", lightGray);
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${this.formatHandResult(handResult)}`;
+  }
+  formatCardByParticipation(cardData, isParticipating) {
+    const color = isRedSuit(cardData.card.suit) ? red : gray;
+    const cardText = formatCard(cardData.card);
+    if (isParticipating) {
+      return `${color}${bold}(${cardText})${reset} `;
+    } else {
+      return `${color}${cardText}${reset} `;
+    }
+  }
+  formatHandResult(handResult) {
+    if (!handResult) {
+      return "\u2014";
+    }
+    const playerParticipates = handResult.participatingIndices.some((idx) => idx < 2);
+    if (!playerParticipates) {
+      return `Nothing \u{1F0CF}`;
+    } else {
+      return `${handResult.name}! ${handResult.emoji}`;
+    }
+  }
+};
+
+// src/widgets/poker/renderers/compact-verbose.ts
+var HAND_ABBREVIATIONS = {
+  "Royal Flush": "RF",
+  "Straight Flush": "SF",
+  "Four of a Kind": "4K",
+  "Full House": "FH",
+  "Flush": "FL",
+  "Straight": "ST",
+  "Three of a Kind": "3K",
+  "Two Pair": "2P",
+  "One Pair": "1P",
+  "High Card": "HC",
+  "Nothing": "\u2014"
+};
+var PokerCompactVerboseRenderer = class extends BaseStyleRenderer {
+  render(data) {
+    const { holeCards, boardCards, handResult } = data;
+    const participatingSet = new Set(handResult?.participatingIndices || []);
+    const handStr = holeCards.map((hc, idx) => this.formatCardCompact(hc, participatingSet.has(idx))).join("");
+    const boardStr = boardCards.map((bc, idx) => this.formatCardCompact(bc, participatingSet.has(idx + 2))).join("");
+    const abbreviation = this.getHandAbbreviation(handResult);
+    return `${handStr}| ${boardStr}\u2192 ${abbreviation}`;
+  }
+  formatCardCompact(cardData, isParticipating) {
+    const color = isRedSuit(cardData.card.suit) ? red : gray;
+    const cardText = this.formatCardText(cardData.card);
+    if (isParticipating) {
+      return `${color}${bold}(${cardText})${reset}`;
+    } else {
+      return `${color}${cardText}${reset}`;
+    }
+  }
+  formatCardText(card) {
+    const rankSymbols = {
+      "10": "T",
+      "11": "J",
+      "12": "Q",
+      "13": "K",
+      "14": "A"
+    };
+    const rank = String(card.rank);
+    const rankSymbol = rankSymbols[rank] ?? rank;
+    return `${rankSymbol}${card.suit}`;
+  }
+  getHandAbbreviation(handResult) {
+    if (!handResult) {
+      return "\u2014 (\u2014)";
+    }
+    const abbreviation = HAND_ABBREVIATIONS[handResult.name] ?? "\u2014";
+    return `${abbreviation} (${handResult.name})`;
+  }
+};
+
 // src/widgets/poker-widget.ts
 var PokerWidget = class extends StdinDataWidget {
   id = "poker";
@@ -1529,6 +2289,7 @@ var PokerWidget = class extends StdinDataWidget {
   lastUpdateTimestamp = 0;
   THROTTLE_MS = 5e3;
   // 5 seconds
+  renderer = new PokerBalancedRenderer();
   /**
    * Generate new poker hand on each update
    */
@@ -1564,6 +2325,21 @@ var PokerWidget = class extends StdinDataWidget {
     }
     this.lastUpdateTimestamp = now;
   }
+  setStyle(style = DEFAULT_WIDGET_STYLE) {
+    switch (style) {
+      case "balanced":
+      case "compact":
+      case "playful":
+        this.renderer = new PokerBalancedRenderer();
+        break;
+      case "compact-verbose":
+        this.renderer = new PokerCompactVerboseRenderer();
+        break;
+      default:
+        this.renderer = new PokerBalancedRenderer();
+        break;
+    }
+  }
   /**
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
    */
@@ -1586,12 +2362,33 @@ var PokerWidget = class extends StdinDataWidget {
     }
   }
   renderWithData(_data, _context) {
-    const participatingSet = new Set(this.handResult?.participatingIndices || []);
-    const handStr = this.holeCards.map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx))).join("");
-    const boardStr = this.boardCards.map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const handLabel = colorize("Hand:", lightGray);
-    const boardLabel = colorize("Board:", lightGray);
-    return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} \u2192 ${this.handResult?.text}`;
+    const holeCardsData = this.holeCards.map((hc, idx) => ({
+      card: hc.card,
+      isParticipating: (this.handResult?.participatingIndices || []).includes(idx)
+    }));
+    const boardCardsData = this.boardCards.map((bc, idx) => ({
+      card: bc.card,
+      isParticipating: (this.handResult?.participatingIndices || []).includes(idx + 2)
+    }));
+    const handResult = this.handResult ? {
+      name: this.getHandName(this.handResult.text),
+      emoji: this.getHandEmoji(this.handResult.text),
+      participatingIndices: this.handResult.participatingIndices
+    } : null;
+    const renderData = {
+      holeCards: holeCardsData,
+      boardCards: boardCardsData,
+      handResult
+    };
+    return this.renderer.render(renderData);
+  }
+  getHandName(text) {
+    const match = text.match(/^([^!]+)/);
+    return match ? match[1].trim() : "Nothing";
+  }
+  getHandEmoji(text) {
+    const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/);
+    return match ? match[1] : "\u{1F0CF}";
   }
 };
 
@@ -1606,6 +2403,12 @@ var EmptyLineWidget = class extends StdinDataWidget {
     3
     // Fourth line (0-indexed)
   );
+  /**
+   * All styles return the same value (Braille Pattern Blank).
+   * This method exists for API consistency with other widgets.
+   */
+  setStyle(_style) {
+  }
   /**
    * Return Braille Pattern Blank to create a visible empty separator line.
    * U+2800 occupies cell width but appears blank, ensuring the line renders.

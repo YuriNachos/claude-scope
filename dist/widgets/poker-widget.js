@@ -4,12 +4,15 @@
  * Displays random Texas Hold'em hands for entertainment
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { bold, gray, lightGray, red, reset } from "../ui/utils/colors.js";
+import { bold, gray, red, reset } from "../ui/utils/colors.js";
 import { colorize } from "../ui/utils/formatters.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { Deck } from "./poker/deck.js";
 import { evaluateHand } from "./poker/hand-evaluator.js";
 import { formatCard, isRedSuit } from "./poker/types.js";
+import { PokerBalancedRenderer } from "./poker/renderers/balanced.js";
+import { PokerCompactVerboseRenderer } from "./poker/renderers/compact-verbose.js";
+import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 export class PokerWidget extends StdinDataWidget {
     id = "poker";
     metadata = createWidgetMetadata("Poker", "Displays random Texas Hold'em hands for entertainment", "1.0.0", "claude-scope", 2 // Third line (0-indexed)
@@ -19,6 +22,7 @@ export class PokerWidget extends StdinDataWidget {
     handResult = null;
     lastUpdateTimestamp = 0;
     THROTTLE_MS = 5000; // 5 seconds
+    renderer = new PokerBalancedRenderer();
     /**
      * Generate new poker hand on each update
      */
@@ -58,6 +62,21 @@ export class PokerWidget extends StdinDataWidget {
         }
         this.lastUpdateTimestamp = now;
     }
+    setStyle(style = DEFAULT_WIDGET_STYLE) {
+        switch (style) {
+            case "balanced":
+            case "compact":
+            case "playful":
+                this.renderer = new PokerBalancedRenderer();
+                break;
+            case "compact-verbose":
+                this.renderer = new PokerCompactVerboseRenderer();
+                break;
+            default:
+                this.renderer = new PokerBalancedRenderer();
+                break;
+        }
+    }
     /**
      * Format card with appropriate color (red for ♥♦, gray for ♠♣)
      */
@@ -84,16 +103,35 @@ export class PokerWidget extends StdinDataWidget {
         }
     }
     renderWithData(_data, _context) {
-        const participatingSet = new Set(this.handResult?.participatingIndices || []);
-        const handStr = this.holeCards
-            .map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx)))
-            .join("");
-        const boardStr = this.boardCards
-            .map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2)))
-            .join("");
-        const handLabel = colorize("Hand:", lightGray);
-        const boardLabel = colorize("Board:", lightGray);
-        return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} → ${this.handResult?.text}`;
+        const holeCardsData = this.holeCards.map((hc, idx) => ({
+            card: hc.card,
+            isParticipating: (this.handResult?.participatingIndices || []).includes(idx),
+        }));
+        const boardCardsData = this.boardCards.map((bc, idx) => ({
+            card: bc.card,
+            isParticipating: (this.handResult?.participatingIndices || []).includes(idx + 2),
+        }));
+        const handResult = this.handResult
+            ? {
+                name: this.getHandName(this.handResult.text),
+                emoji: this.getHandEmoji(this.handResult.text),
+                participatingIndices: this.handResult.participatingIndices,
+            }
+            : null;
+        const renderData = {
+            holeCards: holeCardsData,
+            boardCards: boardCardsData,
+            handResult,
+        };
+        return this.renderer.render(renderData);
+    }
+    getHandName(text) {
+        const match = text.match(/^([^!]+)/);
+        return match ? match[1].trim() : "Nothing";
+    }
+    getHandEmoji(text) {
+        const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/);
+        return match ? match[1] : "🃏";
     }
 }
 //# sourceMappingURL=poker-widget.js.map
