@@ -1,0 +1,111 @@
+/**
+ * Theme creation helpers
+ *
+ * Utility functions to help create theme color objects from raw RGB values.
+ * These helpers derive semantic and base colors from widget-specific colors.
+ */
+
+import type { IBaseColors, ISemanticColors, IThemeColors } from "./types.js";
+
+/**
+ * Create base colors from widget colors
+ * Derives text, muted, border, and accent from existing widget colors
+ */
+export function createBaseColors(params: {
+  modelColor: string;
+  durationColor: string;
+  accentColor: string;
+}): IBaseColors {
+  return {
+    text: params.modelColor,
+    muted: params.durationColor,
+    accent: params.accentColor,
+    border: params.durationColor,
+  };
+}
+
+/**
+ * Create semantic colors from widget colors
+ * Derives success, warning, error, info from context and branch colors
+ */
+export function createSemanticColors(params: {
+  contextLow: string;
+  contextMedium: string;
+  contextHigh: string;
+  branchColor: string;
+}): ISemanticColors {
+  return {
+    success: params.contextLow,
+    warning: params.contextMedium,
+    error: params.contextHigh,
+    info: params.branchColor,
+  };
+}
+
+/**
+ * Create theme colors from raw RGB values
+ * This is the main helper for creating complete theme color objects
+ */
+export function createThemeColors(params: {
+  // Widget-specific colors (from theme definition)
+  branch: string;
+  changes: string;
+  contextLow: string;
+  contextMedium: string;
+  contextHigh: string;
+  linesAdded: string;
+  linesRemoved: string;
+  cost: string;
+  model: string;
+  duration: string;
+  accent: string;
+}): IThemeColors {
+  const base = createBaseColors({
+    modelColor: params.model,
+    durationColor: params.duration,
+    accentColor: params.accent,
+  });
+
+  const semantic = createSemanticColors({
+    contextLow: params.contextLow,
+    contextMedium: params.contextMedium,
+    contextHigh: params.contextHigh,
+    branchColor: params.branch,
+  });
+
+  return {
+    base,
+    semantic,
+    git: {
+      branch: params.branch,
+      changes: params.changes,
+    },
+    context: {
+      low: params.contextLow,
+      medium: params.contextMedium,
+      high: params.contextHigh,
+      bar: params.contextLow,
+    },
+    lines: {
+      added: params.linesAdded,
+      removed: params.linesRemoved,
+    },
+    cost: {
+      amount: params.cost,
+      currency: params.cost,
+    },
+    duration: {
+      value: params.duration,
+      unit: params.duration,
+    },
+    model: {
+      name: params.model,
+      version: params.model,
+    },
+    poker: {
+      participating: params.model,
+      nonParticipating: params.duration,
+      result: params.accent,
+    },
+  };
+}
