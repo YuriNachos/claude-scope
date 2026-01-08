@@ -71,7 +71,26 @@ export class GitWidget implements IWidget {
         return null;
       }
 
-      const renderData: GitRenderData = { branch };
+      // Get git changes if available
+      let changes: { files: number; insertions: number; deletions: number } | undefined;
+      try {
+        const diffSummary = await this.git.diffSummary();
+        if (diffSummary.fileCount > 0) {
+          let insertions = 0;
+          let deletions = 0;
+          for (const file of diffSummary.files) {
+            insertions += file.insertions || 0;
+            deletions += file.deletions || 0;
+          }
+          if (insertions > 0 || deletions > 0) {
+            changes = { files: diffSummary.fileCount, insertions, deletions };
+          }
+        }
+      } catch {
+        // Diff may fail, continue without changes
+      }
+
+      const renderData: GitRenderData = { branch, changes };
       return this.styleFn(renderData);
     } catch {
       // Log specific error for debugging but return null (graceful degradation)
