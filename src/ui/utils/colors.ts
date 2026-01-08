@@ -58,3 +58,15 @@ export const contextColors = {
 export function colorize(text: string, color: string): string {
   return `${color}${text}${reset}`;
 }
+
+/**
+ * Create ANSI RGB color code (24-bit true color)
+ * @param r - Red component (0-255)
+ * @param g - Green component (0-255)
+ * @param b - Blue component (0-255)
+ * @returns ANSI escape code for RGB color
+ * @example rgb(136, 192, 208) // "\x1b[38;2;136;192;208m"
+ */
+export function rgb(r: number, g: number, b: number): string {
+  return `\x1b[38;2;${r};${g};${b}m`;
+}
