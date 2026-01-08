@@ -163,4 +163,156 @@ describe('GitChangesWidget', () => {
     result = await widget.render({ width: 80, timestamp: 0 });
     expect(result).to.be.null;
   });
+
+  describe('style renderers', () => {
+    const createMockWidget = (insertions: number, deletions: number) => {
+      const mockGit = new MockGit();
+      mockGit.setDiff([{ file: 'test.txt', insertions, deletions }]);
+      const widget = new GitChangesWidget(() => mockGit);
+      void widget.update(createMockStdinData({ cwd: '/test/dir' }));
+      return widget;
+    };
+
+    describe('balanced style', () => {
+      it('should render with space separator', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('balanced');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('+142 -27');
+      });
+
+      it('should show only insertions when no deletions', async () => {
+        const widget = createMockWidget(142, 0);
+        widget.setStyle('balanced');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('+142');
+      });
+
+      it('should show only deletions when no insertions', async () => {
+        const widget = createMockWidget(0, 27);
+        widget.setStyle('balanced');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('-27');
+      });
+    });
+
+    describe('compact style', () => {
+      it('should render with slash separator', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('compact');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('+142/-27');
+      });
+    });
+
+    describe('playful style', () => {
+      it('should render with arrow emojis', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('playful');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('⬆142 ⬇27');
+      });
+    });
+
+    describe('verbose style', () => {
+      it('should render with full text', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('verbose');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('+142 insertions, -27 deletions');
+      });
+    });
+
+    describe('technical style', () => {
+      it('should render raw numbers with slash', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('technical');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('142/27');
+      });
+    });
+
+    describe('symbolic style', () => {
+      it('should render with triangle symbols', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('symbolic');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('▲142 ▼27');
+      });
+    });
+
+    describe('labeled style', () => {
+      it('should render with label prefix', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('labeled');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('Diff: +142 -27');
+      });
+    });
+
+    describe('indicator style', () => {
+      it('should render with bullet indicator', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('indicator');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('● +142 -27');
+      });
+    });
+
+    describe('fancy style', () => {
+      it('should render with angle brackets and pipe', async () => {
+        const widget = createMockWidget(142, 27);
+        widget.setStyle('fancy');
+
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('⟨+142|-27⟩');
+      });
+    });
+
+    describe('style switching', () => {
+      it('should switch between styles dynamically', async () => {
+        const widget = createMockWidget(142, 27);
+
+        widget.setStyle('balanced');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('+142 -27');
+
+        widget.setStyle('compact');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('+142/-27');
+
+        widget.setStyle('fancy');
+        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal('⟨+142|-27⟩');
+      });
+
+      it('should default to balanced for unknown styles', async () => {
+        const widget = createMockWidget(142, 27);
+
+        // @ts-expect-error - testing invalid style
+        widget.setStyle('unknown' as any);
+        const result = await widget.render({ width: 80, timestamp: 0 });
+
+        expect(result).to.equal('+142 -27');
+      });
+    });
+  });
 });
