@@ -15,16 +15,6 @@ export const TIME = {
 } as const;
 
 /**
- * Cost formatting thresholds
- */
-export const COST_THRESHOLDS = {
-  /** Below this value, show 4 decimal places ($0.0012) */
-  SMALL: 0.01,
-  /** Above this value, show no decimal places ($123) */
-  LARGE: 100,
-} as const;
-
-/**
  * Context usage color thresholds (percentages)
  */
 export const CONTEXT_THRESHOLDS = {

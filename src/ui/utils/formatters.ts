@@ -2,13 +2,7 @@
  * Formatter utilities for displaying data in human-readable formats
  */
 
-import {
-  TIME,
-  COST_THRESHOLDS,
-  CONTEXT_THRESHOLDS,
-  ANSI_COLORS,
-  DEFAULTS,
-} from "../../constants.js";
+import { TIME, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from "../../constants.js";
 
 /**
  * Format milliseconds to human-readable duration
@@ -47,32 +41,15 @@ export function formatDuration(ms: number): string {
 }
 
 /**
- * Format cost in USD with appropriate precision
+ * Format cost in USD with 2 decimal places
  *
- * - Values < $0.01 (positive): 4 decimal places ($0.0012)
- * - Values >= $0.01: 2 decimal places ($1.23)
- * - Values >= $100: 0 decimal places ($123)
- * - Negative values: 2 decimal places ($-1.23)
+ * Always formats with 2 decimal places for consistency.
  *
  * @param usd - Cost in USD
  * @returns Formatted cost string with $ prefix
  */
 export function formatCostUSD(usd: number): string {
-  const absUsd = Math.abs(usd);
-
-  if (usd < 0) {
-    // Negative values: 2 decimal places
-    return `$${usd.toFixed(2)}`;
-  } else if (absUsd < COST_THRESHOLDS.SMALL) {
-    // 4 decimal places for very small positive values
-    return `$${usd.toFixed(4)}`;
-  } else if (absUsd < COST_THRESHOLDS.LARGE) {
-    // 2 decimal places for normal values
-    return `$${usd.toFixed(2)}`;
-  } else {
-    // 0 decimal places for large values
-    return `$${Math.floor(usd).toFixed(0)}`;
-  }
+  return `$${usd.toFixed(2)}`;
 }
 
 /**
