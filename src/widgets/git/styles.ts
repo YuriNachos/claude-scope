@@ -48,6 +48,14 @@ export const gitStyles: StyleMap<GitRenderData> = {
   },
 
   verbose: (data: GitRenderData) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts: string[] = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions} insertions`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions} deletions`);
+      if (parts.length > 0) {
+        return `branch: ${data.branch} [${parts.join(", ")}]`;
+      }
+    }
     return `branch: ${data.branch} (HEAD)`;
   },
 
