@@ -4,22 +4,22 @@
  * Displays context window usage with progress bar
  */
 
-import { StdinDataWidget } from './core/stdin-data-widget.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
-import { progressBar, colorize } from '../ui/utils/formatters.js';
-import { DEFAULTS } from '../constants.js';
-import type { IContextColors } from '../ui/theme/types.js';
-import { DEFAULT_THEME } from '../ui/theme/default-theme.js';
-import type { RenderContext, StdinData } from '../types.js';
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import { createWidgetMetadata } from "../core/widget-types.js";
+import { progressBar, colorize } from "../ui/utils/formatters.js";
+import { DEFAULTS } from "../constants.js";
+import type { IContextColors } from "../ui/theme/types.js";
+import { DEFAULT_THEME } from "../ui/theme/default-theme.js";
+import type { RenderContext, StdinData } from "../types.js";
 
 export class ContextWidget extends StdinDataWidget {
-  readonly id = 'context';
+  readonly id = "context";
   readonly metadata = createWidgetMetadata(
-    'Context',
-    'Displays context window usage with progress bar',
-    '1.0.0',
-    'claude-scope',
-    0  // First line
+    "Context",
+    "Displays context window usage with progress bar",
+    "1.0.0",
+    "claude-scope",
+    0 // First line
   );
 
   private colors: IContextColors;
@@ -39,10 +39,11 @@ export class ContextWidget extends StdinDataWidget {
     // - cache_creation_input_tokens: tokens spent creating cache (also in context)
     // - cache_read_input_tokens: tokens read from cache (still occupy context space)
     // - output_tokens: tokens in the response (also part of context)
-    const used = current_usage.input_tokens +
-                 current_usage.cache_creation_input_tokens +
-                 current_usage.cache_read_input_tokens +
-                 current_usage.output_tokens;
+    const used =
+      current_usage.input_tokens +
+      current_usage.cache_creation_input_tokens +
+      current_usage.cache_read_input_tokens +
+      current_usage.output_tokens;
 
     const percent = Math.round((used / context_window_size) * 100);
 

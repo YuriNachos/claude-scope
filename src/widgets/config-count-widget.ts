@@ -5,9 +5,9 @@
  * Data source: ConfigProvider scans filesystem.
  */
 
-import type { IWidget, RenderContext, StdinData } from '../core/types.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
-import { ConfigProvider, type ConfigCounts } from '../providers/config-provider.js';
+import type { IWidget, RenderContext, StdinData } from "../core/types.js";
+import { createWidgetMetadata } from "../core/widget-types.js";
+import { ConfigProvider, type ConfigCounts } from "../providers/config-provider.js";
 
 /**
  * Widget displaying configuration counts
@@ -17,13 +17,13 @@ import { ConfigProvider, type ConfigCounts } from '../providers/config-provider.
  * Hides if all counts are zero.
  */
 export class ConfigCountWidget implements IWidget {
-  readonly id = 'config-count';
+  readonly id = "config-count";
   readonly metadata = createWidgetMetadata(
-    'Config Count',
-    'Displays Claude Code configuration counts',
-    '1.0.0',
-    'claude-scope',
-    1  // Second line
+    "Config Count",
+    "Displays Claude Code configuration counts",
+    "1.0.0",
+    "claude-scope",
+    1 // Second line
   );
 
   private configProvider = new ConfigProvider();
@@ -74,7 +74,7 @@ export class ConfigCountWidget implements IWidget {
       parts.push(`🪝 ${hooksCount} hooks`);
     }
 
-    return parts.join(' │ ') || null;
+    return parts.join(" │ ") || null;
   }
 
   async cleanup(): Promise<void> {

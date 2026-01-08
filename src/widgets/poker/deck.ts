@@ -1,11 +1,22 @@
-import { randomInt } from 'node:crypto';
-import type { Card } from './types.js';
-import { Suit, Rank } from './types.js';
+import { randomInt } from "node:crypto";
+import type { Card } from "./types.js";
+import { Suit, Rank } from "./types.js";
 
 const ALL_SUITS: Suit[] = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs];
 const ALL_RANKS: Rank[] = [
-  Rank.Two, Rank.Three, Rank.Four, Rank.Five, Rank.Six, Rank.Seven,
-  Rank.Eight, Rank.Nine, Rank.Ten, Rank.Jack, Rank.Queen, Rank.King, Rank.Ace
+  Rank.Two,
+  Rank.Three,
+  Rank.Four,
+  Rank.Five,
+  Rank.Six,
+  Rank.Seven,
+  Rank.Eight,
+  Rank.Nine,
+  Rank.Ten,
+  Rank.Jack,
+  Rank.Queen,
+  Rank.King,
+  Rank.Ace,
 ];
 
 /**
@@ -49,7 +60,7 @@ export class Deck {
    */
   deal(): Card {
     if (this.cards.length === 0) {
-      throw new Error('Deck is empty');
+      throw new Error("Deck is empty");
     }
     return this.cards.pop()!;
   }

@@ -3,9 +3,9 @@
  * Parses and validates Claude Code session data
  */
 
-import type { StdinData } from '../types.js';
-import { StdinDataSchema } from '../schemas/stdin-schema.js';
-import { formatError } from '../validation/result.js';
+import type { StdinData } from "../types.js";
+import { StdinDataSchema } from "../schemas/stdin-schema.js";
+import { formatError } from "../validation/result.js";
 
 /**
  * Error thrown when stdin parsing fails
@@ -13,7 +13,7 @@ import { formatError } from '../validation/result.js';
 export class StdinParseError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'StdinParseError';
+    this.name = "StdinParseError";
   }
 }
 
@@ -23,7 +23,7 @@ export class StdinParseError extends Error {
 export class StdinValidationError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'StdinValidationError';
+    this.name = "StdinValidationError";
   }
 }
 
@@ -41,7 +41,7 @@ export class StdinProvider {
   async parse(input: string): Promise<StdinData> {
     // Check for empty input
     if (!input || input.trim().length === 0) {
-      throw new StdinParseError('stdin data is empty');
+      throw new StdinParseError("stdin data is empty");
     }
 
     // Parse JSON
@@ -56,9 +56,7 @@ export class StdinProvider {
     const result = StdinDataSchema.validate(data);
 
     if (!result.success) {
-      throw new StdinValidationError(
-        `Validation failed: ${formatError(result.error)}`
-      );
+      throw new StdinValidationError(`Validation failed: ${formatError(result.error)}`);
     }
 
     return result.data;

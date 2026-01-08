@@ -5,9 +5,9 @@
  * Cache invalidates after 5 seconds.
  */
 
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as os from 'os';
+import * as fs from "fs/promises";
+import * as path from "path";
+import * as os from "os";
 
 export interface ConfigCounts {
   claudeMdCount: number;
@@ -36,7 +36,7 @@ export class ConfigProvider {
     const now = Date.now();
 
     // Return cache if fresh
-    if (this.cachedCounts && (now - this.lastScan) < this.cacheInterval) {
+    if (this.cachedCounts && now - this.lastScan < this.cacheInterval) {
       return this.cachedCounts;
     }
 
@@ -57,21 +57,21 @@ export class ConfigProvider {
     let hooksCount = 0;
 
     const homeDir = os.homedir();
-    const claudeDir = path.join(homeDir, '.claude');
+    const claudeDir = path.join(homeDir, ".claude");
     const cwd = options.cwd;
 
     // === USER SCOPE ===
 
     // ~/.claude/CLAUDE.md
-    if (await this.fileExists(path.join(claudeDir, 'CLAUDE.md'))) {
+    if (await this.fileExists(path.join(claudeDir, "CLAUDE.md"))) {
       claudeMdCount++;
     }
 
     // ~/.claude/rules/*.md
-    rulesCount += await this.countRulesInDir(path.join(claudeDir, 'rules'));
+    rulesCount += await this.countRulesInDir(path.join(claudeDir, "rules"));
 
     // ~/.claude/settings.json
-    const userSettings = path.join(claudeDir, 'settings.json');
+    const userSettings = path.join(claudeDir, "settings.json");
     const userSettingsData = await this.readJsonFile(userSettings);
     if (userSettingsData) {
       mcpCount += this.countMcpServers(userSettingsData);
@@ -79,7 +79,7 @@ export class ConfigProvider {
     }
 
     // ~/.claude.json
-    const userClaudeJson = path.join(homeDir, '.claude.json');
+    const userClaudeJson = path.join(homeDir, ".claude.json");
     const userClaudeData = await this.readJsonFile(userClaudeJson);
     if (userClaudeData) {
       // Dedupe: subtract MCPs already counted in settings.json
@@ -91,37 +91,37 @@ export class ConfigProvider {
 
     if (cwd) {
       // {cwd}/CLAUDE.md
-      if (await this.fileExists(path.join(cwd, 'CLAUDE.md'))) {
+      if (await this.fileExists(path.join(cwd, "CLAUDE.md"))) {
         claudeMdCount++;
       }
 
       // {cwd}/CLAUDE.local.md
-      if (await this.fileExists(path.join(cwd, 'CLAUDE.local.md'))) {
+      if (await this.fileExists(path.join(cwd, "CLAUDE.local.md"))) {
         claudeMdCount++;
       }
 
       // {cwd}/.claude/CLAUDE.md
-      if (await this.fileExists(path.join(cwd, '.claude', 'CLAUDE.md'))) {
+      if (await this.fileExists(path.join(cwd, ".claude", "CLAUDE.md"))) {
         claudeMdCount++;
       }
 
       // {cwd}/.claude/CLAUDE.local.md
-      if (await this.fileExists(path.join(cwd, '.claude', 'CLAUDE.local.md'))) {
+      if (await this.fileExists(path.join(cwd, ".claude", "CLAUDE.local.md"))) {
         claudeMdCount++;
       }
 
       // {cwd}/.claude/rules/*.md
-      rulesCount += await this.countRulesInDir(path.join(cwd, '.claude', 'rules'));
+      rulesCount += await this.countRulesInDir(path.join(cwd, ".claude", "rules"));
 
       // {cwd}/.mcp.json
-      const mcpJson = path.join(cwd, '.mcp.json');
+      const mcpJson = path.join(cwd, ".mcp.json");
       const mcpData = await this.readJsonFile(mcpJson);
       if (mcpData) {
         mcpCount += this.countMcpServers(mcpData);
       }
 
       // {cwd}/.claude/settings.json
-      const projectSettings = path.join(cwd, '.claude', 'settings.json');
+      const projectSettings = path.join(cwd, ".claude", "settings.json");
       const projectSettingsData = await this.readJsonFile(projectSettings);
       if (projectSettingsData) {
         mcpCount += this.countMcpServers(projectSettingsData);
@@ -129,7 +129,7 @@ export class ConfigProvider {
       }
 
       // {cwd}/.claude/settings.local.json
-      const localSettings = path.join(cwd, '.claude', 'settings.local.json');
+      const localSettings = path.join(cwd, ".claude", "settings.local.json");
       const localSettingsData = await this.readJsonFile(localSettings);
       if (localSettingsData) {
         mcpCount += this.countMcpServers(localSettingsData);
@@ -157,7 +157,7 @@ export class ConfigProvider {
    */
   private async readJsonFile(filePath: string): Promise<any> {
     try {
-      const content = await fs.readFile(filePath, 'utf8');
+      const content = await fs.readFile(filePath, "utf8");
       return JSON.parse(content);
     } catch {
       return null;
@@ -168,7 +168,7 @@ export class ConfigProvider {
    * Count MCP servers in config object
    */
   private countMcpServers(config: any): number {
-    if (!config || !config.mcpServers || typeof config.mcpServers !== 'object') {
+    if (!config || !config.mcpServers || typeof config.mcpServers !== "object") {
       return 0;
     }
     return Object.keys(config.mcpServers).length;
@@ -178,7 +178,7 @@ export class ConfigProvider {
    * Count hooks in config object
    */
   private countHooks(config: any): number {
-    if (!config || !config.hooks || typeof config.hooks !== 'object') {
+    if (!config || !config.hooks || typeof config.hooks !== "object") {
       return 0;
     }
     return Object.keys(config.hooks).length;
@@ -200,7 +200,7 @@ export class ConfigProvider {
 
         if (entry.isDirectory()) {
           count += await this.countRulesInDir(fullPath);
-        } else if (entry.isFile() && entry.name.endsWith('.md')) {
+        } else if (entry.isFile() && entry.name.endsWith(".md")) {
           count++;
         }
       }

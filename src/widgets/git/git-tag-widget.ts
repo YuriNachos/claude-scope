@@ -6,11 +6,11 @@
  * because it requires async git operations with custom lifecycle management.
  */
 
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
-import { createWidgetMetadata } from '../../core/widget-types.js';
-import type { IGit } from '../../providers/git-provider.js';
-import { createGit } from '../../providers/git-provider.js';
-import { green, gray, reset } from '../../ui/utils/colors.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
+import { createWidgetMetadata } from "../../core/widget-types.js";
+import type { IGit } from "../../providers/git-provider.js";
+import { createGit } from "../../providers/git-provider.js";
+import { green, gray, reset } from "../../ui/utils/colors.js";
 
 /**
  * Widget displaying the latest git tag
@@ -21,13 +21,13 @@ import { green, gray, reset } from '../../ui/utils/colors.js';
  * - Clean separation of concerns
  */
 export class GitTagWidget implements IWidget {
-  readonly id = 'git-tag';
+  readonly id = "git-tag";
   readonly metadata = createWidgetMetadata(
-    'Git Tag Widget',
-    'Displays the latest git tag',
-    '1.0.0',
-    'claude-scope',
-    1  // Second line
+    "Git Tag Widget",
+    "Displays the latest git tag",
+    "1.0.0",
+    "claude-scope",
+    1 // Second line
   );
 
   private gitFactory: (cwd: string) => IGit;

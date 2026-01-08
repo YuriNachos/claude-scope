@@ -39,7 +39,7 @@ export const CONTEXT_THRESHOLDS = {
  */
 export const DEFAULTS = {
   /** Default separator between widgets */
-  SEPARATOR: ' ',
+  SEPARATOR: " ",
   /** Default width for progress bars in characters */
   PROGRESS_BAR_WIDTH: 20,
 } as const;
@@ -49,13 +49,13 @@ export const DEFAULTS = {
  */
 export const ANSI_COLORS = {
   /** Green color */
-  GREEN: '\x1b[32m',
+  GREEN: "\x1b[32m",
   /** Yellow color */
-  YELLOW: '\x1b[33m',
+  YELLOW: "\x1b[33m",
   /** Red color */
-  RED: '\x1b[31m',
+  RED: "\x1b[31m",
   /** Reset color */
-  RESET: '\x1b[0m',
+  RESET: "\x1b[0m",
 } as const;
 
 // Re-export for backward compatibility

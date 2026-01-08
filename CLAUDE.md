@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.4.3
+**Current version**: v0.5.4
 
 **Implemented features**:
 - Git branch and changes display
@@ -422,6 +422,52 @@ Widget outputs use snapshot testing for visual regression:
 - **Test Quality**: Use helper functions to reduce duplication, flexible assertions for maintainability
 - **Error Handling**: Widgets should handle errors gracefully and return `null` on failure
 - **Zero Runtime Dependencies**: No external runtime dependencies - use native Node.js modules only
+
+## Code Quality
+
+### Biome Formatter & Linter
+
+This project uses [Biome](https://biomejs.dev/) for code formatting and linting.
+
+**Configuration**: `biome.json`
+
+**Usage**:
+```bash
+# Format files
+npx @biomejs/biome format --write ./src
+
+# Check and fix all issues
+npx @biomejs/biome check --write ./src
+
+# Check only (no fixes)
+npx @biomejs/biome check ./src
+```
+
+**Style Guide**:
+- 2 spaces indentation
+- Double quotes
+- 100 characters line width
+- Semicolons required
+- Organized imports (alphabetically by import path)
+
+### Claude Code Hooks
+
+This project uses Claude Code hooks for automation. Hooks are configured in `.claude/settings.json`.
+
+**Available Hooks**:
+
+| Hook | Event | Purpose |
+|------|-------|---------|
+| `PostToolUse` | After Edit/Write | Auto-format TypeScript files |
+| `UserPromptSubmit` | Before processing prompt | Add smart context (git status, widgets, version) |
+| `SessionStart` | On session start/resume | Show Git status and recent commits |
+
+**Hook Scripts**:
+- `.claude/hooks/format-ts.sh` - Biome formatting
+- `.claude/hooks/add-context.sh` - Context injection
+- `.claude/hooks/load-context.sh` - Git status loading
+
+**Usage**: Hooks run automatically in Claude Code. No manual invocation needed.
 
 ## GitHub CLI
 

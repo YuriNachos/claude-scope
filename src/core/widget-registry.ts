@@ -3,7 +3,7 @@
  * Manages widget lifecycle and retrieval
  */
 
-import type { IWidget, WidgetContext } from './types.js';
+import type { IWidget, WidgetContext } from "./types.js";
 
 /**
  * Registry for managing widgets
@@ -69,7 +69,7 @@ export class WidgetRegistry {
    * Get only enabled widgets
    */
   getEnabledWidgets(): IWidget[] {
-    return this.getAll().filter(w => w.isEnabled());
+    return this.getAll().filter((w) => w.isEnabled());
   }
 
   /**

@@ -6,10 +6,10 @@
  * because it requires async git operations with custom lifecycle management.
  */
 
-import type { IWidget, WidgetContext, RenderContext, StdinData } from '../../core/types.js';
-import { createWidgetMetadata } from '../../core/widget-types.js';
-import type { IGit } from '../../providers/git-provider.js';
-import { createGit } from '../../providers/git-provider.js';
+import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
+import { createWidgetMetadata } from "../../core/widget-types.js";
+import type { IGit } from "../../providers/git-provider.js";
+import { createGit } from "../../providers/git-provider.js";
 
 /**
  * Widget displaying git branch information
@@ -20,13 +20,13 @@ import { createGit } from '../../providers/git-provider.js';
  * - Clean separation of concerns
  */
 export class GitWidget implements IWidget {
-  readonly id = 'git';
+  readonly id = "git";
   readonly metadata = createWidgetMetadata(
-    'Git Widget',
-    'Displays current git branch',
-    '1.0.0',
-    'claude-scope',
-    0  // First line
+    "Git Widget",
+    "Displays current git branch",
+    "1.0.0",
+    "claude-scope",
+    0 // First line
   );
 
   private gitFactory: (cwd: string) => IGit;

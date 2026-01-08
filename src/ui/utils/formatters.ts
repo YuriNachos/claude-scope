@@ -2,7 +2,13 @@
  * Formatter utilities for displaying data in human-readable formats
  */
 
-import { TIME, COST_THRESHOLDS, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from '../../constants.js';
+import {
+  TIME,
+  COST_THRESHOLDS,
+  CONTEXT_THRESHOLDS,
+  ANSI_COLORS,
+  DEFAULTS,
+} from "../../constants.js";
 
 /**
  * Format milliseconds to human-readable duration
@@ -17,7 +23,7 @@ import { TIME, COST_THRESHOLDS, CONTEXT_THRESHOLDS, ANSI_COLORS, DEFAULTS } from
  * @returns Human-readable duration string
  */
 export function formatDuration(ms: number): string {
-  if (ms <= 0) return '0s';
+  if (ms <= 0) return "0s";
 
   const seconds = Math.floor(ms / TIME.MS_PER_SECOND);
   const hours = Math.floor(seconds / TIME.SECONDS_PER_HOUR);
@@ -37,7 +43,7 @@ export function formatDuration(ms: number): string {
     parts.push(`${secs}s`);
   }
 
-  return parts.join(' ');
+  return parts.join(" ");
 }
 
 /**
@@ -80,7 +86,7 @@ export function progressBar(percent: number, width: number = DEFAULTS.PROGRESS_B
   const clampedPercent = Math.max(0, Math.min(100, percent));
   const filled = Math.round((clampedPercent / 100) * width);
   const empty = width - filled;
-  return '█'.repeat(filled) + '░'.repeat(empty);
+  return "█".repeat(filled) + "░".repeat(empty);
 }
 
 /**

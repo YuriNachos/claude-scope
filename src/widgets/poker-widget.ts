@@ -4,34 +4,30 @@
  * Displays random Texas Hold'em hands for entertainment
  */
 
-import { StdinDataWidget } from './core/stdin-data-widget.js';
-import { createWidgetMetadata } from '../core/widget-types.js';
-import { Deck } from './poker/deck.js';
-import { evaluateHand } from './poker/hand-evaluator.js';
-import { formatCard, isRedSuit, type Card } from './poker/types.js';
-import { colorize } from '../ui/utils/formatters.js';
-import { bold, gray, lightGray, red, reset } from '../ui/utils/colors.js';
-import type { RenderContext, StdinData } from '../types.js';
+import { createWidgetMetadata } from "../core/widget-types.js";
+import type { RenderContext, StdinData } from "../types.js";
+import { bold, gray, lightGray, red, reset } from "../ui/utils/colors.js";
+import { colorize } from "../ui/utils/formatters.js";
+import { StdinDataWidget } from "./core/stdin-data-widget.js";
+import { Deck } from "./poker/deck.js";
+import { evaluateHand } from "./poker/hand-evaluator.js";
+import { type Card, formatCard, isRedSuit } from "./poker/types.js";
 
 export class PokerWidget extends StdinDataWidget {
-  readonly id = 'poker';
+  readonly id = "poker";
   readonly metadata = createWidgetMetadata(
-    'Poker',
-    'Displays random Texas Hold\'em hands for entertainment',
-    '1.0.0',
-    'claude-scope',
-    2  // Third line (0-indexed)
+    "Poker",
+    "Displays random Texas Hold'em hands for entertainment",
+    "1.0.0",
+    "claude-scope",
+    2 // Third line (0-indexed)
   );
 
   private holeCards: { card: Card; formatted: string }[] = [];
   private boardCards: { card: Card; formatted: string }[] = [];
   private handResult: { text: string; participatingIndices: number[] } | null = null;
   private lastUpdateTimestamp = 0;
-  private readonly THROTTLE_MS = 5000;  // 5 seconds
-
-  constructor() {
-    super();
-  }
+  private readonly THROTTLE_MS = 5000; // 5 seconds
 
   /**
    * Generate new poker hand on each update
@@ -53,27 +49,27 @@ export class PokerWidget extends StdinDataWidget {
     const board = [deck.deal(), deck.deal(), deck.deal(), deck.deal(), deck.deal()];
     const result = evaluateHand(hole, board);
 
-    this.holeCards = hole.map(card => ({
+    this.holeCards = hole.map((card) => ({
       card,
-      formatted: this.formatCardColor(card)
+      formatted: this.formatCardColor(card),
     }));
 
-    this.boardCards = board.map(card => ({
+    this.boardCards = board.map((card) => ({
       card,
-      formatted: this.formatCardColor(card)
+      formatted: this.formatCardColor(card),
     }));
 
-    const playerParticipates = result.participatingCards.some(idx => idx < 2);
+    const playerParticipates = result.participatingCards.some((idx) => idx < 2);
 
     if (!playerParticipates) {
       this.handResult = {
         text: `Nothing 🃏`,
-        participatingIndices: result.participatingCards
+        participatingIndices: result.participatingCards,
       };
     } else {
       this.handResult = {
         text: `${result.name}! ${result.emoji}`,
-        participatingIndices: result.participatingCards
+        participatingIndices: result.participatingCards,
       };
     }
 
@@ -115,14 +111,14 @@ export class PokerWidget extends StdinDataWidget {
 
     const handStr = this.holeCards
       .map((hc, idx) => this.formatCardByParticipation(hc, participatingSet.has(idx)))
-      .join('');
+      .join("");
 
     const boardStr = this.boardCards
       .map((bc, idx) => this.formatCardByParticipation(bc, participatingSet.has(idx + 2)))
-      .join('');
+      .join("");
 
-    const handLabel = colorize('Hand:', lightGray);
-    const boardLabel = colorize('Board:', lightGray);
+    const handLabel = colorize("Hand:", lightGray);
+    const boardLabel = colorize("Board:", lightGray);
 
     return `${handLabel} ${handStr} | ${boardLabel} ${boardStr} → ${this.handResult?.text}`;
   }

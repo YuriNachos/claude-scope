@@ -5,8 +5,8 @@
  * avoiding external dependencies like simple-git.
  */
 
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
@@ -81,7 +81,7 @@ export class NativeGit implements IGit {
 
   async status(): Promise<GitStatusResult> {
     try {
-      const { stdout } = await execFileAsync('git', ['status', '--branch', '--short'], {
+      const { stdout } = await execFileAsync("git", ["status", "--branch", "--short"], {
         cwd: this.cwd,
       });
 
@@ -97,13 +97,13 @@ export class NativeGit implements IGit {
   }
 
   async diffSummary(options?: string[]): Promise<GitDiffSummary> {
-    const args = ['diff', '--shortstat'];
+    const args = ["diff", "--shortstat"];
     if (options) {
       args.push(...options);
     }
 
     try {
-      const { stdout } = await execFileAsync('git', args, {
+      const { stdout } = await execFileAsync("git", args, {
         cwd: this.cwd,
       });
 
@@ -118,9 +118,7 @@ export class NativeGit implements IGit {
       // Return a single "file" entry representing total changes
       // This matches the simple-git behavior we had before
       const files: GitDiffFile[] =
-        insertions > 0 || deletions > 0
-          ? [{ file: '(total)', insertions, deletions }]
-          : [];
+        insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
 
       return { files };
     } catch {
@@ -131,13 +129,9 @@ export class NativeGit implements IGit {
 
   async latestTag(): Promise<string | null> {
     try {
-      const { stdout } = await execFileAsync(
-        'git',
-        ['describe', '--tags', '--abbrev=0'],
-        {
-          cwd: this.cwd,
-        }
-      );
+      const { stdout } = await execFileAsync("git", ["describe", "--tags", "--abbrev=0"], {
+        cwd: this.cwd,
+      });
       return stdout.trim();
     } catch {
       // No tags found or not in a git repo

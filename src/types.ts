@@ -13,19 +13,11 @@ import type {
   OutputStyle,
   CostInfo,
   ContextWindow,
-  ContextUsage
-} from './schemas/stdin-schema.js';
+  ContextUsage,
+} from "./schemas/stdin-schema.js";
 
 // Re-export for convenience
-export type {
-  StdinData,
-  ModelInfo,
-  Workspace,
-  OutputStyle,
-  CostInfo,
-  ContextWindow,
-  ContextUsage
-};
+export type { StdinData, ModelInfo, Workspace, OutputStyle, CostInfo, ContextWindow, ContextUsage };
 
 // Workspace alias for backwards compatibility
 export type WorkspaceInfo = Workspace;

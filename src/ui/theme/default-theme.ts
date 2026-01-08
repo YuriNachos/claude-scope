@@ -1,5 +1,5 @@
-import type { ITheme } from './types.js';
-import { gray } from '../utils/colors.js';
+import type { ITheme } from "./types.js";
+import { gray } from "../utils/colors.js";
 
 export const DEFAULT_THEME: ITheme = {
   context: {

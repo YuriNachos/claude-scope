@@ -7,8 +7,8 @@
  * The base class handles data storage, update logic, and enables checking.
  */
 
-import type { IWidget, IWidgetMetadata, WidgetContext, RenderContext } from '../../core/types.js';
-import type { StdinData } from '../../types.js';
+import type { IWidget, IWidgetMetadata, WidgetContext, RenderContext } from "../../core/types.js";
+import type { StdinData } from "../../types.js";
 
 /**
  * Abstract base class for widgets working with StdinData
@@ -110,10 +110,7 @@ export abstract class StdinDataWidget implements IWidget {
    * @param context - Render context
    * @returns Rendered string, or null if widget should not display
    */
-  protected abstract renderWithData(
-    data: StdinData,
-    context: RenderContext
-  ): string | null;
+  protected abstract renderWithData(data: StdinData, context: RenderContext): string | null;
 
   /**
    * Optional cleanup method

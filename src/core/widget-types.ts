@@ -2,7 +2,7 @@
  * Widget type utilities and helpers
  */
 
-import type { IWidgetMetadata, IWidget } from './types.js';
+import type { IWidgetMetadata, IWidget } from "./types.js";
 
 /**
  * Create widget metadata with defaults
@@ -17,8 +17,8 @@ import type { IWidgetMetadata, IWidget } from './types.js';
 export function createWidgetMetadata(
   name: string,
   description: string,
-  version = '1.0.0',
-  author = 'claude-scope',
+  version = "1.0.0",
+  author = "claude-scope",
   line: number = 0
 ): IWidgetMetadata {
   return {
@@ -26,7 +26,7 @@ export function createWidgetMetadata(
     description,
     version,
     author,
-    line
+    line,
   };
 }
 
@@ -49,6 +49,6 @@ export interface WidgetConfig {
 export function createWidgetConfig(config: WidgetConfig = {}): WidgetConfig {
   return {
     enabled: true,
-    ...config
+    ...config,
   };
 }
