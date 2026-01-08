@@ -4,18 +4,16 @@
  * Displays random Texas Hold'em hands for entertainment
  */
 
+import type { StyleRendererFn } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
-import type { WidgetStyle } from "../core/style-types.js";
-import { bold, gray, lightGray, red, reset } from "../ui/utils/colors.js";
-import { colorize } from "../ui/utils/formatters.js";
+import { createStyleSetter } from "../utils/create-style-setter.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { Deck } from "./poker/deck.js";
 import { evaluateHand } from "./poker/hand-evaluator.js";
 import { type Card, formatCard, isRedSuit } from "./poker/types.js";
-import { PokerBalancedRenderer } from "./poker/renderers/balanced.js";
-import { PokerCompactVerboseRenderer } from "./poker/renderers/compact-verbose.js";
-import type { PokerRenderer, PokerCardData, PokerRenderData } from "./poker/renderers/types.js";
+import { pokerStyles } from "./poker/styles.js";
+import type { PokerCardData, PokerRenderData } from "./poker/widget-types.js";
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 
 export class PokerWidget extends StdinDataWidget {
@@ -33,7 +31,9 @@ export class PokerWidget extends StdinDataWidget {
   private handResult: { text: string; participatingIndices: number[] } | null = null;
   private lastUpdateTimestamp = 0;
   private readonly THROTTLE_MS = 5000; // 5 seconds
-  private renderer: PokerRenderer = new PokerBalancedRenderer();
+  private styleFn: StyleRendererFn<PokerRenderData> = pokerStyles.balanced!;
+
+  setStyle = createStyleSetter(pokerStyles, { value: this.styleFn }, DEFAULT_WIDGET_STYLE);
 
   /**
    * Generate new poker hand on each update
@@ -82,50 +82,13 @@ export class PokerWidget extends StdinDataWidget {
     this.lastUpdateTimestamp = now;
   }
 
-  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
-    switch (style) {
-      case "balanced":
-      case "compact":
-      case "playful":
-        this.renderer = new PokerBalancedRenderer();
-        break;
-      case "compact-verbose":
-        this.renderer = new PokerCompactVerboseRenderer();
-        break;
-      default:
-        this.renderer = new PokerBalancedRenderer();
-        break;
-    }
-  }
-
   /**
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
    */
   private formatCardColor(card: Card): string {
-    const color = isRedSuit(card.suit) ? red : gray;
-    return colorize(`[${formatCard(card)}]`, color);
-  }
-
-  /**
-   * Format card based on participation in best hand
-   * Participating cards: (K♠) with color + BOLD
-   * Non-participating cards: K♠ with color, no brackets
-   */
-  private formatCardByParticipation(
-    cardData: { card: Card; formatted: string },
-    isParticipating: boolean
-  ): string {
-    // Get the card color based on suit (red for ♥♦, gray for ♠♣)
-    const color = isRedSuit(cardData.card.suit) ? red : gray;
-    const cardText = formatCard(cardData.card); // "K♠"
-
-    if (isParticipating) {
-      // Participating: (K♠) with color + BOLD, followed by space
-      return `${color}${bold}(${cardText})${reset} `;
-    } else {
-      // Non-participating: K♠ with color, no brackets, with space padding
-      return `${color}${cardText}${reset} `;
-    }
+    const color = isRedSuit(card.suit) ? "red" : "gray";
+    // This is just for internal storage, actual formatting happens in styles
+    return formatCard(card);
   }
 
   protected renderWithData(_data: StdinData, _context: RenderContext): string | null {
@@ -153,7 +116,7 @@ export class PokerWidget extends StdinDataWidget {
       handResult,
     };
 
-    return this.renderer.render(renderData);
+    return this.styleFn(renderData);
   }
 
   private getHandName(text: string): string {
