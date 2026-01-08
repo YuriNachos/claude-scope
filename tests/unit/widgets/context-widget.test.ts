@@ -249,8 +249,10 @@ describe("ContextWidget", () => {
 
   describe("with custom colors", () => {
     it("should use custom low color when provided", async () => {
-      const customColors = { low: "\x1b[36m", medium: "\x1b[33m", high: "\x1b[31m" };
-      const widget = new ContextWidget(customColors);
+      const customColors = {
+        context: { low: "\x1b[36m", medium: "\x1b[33m", high: "\x1b[31m" },
+      };
+      const widget = new ContextWidget(customColors as any);
       await widget.update(
         createMockStdinData({
           context_window: {

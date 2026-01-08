@@ -73,20 +73,23 @@ export const durationStyles = {
 /**
  * Helper to format duration with colors
  * Parses the formatted duration and applies colors to values and units
+ * Matches formatDuration behavior: always shows seconds when hours/minutes present
  */
 function formatDurationWithColors(ms, colors) {
+    if (ms <= 0)
+        return colorize("0s", colors.value);
     const totalSeconds = Math.floor(ms / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     const parts = [];
     if (hours > 0) {
-        parts.push(colorize(`${hours}`, colors.value) + colorize("h", colors.unit));
+        parts.push(colorize(`${hours}`, colors.value) + colorize("h", colors.unit), colorize(`${minutes}`, colors.value) + colorize("m", colors.unit), colorize(`${seconds}`, colors.value) + colorize("s", colors.unit));
     }
-    if (minutes > 0) {
-        parts.push(colorize(`${minutes}`, colors.value) + colorize("m", colors.unit));
+    else if (minutes > 0) {
+        parts.push(colorize(`${minutes}`, colors.value) + colorize("m", colors.unit), colorize(`${seconds}`, colors.value) + colorize("s", colors.unit));
     }
-    if (seconds > 0 || parts.length === 0) {
+    else {
         parts.push(colorize(`${seconds}`, colors.value) + colorize("s", colors.unit));
     }
     return parts.join(" ");

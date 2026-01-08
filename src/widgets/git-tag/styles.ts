@@ -2,35 +2,49 @@
  * Functional style renderers for GitTagWidget
  */
 
-import { withLabel, withIndicator } from "../../ui/utils/style-utils.js";
-import type { GitTagRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
+import type { IGitColors } from "../../ui/theme/types.js";
+import { colorize } from "../../ui/utils/colors.js";
+import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
+import type { GitTagRenderData } from "./types.js";
 
-export const gitTagStyles: StyleMap<GitTagRenderData> = {
-  balanced: (data: GitTagRenderData) => {
-    return data.tag || "—";
+export const gitTagStyles: StyleMap<GitTagRenderData, IGitColors> = {
+  balanced: (data: GitTagRenderData, colors?: IGitColors) => {
+    const tag = data.tag || "—";
+    if (!colors) return tag;
+    return colorize(tag, colors.branch);
   },
 
-  compact: (data: GitTagRenderData) => {
+  compact: (data: GitTagRenderData, colors?: IGitColors) => {
     if (!data.tag) return "—";
     // Remove "v" prefix if present
-    return data.tag.replace(/^v/, "");
+    const tag = data.tag.replace(/^v/, "");
+    if (!colors) return tag;
+    return colorize(tag, colors.branch);
   },
 
-  playful: (data: GitTagRenderData) => {
-    return `🏷️ ${data.tag || "—"}`;
+  playful: (data: GitTagRenderData, colors?: IGitColors) => {
+    const tag = data.tag || "—";
+    if (!colors) return `🏷️ ${tag}`;
+    return `🏷️ ${colorize(tag, colors.branch)}`;
   },
 
-  verbose: (data: GitTagRenderData) => {
+  verbose: (data: GitTagRenderData, colors?: IGitColors) => {
     if (!data.tag) return "version: none";
-    return `version ${data.tag}`;
+    const tag = `version ${data.tag}`;
+    if (!colors) return tag;
+    return `version ${colorize(data.tag, colors.branch)}`;
   },
 
-  labeled: (data: GitTagRenderData) => {
-    return withLabel("Tag", data.tag || "none");
+  labeled: (data: GitTagRenderData, colors?: IGitColors) => {
+    const tag = data.tag || "none";
+    if (!colors) return withLabel("Tag", tag);
+    return withLabel("Tag", colorize(tag, colors.branch));
   },
 
-  indicator: (data: GitTagRenderData) => {
-    return withIndicator(data.tag || "—");
+  indicator: (data: GitTagRenderData, colors?: IGitColors) => {
+    const tag = data.tag || "—";
+    if (!colors) return withIndicator(tag);
+    return withIndicator(colorize(tag, colors.branch));
   },
 };

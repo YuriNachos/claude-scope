@@ -1,7 +1,8 @@
 /**
  * Functional style renderers for GitTagWidget
  */
-import type { GitTagRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
-export declare const gitTagStyles: StyleMap<GitTagRenderData>;
+import type { IGitColors } from "../../ui/theme/types.js";
+import type { GitTagRenderData } from "./types.js";
+export declare const gitTagStyles: StyleMap<GitTagRenderData, IGitColors>;
 //# sourceMappingURL=styles.d.ts.map

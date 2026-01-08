@@ -7,6 +7,7 @@
  */
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { createGit } from "../../providers/git-provider.js";
+import { DEFAULT_THEME } from "../../ui/theme/index.js";
 import { gitTagStyles } from "../git-tag/styles.js";
 /**
  * Widget displaying the latest git tag
@@ -24,14 +25,17 @@ export class GitTagWidget {
     git = null;
     enabled = true;
     cwd = null;
+    colors;
     styleFn = gitTagStyles.balanced;
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
      *                     If not provided, uses default createGit (production)
      *                     Tests can inject MockGit factory here
+     * @param colors - Optional theme colors
      */
-    constructor(gitFactory) {
+    constructor(gitFactory, colors) {
         this.gitFactory = gitFactory || createGit;
+        this.colors = colors ?? DEFAULT_THEME;
     }
     setStyle(style = "balanced") {
         const fn = gitTagStyles[style];
@@ -50,7 +54,7 @@ export class GitTagWidget {
             // Fetch the latest tag
             const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
             const renderData = { tag: latestTag };
-            return this.styleFn(renderData);
+            return this.styleFn(renderData, this.colors.git);
         }
         catch {
             // Log specific error for debugging but return null (graceful degradation)

@@ -525,25 +525,37 @@ var GitWidget = class {
 
 // src/widgets/git-tag/styles.ts
 var gitTagStyles = {
-  balanced: (data) => {
-    return data.tag || "\u2014";
+  balanced: (data, colors) => {
+    const tag = data.tag || "\u2014";
+    if (!colors) return tag;
+    return colorize(tag, colors.branch);
   },
-  compact: (data) => {
+  compact: (data, colors) => {
     if (!data.tag) return "\u2014";
-    return data.tag.replace(/^v/, "");
+    const tag = data.tag.replace(/^v/, "");
+    if (!colors) return tag;
+    return colorize(tag, colors.branch);
   },
-  playful: (data) => {
-    return `\u{1F3F7}\uFE0F ${data.tag || "\u2014"}`;
+  playful: (data, colors) => {
+    const tag = data.tag || "\u2014";
+    if (!colors) return `\u{1F3F7}\uFE0F ${tag}`;
+    return `\u{1F3F7}\uFE0F ${colorize(tag, colors.branch)}`;
   },
-  verbose: (data) => {
+  verbose: (data, colors) => {
     if (!data.tag) return "version: none";
-    return `version ${data.tag}`;
+    const tag = `version ${data.tag}`;
+    if (!colors) return tag;
+    return `version ${colorize(data.tag, colors.branch)}`;
   },
-  labeled: (data) => {
-    return withLabel("Tag", data.tag || "none");
+  labeled: (data, colors) => {
+    const tag = data.tag || "none";
+    if (!colors) return withLabel("Tag", tag);
+    return withLabel("Tag", colorize(tag, colors.branch));
   },
-  indicator: (data) => {
-    return withIndicator(data.tag || "\u2014");
+  indicator: (data, colors) => {
+    const tag = data.tag || "\u2014";
+    if (!colors) return withIndicator(tag);
+    return withIndicator(colorize(tag, colors.branch));
   }
 };
 
@@ -562,14 +574,17 @@ var GitTagWidget = class {
   git = null;
   enabled = true;
   cwd = null;
+  colors;
   styleFn = gitTagStyles.balanced;
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
    *                     Tests can inject MockGit factory here
+   * @param colors - Optional theme colors
    */
-  constructor(gitFactory) {
+  constructor(gitFactory, colors) {
     this.gitFactory = gitFactory || createGit;
+    this.colors = colors ?? DEFAULT_THEME;
   }
   setStyle(style = "balanced") {
     const fn = gitTagStyles[style];
@@ -587,7 +602,7 @@ var GitTagWidget = class {
     try {
       const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
       const renderData = { tag: latestTag };
-      return this.styleFn(renderData);
+      return this.styleFn(renderData, this.colors.git);
     } catch {
       return null;
     }
@@ -1060,18 +1075,24 @@ var durationStyles = {
   }
 };
 function formatDurationWithColors(ms, colors) {
+  if (ms <= 0) return colorize("0s", colors.value);
   const totalSeconds = Math.floor(ms / 1e3);
   const hours = Math.floor(totalSeconds / 3600);
   const minutes = Math.floor(totalSeconds % 3600 / 60);
   const seconds = totalSeconds % 60;
   const parts = [];
   if (hours > 0) {
-    parts.push(colorize(`${hours}`, colors.value) + colorize("h", colors.unit));
-  }
-  if (minutes > 0) {
-    parts.push(colorize(`${minutes}`, colors.value) + colorize("m", colors.unit));
-  }
-  if (seconds > 0 || parts.length === 0) {
+    parts.push(
+      colorize(`${hours}`, colors.value) + colorize("h", colors.unit),
+      colorize(`${minutes}`, colors.value) + colorize("m", colors.unit),
+      colorize(`${seconds}`, colors.value) + colorize("s", colors.unit)
+    );
+  } else if (minutes > 0) {
+    parts.push(
+      colorize(`${minutes}`, colors.value) + colorize("m", colors.unit),
+      colorize(`${seconds}`, colors.value) + colorize("s", colors.unit)
+    );
+  } else {
     parts.push(colorize(`${seconds}`, colors.value) + colorize("s", colors.unit));
   }
   return parts.join(" ");

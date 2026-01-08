@@ -6,11 +6,13 @@
  * because it requires async git operations with custom lifecycle management.
  */
 
-import type { IWidget, WidgetContext, RenderContext, StdinData } from "../../core/types.js";
 import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
+import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { IGit } from "../../providers/git-provider.js";
 import { createGit } from "../../providers/git-provider.js";
+import { DEFAULT_THEME } from "../../ui/theme/index.js";
+import type { IGitColors, IThemeColors } from "../../ui/theme/types.js";
 import { gitTagStyles } from "../git-tag/styles.js";
 import type { GitTagRenderData } from "../git-tag/types.js";
 
@@ -36,15 +38,18 @@ export class GitTagWidget implements IWidget {
   private git: IGit | null = null;
   private enabled = true;
   private cwd: string | null = null;
-  private styleFn: StyleRendererFn<GitTagRenderData> = gitTagStyles.balanced!;
+  private colors: IThemeColors;
+  private styleFn: StyleRendererFn<GitTagRenderData, IGitColors> = gitTagStyles.balanced!;
 
   /**
    * @param gitFactory - Optional factory function for creating IGit instances
    *                     If not provided, uses default createGit (production)
    *                     Tests can inject MockGit factory here
+   * @param colors - Optional theme colors
    */
-  constructor(gitFactory?: (cwd: string) => IGit) {
+  constructor(gitFactory?: (cwd: string) => IGit, colors?: IThemeColors) {
     this.gitFactory = gitFactory || createGit;
+    this.colors = colors ?? DEFAULT_THEME;
   }
 
   setStyle(style: WidgetStyle = "balanced"): void {
@@ -68,7 +73,7 @@ export class GitTagWidget implements IWidget {
       const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
 
       const renderData: GitTagRenderData = { tag: latestTag };
-      return this.styleFn(renderData);
+      return this.styleFn(renderData, this.colors.git);
     } catch {
       // Log specific error for debugging but return null (graceful degradation)
       return null;
