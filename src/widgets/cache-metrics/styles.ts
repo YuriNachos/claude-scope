@@ -3,6 +3,7 @@
  */
 
 import type { StyleMap } from "../../core/style-types.js";
+import type { IThemeColors } from "../../ui/theme/types.js";
 import type { CacheMetricsRenderData, CacheMetricsStyle } from "./types.js";
 
 /**
@@ -41,66 +42,112 @@ function createProgressBar(percentage: number, width: number): string {
 }
 
 /**
+ * Get the appropriate color based on cache hit rate percentage
+ */
+function getCacheColor(hitRate: number, colors: IThemeColors): string {
+  if (hitRate > 70) {
+    return colors.cache.high;
+  } else if (hitRate >= 40) {
+    return colors.cache.medium;
+  } else {
+    return colors.cache.low;
+  }
+}
+
+/**
  * Style implementations for cache metrics display
  */
-export const cacheMetricsStyles: StyleMap<CacheMetricsRenderData> = {
+export const cacheMetricsStyles: StyleMap<CacheMetricsRenderData, IThemeColors> = {
   /**
    * balanced: 💾 70% cached (35.0k tokens) with color coding
    */
-  balanced: (data: CacheMetricsRenderData) => {
+  balanced: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
     const { hitRate, cacheRead } = data;
-    return `💾 ${hitRate.toFixed(0)}% cached (${formatK(cacheRead)} tokens)`;
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    const tokens = colors
+      ? `${colors.cache.read}${formatK(cacheRead)} tokens`
+      : `${formatK(cacheRead)} tokens`;
+    return `💾 ${percentage} cached (${tokens})`;
   },
 
   /**
    * compact: Cache: 70%
    */
-  compact: (data: CacheMetricsRenderData) => {
-    return `Cache: ${data.hitRate.toFixed(0)}%`;
+  compact: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
+    const hitRate = data.hitRate.toFixed(0);
+    if (colors) {
+      return `${colors.cache.read}Cache: ${hitRate}%`;
+    }
+    return `Cache: ${hitRate}%`;
   },
 
   /**
    * playful: 💾 [███████░] 70% with progress bar
    */
-  playful: (data: CacheMetricsRenderData) => {
+  playful: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
     const { hitRate } = data;
     const bar = createProgressBar(hitRate, 7);
-    return `💾 [${bar}] ${hitRate.toFixed(0)}%`;
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const barAndPercent = color
+      ? `${color}[${bar}] ${hitRate.toFixed(0)}%`
+      : `[${bar}] ${hitRate.toFixed(0)}%`;
+    return `💾 ${barAndPercent}`;
   },
 
   /**
    * verbose: Cache: 35.0k tokens (70%) | $0.03 saved
    */
-  verbose: (data: CacheMetricsRenderData) => {
+  verbose: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
     const { cacheRead, hitRate, savings } = data;
-    return `Cache: ${formatK(cacheRead)} tokens (${hitRate.toFixed(0)}%) | ${formatCurrency(savings)} saved`;
+    const tokens = colors
+      ? `${colors.cache.read}${formatK(cacheRead)} tokens`
+      : `${formatK(cacheRead)} tokens`;
+    const percent = `${hitRate.toFixed(0)}%`;
+    const saved = colors
+      ? `${colors.cache.write}${formatCurrency(savings)} saved`
+      : `${formatCurrency(savings)} saved`;
+    return `Cache: ${tokens} (${percent}) | ${saved}`;
   },
 
   /**
    * labeled: Cache Hit: 70% | $0.03 saved
    */
-  labeled: (data: CacheMetricsRenderData) => {
+  labeled: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
     const { hitRate, savings } = data;
-    return `Cache Hit: ${hitRate.toFixed(0)}% | ${formatCurrency(savings)} saved`;
+    const percent = colors
+      ? `${colors.cache.read}${hitRate.toFixed(0)}%`
+      : `${hitRate.toFixed(0)}%`;
+    const saved = colors
+      ? `${colors.cache.write}${formatCurrency(savings)} saved`
+      : `${formatCurrency(savings)} saved`;
+    return `Cache Hit: ${percent} | ${saved}`;
   },
 
   /**
    * indicator: ● 70% cached
    */
-  indicator: (data: CacheMetricsRenderData) => {
-    return `● ${data.hitRate.toFixed(0)}% cached`;
+  indicator: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
+    const { hitRate } = data;
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    return `● ${percentage} cached`;
   },
 
   /**
    * breakdown: Multi-line with ├─ Read: and └─ Write: breakdown
    */
-  breakdown: (data: CacheMetricsRenderData) => {
+  breakdown: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
     const { cacheRead, cacheWrite, hitRate, savings } = data;
-    return [
-      `💾 ${hitRate.toFixed(0)}% cached | ${formatCurrency(savings)} saved`,
-      `├─ Read: ${formatK(cacheRead)}`,
-      `└─ Write: ${formatK(cacheWrite)}`,
-    ].join("\n");
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const percent = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    const saved = colors
+      ? `${colors.cache.write}${formatCurrency(savings)} saved`
+      : `${formatCurrency(savings)} saved`;
+    const read = colors ? `${colors.cache.read}${formatK(cacheRead)}` : formatK(cacheRead);
+    const write = colors ? `${colors.cache.write}${formatK(cacheWrite)}` : formatK(cacheWrite);
+
+    return [`💾 ${percent} cached | ${saved}`, `├─ Read: ${read}`, `└─ Write: ${write}`].join("\n");
   },
 };
 
