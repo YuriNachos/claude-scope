@@ -52,10 +52,15 @@ export class CacheMetricsWidget extends StdinDataWidget {
     const cacheWrite = usage.cache_creation_input_tokens ?? 0;
     const inputTokens = usage.input_tokens ?? 0;
     const outputTokens = usage.output_tokens ?? 0;
-    const totalTokens = inputTokens + outputTokens;
 
-    // Cache hit rate = cache read / total input tokens
-    const hitRate = inputTokens > 0 ? Math.round((cacheRead / inputTokens) * 100) : 0;
+    // FIX: Total input tokens = cache read + cache write + new input tokens
+    // The input_tokens field only contains NEW (non-cached) tokens
+    const totalInputTokens = cacheRead + cacheWrite + inputTokens;
+    const totalTokens = totalInputTokens + outputTokens;
+
+    // Cache hit rate = cache read / total input tokens (capped at 100%)
+    const hitRate =
+      totalInputTokens > 0 ? Math.min(100, Math.round((cacheRead / totalInputTokens) * 100)) : 0;
 
     // Cost savings: cache costs 10% of regular tokens
     // Savings = (cacheRead * 0.9) * cost_per_token
