@@ -69,12 +69,13 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
     const parts: string[] = [];
     const c = colors ?? getDefaultColors();
 
-    // Get all unique tool names (running + completed)
+    // Get all unique tool names (running + top-3 completed)
     const allToolNames = new Set<string>();
     for (const tool of data.running) {
       allToolNames.add(tool.name);
     }
-    for (const [name] of data.completed) {
+    // Only include top-3 completed tools (already sorted by count)
+    for (const [name] of data.completed.slice(0, 3)) {
       allToolNames.add(name);
     }
 
