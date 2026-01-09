@@ -83,7 +83,7 @@ function getStraightIndices(cards, highCard) {
             cardIndicesByRank.set(value, []);
             uniqueValues.add(value);
         }
-        cardIndicesByRank.get(value).push(i);
+        cardIndicesByRank.get(value)?.push(i);
     }
     const sortedValues = Array.from(uniqueValues).sort((a, b) => b - a);
     // Check for straight with Ace high (A-K-Q-J-10)
@@ -129,7 +129,7 @@ function getStraightFlushHighCard(cards, suit) {
  * Get indices for a straight flush with the given high card and suit
  */
 function getStraightFlushIndices(cards, highCard, suit) {
-    const suitCards = cards.filter((c) => c.suit === suit);
+    const _suitCards = cards.filter((c) => c.suit === suit);
     const suitCardIndices = [];
     // Map filtered cards back to original indices
     const indexMap = new Map();

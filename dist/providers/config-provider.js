@@ -4,9 +4,9 @@
  * Scans Claude Code configuration files with hybrid caching.
  * Cache invalidates after 5 seconds.
  */
-import * as fs from "fs/promises";
-import * as os from "os";
-import * as path from "path";
+import * as fs from "node:fs/promises";
+import * as os from "node:os";
+import * as path from "node:path";
 /**
  * Provider for scanning Claude Code configuration with caching
  */

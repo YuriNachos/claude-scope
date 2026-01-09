@@ -93,29 +93,27 @@ function getHandAbbreviation(handResult) {
     const abbreviation = HAND_ABBREVIATIONS[handResult.name] ?? "—";
     return `${abbreviation} (${handResult.name})`;
 }
+/**
+ * Balanced style implementation (shared with compact and playful)
+ */
+function balancedStyle(data, colors) {
+    const { holeCards, boardCards, handResult } = data;
+    const participatingSet = new Set(handResult?.participatingIndices || []);
+    const handStr = holeCards
+        .map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx)))
+        .join("");
+    const boardStr = boardCards
+        .map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2)))
+        .join("");
+    const labelColor = colors?.participating ?? lightGray;
+    const handLabel = colorize("Hand:", labelColor);
+    const boardLabel = colorize("Board:", labelColor);
+    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
+}
 export const pokerStyles = {
-    balanced: (data, colors) => {
-        const { holeCards, boardCards, handResult } = data;
-        const participatingSet = new Set(handResult?.participatingIndices || []);
-        const handStr = holeCards
-            .map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx)))
-            .join("");
-        const boardStr = boardCards
-            .map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2)))
-            .join("");
-        const labelColor = colors?.participating ?? lightGray;
-        const handLabel = colorize("Hand:", labelColor);
-        const boardLabel = colorize("Board:", labelColor);
-        return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
-    },
-    compact: (data, colors) => {
-        // Same as balanced for now
-        return pokerStyles.balanced(data, colors);
-    },
-    playful: (data, colors) => {
-        // Same as balanced for now
-        return pokerStyles.balanced(data, colors);
-    },
+    balanced: balancedStyle,
+    compact: balancedStyle,
+    playful: balancedStyle,
     "compact-verbose": (data, colors) => {
         const { holeCards, boardCards, handResult } = data;
         const participatingSet = new Set(handResult?.participatingIndices || []);

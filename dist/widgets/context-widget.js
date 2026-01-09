@@ -2,8 +2,10 @@
  * Context Widget
  *
  * Displays context window usage with progress bar
+ * Uses cached values when current_usage is null to prevent flickering
  */
 import { createWidgetMetadata } from "../core/widget-types.js";
+import { CacheManager } from "../storage/cache-manager.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { contextStyles } from "./context/styles.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
@@ -13,9 +15,11 @@ export class ContextWidget extends StdinDataWidget {
     );
     colors;
     styleFn = contextStyles.balanced;
+    cacheManager;
     constructor(colors) {
         super();
         this.colors = colors ?? DEFAULT_THEME;
+        this.cacheManager = new CacheManager();
     }
     setStyle(style = "balanced") {
         const fn = contextStyles[style];
@@ -23,19 +27,43 @@ export class ContextWidget extends StdinDataWidget {
             this.styleFn = fn;
         }
     }
+    /**
+     * Update widget with new data, storing valid values in cache
+     */
+    async update(data) {
+        await super.update(data);
+        const { current_usage } = data.context_window;
+        // If we have valid current_usage, cache it
+        if (current_usage) {
+            this.cacheManager.setCachedUsage(data.session_id, {
+                input_tokens: current_usage.input_tokens,
+                output_tokens: current_usage.output_tokens,
+                cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
+                cache_read_input_tokens: current_usage.cache_read_input_tokens,
+            });
+        }
+    }
     renderWithData(data, _context) {
         const { current_usage, context_window_size } = data.context_window;
-        if (!current_usage)
+        // Try to get usage data: prefer current, fall back to cache
+        let usage = current_usage;
+        if (!usage) {
+            const cached = this.cacheManager.getCachedUsage(data.session_id);
+            if (cached) {
+                usage = cached.usage;
+            }
+        }
+        if (!usage)
             return null;
         // Calculate actual context usage:
         // - input_tokens: new tokens added to context
         // - cache_creation_input_tokens: tokens spent creating cache (also in context)
         // - cache_read_input_tokens: tokens read from cache (still occupy context space)
         // - output_tokens: tokens in the response (also part of context)
-        const used = current_usage.input_tokens +
-            current_usage.cache_creation_input_tokens +
-            current_usage.cache_read_input_tokens +
-            current_usage.output_tokens;
+        const used = usage.input_tokens +
+            usage.cache_creation_input_tokens +
+            usage.cache_read_input_tokens +
+            usage.output_tokens;
         const percent = Math.round((used / context_window_size) * 100);
         const renderData = {
             used,
@@ -44,6 +72,9 @@ export class ContextWidget extends StdinDataWidget {
         };
         // Style functions now handle colorization based on percent
         return this.styleFn(renderData, this.colors.context);
+    }
+    isEnabled() {
+        return true;
     }
 }
 //# sourceMappingURL=context-widget.js.map

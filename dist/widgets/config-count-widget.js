@@ -44,7 +44,7 @@ export class ConfigCountWidget {
         const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
         return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
     }
-    async render(context) {
+    async render(_context) {
         if (!this.configs) {
             return null;
         }

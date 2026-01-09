@@ -47,7 +47,7 @@ export const durationStyles = {
                 colorize("m", colors.unit);
             return `⌛ ${colored}`;
         }
-        return `⌛ ` + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
+        return `⌛ ${colorize(`${minutes}`, colors.value)}${colorize("m", colors.unit)}`;
     },
     technical: (data, colors) => {
         const value = `${Math.floor(data.durationMs)}ms`;

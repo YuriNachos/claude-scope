@@ -71,7 +71,7 @@ export async function main() {
         // Create renderer with error handling configuration
         const renderer = new Renderer({
             separator: " │ ",
-            onError: (error, widget) => {
+            onError: (_error, _widget) => {
                 // Silently ignore widget errors - they return null
             },
             showErrors: false,
@@ -88,7 +88,7 @@ export async function main() {
         // Join with newline
         return lines.join("\n");
     }
-    catch (error) {
+    catch (_error) {
         // Try to show at least git info on error
         const fallback = await tryGitFallback();
         return fallback;

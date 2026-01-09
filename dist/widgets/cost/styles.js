@@ -4,18 +4,20 @@
 import { colorize } from "../../ui/utils/colors.js";
 import { formatCostUSD } from "../../ui/utils/formatters.js";
 import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
+/**
+ * Balanced style implementation (shared with compact)
+ */
+function balancedStyle(data, colors) {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors)
+        return formatted;
+    // Colorize the amount, keep currency symbol muted
+    const amountStr = data.costUsd.toFixed(2);
+    return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+}
 export const costStyles = {
-    balanced: (data, colors) => {
-        const formatted = formatCostUSD(data.costUsd);
-        if (!colors)
-            return formatted;
-        // Colorize the amount, keep currency symbol muted
-        const amountStr = data.costUsd.toFixed(2);
-        return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
-    },
-    compact: (data, colors) => {
-        return costStyles.balanced(data, colors);
-    },
+    balanced: balancedStyle,
+    compact: balancedStyle,
     playful: (data, colors) => {
         const formatted = formatCostUSD(data.costUsd);
         if (!colors)

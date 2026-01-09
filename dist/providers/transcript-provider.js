@@ -1,5 +1,5 @@
-import { createReadStream, existsSync } from "fs";
-import { createInterface } from "readline";
+import { createReadStream, existsSync } from "node:fs";
+import { createInterface } from "node:readline";
 /**
  * Parses Claude Code transcript files to track tool usage
  * Matches tool_use blocks with tool_result blocks by ID
@@ -106,7 +106,7 @@ export class TranscriptProvider {
     truncateCommand(cmd) {
         if (cmd.length <= 30)
             return cmd;
-        return cmd.slice(0, 30) + "...";
+        return `${cmd.slice(0, 30)}...`;
     }
 }
 //# sourceMappingURL=transcript-provider.js.map

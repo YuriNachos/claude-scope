@@ -24,7 +24,7 @@ export declare class ConfigCountWidget implements IWidget {
     initialize(): Promise<void>;
     update(data: StdinData): Promise<void>;
     isEnabled(): boolean;
-    render(context: RenderContext): Promise<string | null>;
+    render(_context: RenderContext): Promise<string | null>;
     cleanup(): Promise<void>;
 }
 //# sourceMappingURL=config-count-widget.d.ts.map

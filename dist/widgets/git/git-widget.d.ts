@@ -35,7 +35,7 @@ export declare class GitWidget implements IWidget {
     constructor(gitFactory?: (cwd: string) => IGit, colors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
     initialize(context: WidgetContext): Promise<void>;
-    render(context: RenderContext): Promise<string | null>;
+    render(_context: RenderContext): Promise<string | null>;
     update(data: StdinData): Promise<void>;
     isEnabled(): boolean;
     cleanup(): Promise<void>;

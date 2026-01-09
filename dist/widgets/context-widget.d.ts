@@ -2,6 +2,7 @@
  * Context Widget
  *
  * Displays context window usage with progress bar
+ * Uses cached values when current_usage is null to prevent flickering
  */
 import type { WidgetStyle } from "../core/style-types.js";
 import type { RenderContext, StdinData } from "../types.js";
@@ -12,8 +13,14 @@ export declare class ContextWidget extends StdinDataWidget {
     readonly metadata: import("../core/types.js").IWidgetMetadata;
     private colors;
     private styleFn;
+    private cacheManager;
     constructor(colors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
+    /**
+     * Update widget with new data, storing valid values in cache
+     */
+    update(data: StdinData): Promise<void>;
     protected renderWithData(data: StdinData, _context: RenderContext): string | null;
+    isEnabled(): boolean;
 }
 //# sourceMappingURL=context-widget.d.ts.map

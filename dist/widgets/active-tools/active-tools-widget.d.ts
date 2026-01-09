@@ -51,7 +51,7 @@ export declare class ActiveToolsWidget extends StdinDataWidget {
      * @param context - Render context
      * @returns Rendered string or null if no tools
      */
-    protected renderWithData(data: StdinData, context: RenderContext): string | null;
+    protected renderWithData(_data: StdinData, _context: RenderContext): string | null;
     /**
      * Check if widget should render
      * @returns true if there are tools to display

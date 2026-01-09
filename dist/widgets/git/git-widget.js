@@ -46,7 +46,7 @@ export class GitWidget {
     async initialize(context) {
         this.enabled = context.config?.enabled !== false;
     }
-    async render(context) {
+    async render(_context) {
         if (!this.enabled || !this.git || !this.cwd) {
             return null;
         }

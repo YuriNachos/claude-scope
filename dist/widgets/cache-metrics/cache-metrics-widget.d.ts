@@ -2,6 +2,7 @@
  * Cache Metrics Widget
  *
  * Displays cache hit rate and savings from context usage data
+ * Uses cached values when current_usage is null to prevent flickering
  */
 import type { RenderContext, StdinData } from "../../types.js";
 import type { IThemeColors } from "../../ui/theme/types.js";
@@ -13,6 +14,7 @@ export declare class CacheMetricsWidget extends StdinDataWidget {
     private theme;
     private style;
     private renderData?;
+    private cacheManager;
     constructor(theme?: IThemeColors);
     /**
      * Set display style
@@ -20,11 +22,12 @@ export declare class CacheMetricsWidget extends StdinDataWidget {
     setStyle(style: CacheMetricsStyle): void;
     /**
      * Calculate cache metrics from context usage data
-     * Returns null if no usage data is available
+     * Returns null if no usage data is available (current or cached)
      */
     private calculateMetrics;
     /**
      * Update widget with new data and calculate metrics
+     * Stores valid usage data in cache for future use
      */
     update(data: StdinData): Promise<void>;
     /**

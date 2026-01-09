@@ -102,7 +102,7 @@ var Renderer = class {
       if (!lineMap.has(line)) {
         lineMap.set(line, []);
       }
-      lineMap.get(line).push(widget);
+      lineMap.get(line)?.push(widget);
     }
     const lines = [];
     const sortedLines = Array.from(lineMap.entries()).sort((a, b) => a[0] - b[0]);
@@ -392,8 +392,8 @@ var StdinProvider = class {
 };
 
 // src/providers/transcript-provider.ts
-var import_fs = require("fs");
-var import_readline = require("readline");
+var import_node_fs = require("node:fs");
+var import_node_readline = require("node:readline");
 var TranscriptProvider = class {
   MAX_TOOLS = 20;
   /**
@@ -402,13 +402,13 @@ var TranscriptProvider = class {
    * @returns Array of tool entries, limited to last 20
    */
   async parseTools(transcriptPath) {
-    if (!(0, import_fs.existsSync)(transcriptPath)) {
+    if (!(0, import_node_fs.existsSync)(transcriptPath)) {
       return [];
     }
     const toolMap = /* @__PURE__ */ new Map();
     try {
-      const fileStream = (0, import_fs.createReadStream)(transcriptPath, { encoding: "utf-8" });
-      const rl = (0, import_readline.createInterface)({
+      const fileStream = (0, import_node_fs.createReadStream)(transcriptPath, { encoding: "utf-8" });
+      const rl = (0, import_node_readline.createInterface)({
         input: fileStream,
         crlfDelay: Infinity
       });
@@ -487,7 +487,7 @@ var TranscriptProvider = class {
    */
   truncateCommand(cmd) {
     if (cmd.length <= 30) return cmd;
-    return cmd.slice(0, 30) + "...";
+    return `${cmd.slice(0, 30)}...`;
   }
 };
 
@@ -1793,7 +1793,7 @@ var ActiveToolsWidget = class extends StdinDataWidget {
    * @param context - Render context
    * @returns Rendered string or null if no tools
    */
-  renderWithData(data, context) {
+  renderWithData(_data, _context) {
     if (!this.renderData || this.tools.length === 0) {
       return null;
     }
@@ -1822,6 +1822,113 @@ function createWidgetMetadata(name, description, version = "1.0.0", author = "cl
     line
   };
 }
+
+// src/storage/cache-manager.ts
+var import_node_fs2 = require("node:fs");
+var import_node_os = require("node:os");
+var import_node_path = require("node:path");
+var DEFAULT_CACHE_PATH = `${(0, import_node_os.homedir)()}/.config/claude-scope/cache.json`;
+var DEFAULT_EXPIRY_MS = 5 * 60 * 1e3;
+var CacheManager = class {
+  cachePath;
+  expiryMs;
+  constructor(options) {
+    this.cachePath = options?.cachePath ?? DEFAULT_CACHE_PATH;
+    this.expiryMs = options?.expiryMs ?? DEFAULT_EXPIRY_MS;
+    this.ensureCacheDir();
+  }
+  /**
+   * Get cached usage data for a session
+   * @param sessionId - Session identifier
+   * @returns Cached usage if valid and not expired, null otherwise
+   */
+  getCachedUsage(sessionId) {
+    const cache = this.loadCache();
+    const cached = cache.sessions[sessionId];
+    if (!cached) {
+      return null;
+    }
+    const age = Date.now() - cached.timestamp;
+    if (age > this.expiryMs) {
+      delete cache.sessions[sessionId];
+      this.saveCache(cache);
+      return null;
+    }
+    return cached;
+  }
+  /**
+   * Store usage data for a session
+   * @param sessionId - Session identifier
+   * @param usage - Context usage data to cache
+   */
+  setCachedUsage(sessionId, usage) {
+    const cache = this.loadCache();
+    cache.sessions[sessionId] = {
+      timestamp: Date.now(),
+      usage
+    };
+    this.saveCache(cache);
+  }
+  /**
+   * Clear all cached data (useful for testing)
+   */
+  clearCache() {
+    const emptyCache = {
+      sessions: {},
+      version: 1
+    };
+    this.saveCache(emptyCache);
+  }
+  /**
+   * Clean up expired sessions
+   */
+  cleanupExpired() {
+    const cache = this.loadCache();
+    const now = Date.now();
+    for (const [sessionId, cached] of Object.entries(cache.sessions)) {
+      const age = now - cached.timestamp;
+      if (age > this.expiryMs) {
+        delete cache.sessions[sessionId];
+      }
+    }
+    this.saveCache(cache);
+  }
+  /**
+   * Load cache from file
+   */
+  loadCache() {
+    if (!(0, import_node_fs2.existsSync)(this.cachePath)) {
+      return { sessions: {}, version: 1 };
+    }
+    try {
+      const content = (0, import_node_fs2.readFileSync)(this.cachePath, "utf-8");
+      return JSON.parse(content);
+    } catch {
+      return { sessions: {}, version: 1 };
+    }
+  }
+  /**
+   * Save cache to file
+   */
+  saveCache(cache) {
+    try {
+      (0, import_node_fs2.writeFileSync)(this.cachePath, JSON.stringify(cache, null, 2), "utf-8");
+    } catch {
+    }
+  }
+  /**
+   * Ensure cache directory exists
+   */
+  ensureCacheDir() {
+    try {
+      const dir = (0, import_node_path.dirname)(this.cachePath);
+      if (!(0, import_node_fs2.existsSync)(dir)) {
+        (0, import_node_fs2.mkdirSync)(dir, { recursive: true });
+      }
+    } catch {
+    }
+  }
+};
 
 // src/ui/utils/formatters.ts
 function formatDuration(ms) {
@@ -1966,9 +2073,11 @@ var CacheMetricsWidget = class extends StdinDataWidget {
   theme;
   style = "balanced";
   renderData;
+  cacheManager;
   constructor(theme) {
     super();
     this.theme = theme ?? DEFAULT_THEME;
+    this.cacheManager = new CacheManager();
   }
   /**
    * Set display style
@@ -1978,10 +2087,16 @@ var CacheMetricsWidget = class extends StdinDataWidget {
   }
   /**
    * Calculate cache metrics from context usage data
-   * Returns null if no usage data is available
+   * Returns null if no usage data is available (current or cached)
    */
   calculateMetrics(data) {
-    const usage = data.context_window?.current_usage;
+    let usage = data.context_window?.current_usage;
+    if (!usage) {
+      const cached = this.cacheManager.getCachedUsage(data.session_id);
+      if (cached) {
+        usage = cached.usage;
+      }
+    }
     if (!usage) {
       return null;
     }
@@ -2004,9 +2119,19 @@ var CacheMetricsWidget = class extends StdinDataWidget {
   }
   /**
    * Update widget with new data and calculate metrics
+   * Stores valid usage data in cache for future use
    */
   async update(data) {
     await super.update(data);
+    const usage = data.context_window?.current_usage;
+    if (usage) {
+      this.cacheManager.setCachedUsage(data.session_id, {
+        input_tokens: usage.input_tokens,
+        output_tokens: usage.output_tokens,
+        cache_creation_input_tokens: usage.cache_creation_input_tokens,
+        cache_read_input_tokens: usage.cache_read_input_tokens
+      });
+    }
     const metrics = this.calculateMetrics(data);
     this.renderData = metrics ?? void 0;
   }
@@ -2035,9 +2160,9 @@ var CacheMetricsWidget = class extends StdinDataWidget {
 var DEFAULT_WIDGET_STYLE = "balanced";
 
 // src/providers/config-provider.ts
-var fs = __toESM(require("fs/promises"), 1);
-var os = __toESM(require("os"), 1);
-var path = __toESM(require("path"), 1);
+var fs = __toESM(require("node:fs/promises"), 1);
+var os = __toESM(require("node:os"), 1);
+var path = __toESM(require("node:path"), 1);
 var ConfigProvider = class {
   cachedCounts;
   lastScan = 0;
@@ -2288,7 +2413,7 @@ var ConfigCountWidget = class {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
     return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
   }
-  async render(context) {
+  async render(_context) {
     if (!this.configs) {
       return null;
     }
@@ -2347,7 +2472,7 @@ var contextStyles = {
     const bar = progressBar(data.percent, 10);
     const output = `\u{1F9E0} [${bar}] ${data.percent}%`;
     if (!colors) return output;
-    return `\u{1F9E0} ` + colorize(`[${bar}] ${data.percent}%`, getContextColor(data.percent, colors));
+    return `\u{1F9E0} ${colorize(`[${bar}] ${data.percent}%`, getContextColor(data.percent, colors))}`;
   },
   verbose: (data, colors) => {
     const usedFormatted = data.used.toLocaleString();
@@ -2390,9 +2515,11 @@ var ContextWidget = class extends StdinDataWidget {
   );
   colors;
   styleFn = contextStyles.balanced;
+  cacheManager;
   constructor(colors) {
     super();
     this.colors = colors ?? DEFAULT_THEME;
+    this.cacheManager = new CacheManager();
   }
   setStyle(style = "balanced") {
     const fn = contextStyles[style];
@@ -2400,10 +2527,32 @@ var ContextWidget = class extends StdinDataWidget {
       this.styleFn = fn;
     }
   }
+  /**
+   * Update widget with new data, storing valid values in cache
+   */
+  async update(data) {
+    await super.update(data);
+    const { current_usage } = data.context_window;
+    if (current_usage) {
+      this.cacheManager.setCachedUsage(data.session_id, {
+        input_tokens: current_usage.input_tokens,
+        output_tokens: current_usage.output_tokens,
+        cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
+        cache_read_input_tokens: current_usage.cache_read_input_tokens
+      });
+    }
+  }
   renderWithData(data, _context) {
     const { current_usage, context_window_size } = data.context_window;
-    if (!current_usage) return null;
-    const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
+    let usage = current_usage;
+    if (!usage) {
+      const cached = this.cacheManager.getCachedUsage(data.session_id);
+      if (cached) {
+        usage = cached.usage;
+      }
+    }
+    if (!usage) return null;
+    const used = usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens + usage.output_tokens;
     const percent = Math.round(used / context_window_size * 100);
     const renderData = {
       used,
@@ -2412,19 +2561,21 @@ var ContextWidget = class extends StdinDataWidget {
     };
     return this.styleFn(renderData, this.colors.context);
   }
+  isEnabled() {
+    return true;
+  }
 };
 
 // src/widgets/cost/styles.ts
+function balancedStyle(data, colors) {
+  const formatted = formatCostUSD(data.costUsd);
+  if (!colors) return formatted;
+  const amountStr = data.costUsd.toFixed(2);
+  return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+}
 var costStyles = {
-  balanced: (data, colors) => {
-    const formatted = formatCostUSD(data.costUsd);
-    if (!colors) return formatted;
-    const amountStr = data.costUsd.toFixed(2);
-    return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
-  },
-  compact: (data, colors) => {
-    return costStyles.balanced(data, colors);
-  },
+  balanced: balancedStyle,
+  compact: balancedStyle,
   playful: (data, colors) => {
     const formatted = formatCostUSD(data.costUsd);
     if (!colors) return `\u{1F4B0} ${formatted}`;
@@ -2516,7 +2667,7 @@ var durationStyles = {
       const colored = colorize(`${hours}`, colors.value) + colorize("h", colors.unit) + colorize(` ${minutes}`, colors.value) + colorize("m", colors.unit);
       return `\u231B ${colored}`;
     }
-    return `\u231B ` + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
+    return `\u231B ${colorize(`${minutes}`, colors.value)}${colorize("m", colors.unit)}`;
   },
   technical: (data, colors) => {
     const value = `${Math.floor(data.durationMs)}ms`;
@@ -2747,7 +2898,7 @@ var GitTagWidget = class {
   async initialize(context) {
     this.enabled = context.config?.enabled !== false;
   }
-  async render(context) {
+  async render(_context) {
     if (!this.enabled || !this.git || !this.cwd) {
       return null;
     }
@@ -2896,7 +3047,7 @@ var GitWidget = class {
   async initialize(context) {
     this.enabled = context.config?.enabled !== false;
   }
-  async render(context) {
+  async render(_context) {
     if (!this.enabled || !this.git || !this.cwd) {
       return null;
     }
@@ -3286,7 +3437,7 @@ function getStraightIndices(cards, highCard) {
       cardIndicesByRank.set(value, []);
       uniqueValues.add(value);
     }
-    cardIndicesByRank.get(value).push(i);
+    cardIndicesByRank.get(value)?.push(i);
   }
   const sortedValues = Array.from(uniqueValues).sort((a, b) => b - a);
   if (sortedValues.includes(14)) {
@@ -3318,7 +3469,7 @@ function getStraightFlushHighCard(cards, suit) {
   return getStraightHighCard(suitCards);
 }
 function getStraightFlushIndices(cards, highCard, suit) {
-  const suitCards = cards.filter((c) => c.suit === suit);
+  const _suitCards = cards.filter((c) => c.suit === suit);
   const suitCardIndices = [];
   const indexMap = /* @__PURE__ */ new Map();
   for (let i = 0; i < cards.length; i++) {
@@ -3596,23 +3747,20 @@ function getHandAbbreviation(handResult) {
   const abbreviation = HAND_ABBREVIATIONS[handResult.name] ?? "\u2014";
   return `${abbreviation} (${handResult.name})`;
 }
+function balancedStyle2(data, colors) {
+  const { holeCards, boardCards, handResult } = data;
+  const participatingSet = new Set(handResult?.participatingIndices || []);
+  const handStr = holeCards.map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx))).join("");
+  const boardStr = boardCards.map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
+  const labelColor = colors?.participating ?? lightGray;
+  const handLabel = colorize2("Hand:", labelColor);
+  const boardLabel = colorize2("Board:", labelColor);
+  return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult, colors)}`;
+}
 var pokerStyles = {
-  balanced: (data, colors) => {
-    const { holeCards, boardCards, handResult } = data;
-    const participatingSet = new Set(handResult?.participatingIndices || []);
-    const handStr = holeCards.map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx))).join("");
-    const boardStr = boardCards.map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const labelColor = colors?.participating ?? lightGray;
-    const handLabel = colorize2("Hand:", labelColor);
-    const boardLabel = colorize2("Board:", labelColor);
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult, colors)}`;
-  },
-  compact: (data, colors) => {
-    return pokerStyles.balanced(data, colors);
-  },
-  playful: (data, colors) => {
-    return pokerStyles.balanced(data, colors);
-  },
+  balanced: balancedStyle2,
+  compact: balancedStyle2,
+  playful: balancedStyle2,
   "compact-verbose": (data, colors) => {
     const { holeCards, boardCards, handResult } = data;
     const participatingSet = new Set(handResult?.participatingIndices || []);
@@ -3703,7 +3851,7 @@ var PokerWidget = class extends StdinDataWidget {
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
    */
   formatCardColor(card) {
-    const color = isRedSuit(card.suit) ? "red" : "gray";
+    const _color = isRedSuit(card.suit) ? "red" : "gray";
     return formatCard(card);
   }
   renderWithData(_data, _context) {
@@ -3774,7 +3922,7 @@ async function main() {
     await registry.register(new EmptyLineWidget());
     const renderer = new Renderer({
       separator: " \u2502 ",
-      onError: (error, widget) => {
+      onError: (_error, _widget) => {
       },
       showErrors: false
     });
@@ -3786,7 +3934,7 @@ async function main() {
       timestamp: Date.now()
     });
     return lines.join("\n");
-  } catch (error) {
+  } catch (_error) {
     const fallback = await tryGitFallback();
     return fallback;
   }

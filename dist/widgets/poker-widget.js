@@ -76,7 +76,7 @@ export class PokerWidget extends StdinDataWidget {
      * Format card with appropriate color (red for ♥♦, gray for ♠♣)
      */
     formatCardColor(card) {
-        const color = isRedSuit(card.suit) ? "red" : "gray";
+        const _color = isRedSuit(card.suit) ? "red" : "gray";
         // This is just for internal storage, actual formatting happens in styles
         return formatCard(card);
     }
