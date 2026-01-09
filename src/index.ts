@@ -5,6 +5,7 @@
  * Entry point
  */
 
+import { isWidgetEnabled } from "./config/widget-flags.js";
 import { Renderer } from "./core/renderer.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
@@ -70,8 +71,16 @@ export async function main(): Promise<string> {
     await registry.register(new GitWidget());
     await registry.register(new GitTagWidget());
     await registry.register(new ConfigCountWidget());
-    await registry.register(new CacheMetricsWidget(DEFAULT_THEME));
-    await registry.register(new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider));
+
+    // Register feature-flagged widgets
+    if (isWidgetEnabled("cacheMetrics")) {
+      await registry.register(new CacheMetricsWidget(DEFAULT_THEME));
+    }
+
+    if (isWidgetEnabled("activeTools")) {
+      await registry.register(new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider));
+    }
+
     await registry.register(new PokerWidget());
     await registry.register(new EmptyLineWidget());
 
