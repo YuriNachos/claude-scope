@@ -134,12 +134,12 @@ export const pokerStyles: StyleMap<PokerRenderData, IPokerColors> = {
 
   compact: (data: PokerRenderData, colors?: IPokerColors) => {
     // Same as balanced for now
-    return pokerStyles.balanced?.(data, colors);
+    return pokerStyles.balanced(data, colors);
   },
 
   playful: (data: PokerRenderData, colors?: IPokerColors) => {
     // Same as balanced for now
-    return pokerStyles.balanced?.(data, colors);
+    return pokerStyles.balanced(data, colors);
   },
 
   "compact-verbose": (data: PokerRenderData, colors?: IPokerColors) => {
