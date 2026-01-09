@@ -77,7 +77,8 @@ export class CacheMetricsWidget extends StdinDataWidget {
    */
   async update(data: StdinData): Promise<void> {
     await super.update(data);
-    this.renderData = this.calculateMetrics(data);
+    const metrics = this.calculateMetrics(data);
+    this.renderData = metrics ?? undefined;
   }
 
   /**
@@ -89,6 +90,9 @@ export class CacheMetricsWidget extends StdinDataWidget {
     }
 
     const styleFn = cacheMetricsStyles[this.style] ?? cacheMetricsStyles.balanced;
+    if (!styleFn) {
+      return null;
+    }
     return styleFn(this.renderData, this.theme);
   }
 
@@ -96,6 +100,6 @@ export class CacheMetricsWidget extends StdinDataWidget {
    * Widget is enabled when we have cache metrics data
    */
   isEnabled(): boolean {
-    return this.renderData !== null && this.renderData !== undefined;
+    return this.renderData !== undefined;
   }
 }

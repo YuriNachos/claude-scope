@@ -1,23 +1,28 @@
 #!/usr/bin/env node
+
 /**
  * Claude Scope - Claude Code statusline plugin
  * Entry point
  */
 
-import { WidgetRegistry } from "./core/widget-registry.js";
 import { Renderer } from "./core/renderer.js";
-import { GitWidget } from "./widgets/git/git-widget.js";
-import { GitTagWidget } from "./widgets/git/git-tag-widget.js";
-import { ModelWidget } from "./widgets/model-widget.js";
+import { WidgetRegistry } from "./core/widget-registry.js";
+import { StdinProvider } from "./data/stdin-provider.js";
+import { TranscriptProvider } from "./providers/transcript-provider.js";
+import type { StdinData } from "./types.js";
+import { DEFAULT_THEME } from "./ui/theme/index.js";
+import { ActiveToolsWidget } from "./widgets/active-tools/index.js";
+import { CacheMetricsWidget } from "./widgets/cache-metrics/index.js";
+import { ConfigCountWidget } from "./widgets/config-count-widget.js";
 import { ContextWidget } from "./widgets/context-widget.js";
 import { CostWidget } from "./widgets/cost-widget.js";
-import { LinesWidget } from "./widgets/lines-widget.js";
 import { DurationWidget } from "./widgets/duration-widget.js";
-import { ConfigCountWidget } from "./widgets/config-count-widget.js";
-import { PokerWidget } from "./widgets/poker-widget.js";
 import { EmptyLineWidget } from "./widgets/empty-line-widget.js";
-import { StdinProvider } from "./data/stdin-provider.js";
-import type { StdinData } from "./types.js";
+import { GitTagWidget } from "./widgets/git/git-tag-widget.js";
+import { GitWidget } from "./widgets/git/git-widget.js";
+import { LinesWidget } from "./widgets/lines-widget.js";
+import { ModelWidget } from "./widgets/model-widget.js";
+import { PokerWidget } from "./widgets/poker-widget.js";
 
 /**
  * Read stdin as string
@@ -53,6 +58,9 @@ export async function main(): Promise<string> {
     // Create registry
     const registry = new WidgetRegistry();
 
+    // Create transcript provider for ActiveToolsWidget
+    const transcriptProvider = new TranscriptProvider();
+
     // Register all widgets (no constructor args needed)
     await registry.register(new ModelWidget());
     await registry.register(new ContextWidget());
@@ -62,6 +70,8 @@ export async function main(): Promise<string> {
     await registry.register(new GitWidget());
     await registry.register(new GitTagWidget());
     await registry.register(new ConfigCountWidget());
+    await registry.register(new CacheMetricsWidget(DEFAULT_THEME));
+    await registry.register(new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider));
     await registry.register(new PokerWidget());
     await registry.register(new EmptyLineWidget());
 

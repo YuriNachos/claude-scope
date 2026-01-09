@@ -24,7 +24,7 @@ export class PokerWidget extends StdinDataWidget {
     "Displays random Texas Hold'em hands for entertainment",
     "1.0.0",
     "claude-scope",
-    2 // Third line (0-indexed)
+    4 // Fifth line (0-indexed)
   );
 
   private holeCards: { card: Card; formatted: string }[] = [];

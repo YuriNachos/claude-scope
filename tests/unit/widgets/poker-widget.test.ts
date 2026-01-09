@@ -13,7 +13,7 @@ describe("PokerWidget", () => {
     const widget = new PokerWidget();
     assert.strictEqual(widget.id, "poker");
     assert.strictEqual(widget.metadata.name, "Poker");
-    assert.strictEqual(widget.metadata.line, 2); // Third line
+    assert.strictEqual(widget.metadata.line, 4); // Fifth line
   });
 
   it("should generate and render a poker hand", async () => {

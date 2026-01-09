@@ -25,6 +25,8 @@ export class ActiveToolsWidget extends StdinDataWidget {
   readonly metadata: IWidgetMetadata = {
     name: "Active Tools",
     description: "Active tools display from transcript",
+    version: "1.0.0",
+    author: "claude-scope",
     line: 2, // Display on third line (0-indexed)
   };
 
@@ -102,7 +104,10 @@ export class ActiveToolsWidget extends StdinDataWidget {
     }
 
     const styleFn = activeToolsStyles[this.style] ?? activeToolsStyles.balanced;
-    return styleFn(this.renderData, this.theme, context);
+    if (!styleFn) {
+      return null;
+    }
+    return styleFn(this.renderData, this.theme);
   }
 
   /**

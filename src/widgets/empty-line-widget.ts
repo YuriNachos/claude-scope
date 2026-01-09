@@ -16,7 +16,7 @@ export class EmptyLineWidget extends StdinDataWidget {
     "Empty line separator",
     "1.0.0",
     "claude-scope",
-    3 // Fourth line (0-indexed)
+    5 // Sixth line (0-indexed)
   );
 
   /**
