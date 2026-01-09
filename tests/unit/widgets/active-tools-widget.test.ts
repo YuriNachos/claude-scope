@@ -218,7 +218,7 @@ describe("ActiveToolsWidget", () => {
       writeFileSync(
         transcriptPath,
         `${[
-          // 1 Read
+          // 1 Read (should not appear - not in top-3)
           JSON.stringify({
             message: {
               content: [
@@ -295,16 +295,17 @@ describe("ActiveToolsWidget", () => {
 
       const plainText = stripAnsiCodes(result || "");
 
-      // Order should be: Edits (5), Bash (3), Writes (2), Reads (1)
+      // Order should be: Edits (5), Bash (3), Writes (2) - top 3 only
       const editIndex = plainText.indexOf("Edits");
       const bashIndex = plainText.indexOf("Bash");
       const writeIndex = plainText.indexOf("Writes");
-      const readIndex = plainText.indexOf("Reads");
 
       expect(editIndex).to.not.equal(-1);
       expect(bashIndex).to.be.greaterThan(editIndex);
       expect(writeIndex).to.be.greaterThan(bashIndex);
-      expect(readIndex).to.be.greaterThan(writeIndex);
+
+      // Read should NOT appear (not in top-3)
+      expect(plainText).to.not.include("Reads");
     });
 
     it("should sort tools with equal counts alphabetically", async () => {
