@@ -571,6 +571,8 @@ abstract class StdinDataWidget implements IWidget {
   - Parses Claude Code's transcript file for tool lifecycle tracking
   - Shows running tools with spinner indicator (◐)
   - Aggregates completed tools by name with counts (×3)
+  - **Sorts completed tools by usage count (descending)** - most used tools appear first
+  - **Alphabetical tie-breaker** - tools with equal counts are sorted alphabetically
   - Displays tool targets (file paths, patterns, commands)
   - Supports multiple display styles (balanced, compact, playful, etc.)
   - Limits to last 20 tool entries
