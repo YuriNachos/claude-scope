@@ -17,14 +17,14 @@ describe("getThemeByName", () => {
     assert.ok(nordTheme.description.includes("Arctic"));
   });
 
-  it("returns VSCode Dark+ for unknown theme name", () => {
+  it("returns Monokai for unknown theme name", () => {
     const unknownTheme = getThemeByName("non-existent-theme");
-    assert.strictEqual(unknownTheme.name, "vscode-dark-plus");
+    assert.strictEqual(unknownTheme.name, "monokai");
   });
 
-  it("returns VSCode Dark+ for empty string", () => {
+  it("returns Monokai for empty string", () => {
     const emptyTheme = getThemeByName("");
-    assert.strictEqual(emptyTheme.name, "vscode-dark-plus");
+    assert.strictEqual(emptyTheme.name, "monokai");
   });
 
   it("all available themes can be retrieved by name", () => {
@@ -35,12 +35,12 @@ describe("getThemeByName", () => {
     });
   });
 
-  it("DEFAULT_THEME_OBJECT is VSCode Dark+", () => {
-    assert.strictEqual(DEFAULT_THEME_OBJECT.name, "vscode-dark-plus");
+  it("DEFAULT_THEME_OBJECT is Monokai", () => {
+    assert.strictEqual(DEFAULT_THEME_OBJECT.name, "monokai");
   });
 
-  it("DEFAULT_THEME colors match VSCode Dark+", () => {
-    const vscodePlus = getThemeByName("vscode-dark-plus");
-    assert.deepStrictEqual(DEFAULT_THEME_OBJECT, vscodePlus);
+  it("DEFAULT_THEME colors match Monokai", () => {
+    const monokai = getThemeByName("monokai");
+    assert.deepStrictEqual(DEFAULT_THEME_OBJECT, monokai);
   });
 });

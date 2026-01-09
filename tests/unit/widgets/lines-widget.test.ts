@@ -169,7 +169,7 @@ describe("LinesWidget", () => {
       expect(result).to.include("\x1b[35m"); // Magenta (custom removed color)
     });
 
-    it("should use default gray color when no colors provided", async () => {
+    it("should use default Monokai color when no colors provided", async () => {
       const widget = new LinesWidget();
       await widget.update(
         createMockStdinData({
@@ -185,8 +185,8 @@ describe("LinesWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("\x1b[38;2;78;201;176m"); // VSCode teal (added)
-      expect(result).to.include("\x1b[38;2;244;71;71m"); // VSCode red (removed)
+      expect(result).to.include("\x1b[38;2;166;226;46m"); // Monokai green (added)
+      expect(result).to.include("\x1b[38;2;249;26;114m"); // Monokai pink (removed)
     });
   });
 

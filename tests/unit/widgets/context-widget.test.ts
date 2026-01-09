@@ -68,7 +68,7 @@ describe("ContextWidget", () => {
     expect(result).to.include("]");
   });
 
-  it("should use default gray color for low usage (< 50%)", async () => {
+  it("should use default Monokai color for low usage (< 50%)", async () => {
     const widget = new ContextWidget();
     await widget.update(
       createMockStdinData({
@@ -88,10 +88,10 @@ describe("ContextWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("\x1b[38;2;78;201;176m"); // VSCode teal
+    expect(result).to.include("\x1b[38;2;166;226;46m"); // Monokai green
   });
 
-  it("should use default gray color for medium usage (50-79%)", async () => {
+  it("should use default Monokai color for medium usage (50-79%)", async () => {
     const widget = new ContextWidget();
     await widget.update(
       createMockStdinData({
@@ -111,10 +111,10 @@ describe("ContextWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("\x1b[38;2;220;220;170m"); // VSCode yellow
+    expect(result).to.include("\x1b[38;2;253;151;31m"); // Monokai orange
   });
 
-  it("should use default gray color for high usage (>= 80%)", async () => {
+  it("should use default Monokai color for high usage (>= 80%)", async () => {
     const widget = new ContextWidget();
     await widget.update(
       createMockStdinData({
@@ -134,7 +134,7 @@ describe("ContextWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("\x1b[38;2;244;71;71m"); // VSCode red
+    expect(result).to.include("\x1b[38;2;249;26;114m"); // Monokai pink
   });
 
   it("should handle 0% usage", async () => {
@@ -281,7 +281,7 @@ describe("ContextWidget", () => {
       expect(result).to.include("\x1b[36m"); // Cyan (custom low color)
     });
 
-    it("should use default gray color when no colors provided", async () => {
+    it("should use default Monokai color when no colors provided", async () => {
       const widget = new ContextWidget();
       await widget.update(
         createMockStdinData({
@@ -301,7 +301,7 @@ describe("ContextWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("\x1b[38;2;78;201;176m"); // VSCode teal (default)
+      expect(result).to.include("\x1b[38;2;166;226;46m"); // Monokai green (default)
     });
   });
 
