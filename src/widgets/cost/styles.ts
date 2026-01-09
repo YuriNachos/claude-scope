@@ -9,19 +9,22 @@ import { formatCostUSD } from "../../ui/utils/formatters.js";
 import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
 import type { CostRenderData } from "./types.js";
 
+/**
+ * Balanced style implementation (shared with compact)
+ */
+function balancedStyle(data: CostRenderData, colors?: ICostColors): string {
+  const formatted = formatCostUSD(data.costUsd);
+  if (!colors) return formatted;
+
+  // Colorize the amount, keep currency symbol muted
+  const amountStr = data.costUsd.toFixed(2);
+  return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+}
+
 export const costStyles: StyleMap<CostRenderData, ICostColors> = {
-  balanced: (data: CostRenderData, colors?: ICostColors) => {
-    const formatted = formatCostUSD(data.costUsd);
-    if (!colors) return formatted;
+  balanced: balancedStyle,
 
-    // Colorize the amount, keep currency symbol muted
-    const amountStr = data.costUsd.toFixed(2);
-    return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
-  },
-
-  compact: (data: CostRenderData, colors?: ICostColors) => {
-    return costStyles.balanced(data, colors);
-  },
+  compact: balancedStyle,
 
   playful: (data: CostRenderData, colors?: ICostColors) => {
     const formatted = formatCostUSD(data.costUsd);

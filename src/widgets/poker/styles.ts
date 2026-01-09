@@ -112,35 +112,34 @@ function getHandAbbreviation(handResult: PokerRenderData["handResult"]): string 
   return `${abbreviation} (${handResult.name})`;
 }
 
+/**
+ * Balanced style implementation (shared with compact and playful)
+ */
+function balancedStyle(data: PokerRenderData, colors?: IPokerColors): string {
+  const { holeCards, boardCards, handResult } = data;
+  const participatingSet = new Set(handResult?.participatingIndices || []);
+
+  const handStr = holeCards
+    .map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx)))
+    .join("");
+
+  const boardStr = boardCards
+    .map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2)))
+    .join("");
+
+  const labelColor = colors?.participating ?? lightGray;
+  const handLabel = colorize("Hand:", labelColor);
+  const boardLabel = colorize("Board:", labelColor);
+
+  return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
+}
+
 export const pokerStyles: StyleMap<PokerRenderData, IPokerColors> = {
-  balanced: (data: PokerRenderData, colors?: IPokerColors) => {
-    const { holeCards, boardCards, handResult } = data;
-    const participatingSet = new Set(handResult?.participatingIndices || []);
+  balanced: balancedStyle,
 
-    const handStr = holeCards
-      .map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx)))
-      .join("");
+  compact: balancedStyle,
 
-    const boardStr = boardCards
-      .map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2)))
-      .join("");
-
-    const labelColor = colors?.participating ?? lightGray;
-    const handLabel = colorize("Hand:", labelColor);
-    const boardLabel = colorize("Board:", labelColor);
-
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}→ ${formatHandResult(handResult, colors)}`;
-  },
-
-  compact: (data: PokerRenderData, colors?: IPokerColors) => {
-    // Same as balanced for now
-    return pokerStyles.balanced(data, colors);
-  },
-
-  playful: (data: PokerRenderData, colors?: IPokerColors) => {
-    // Same as balanced for now
-    return pokerStyles.balanced(data, colors);
-  },
+  playful: balancedStyle,
 
   "compact-verbose": (data: PokerRenderData, colors?: IPokerColors) => {
     const { holeCards, boardCards, handResult } = data;
