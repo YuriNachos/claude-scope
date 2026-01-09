@@ -60,7 +60,7 @@ export const cacheMetricsStyles: StyleMap<CacheMetricsRenderData, IThemeColors> 
   /**
    * playful: 💾 35.0k cache
    */
-  playful: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
+  playful: (data: CacheMetricsRenderData, _colors?: IThemeColors) => {
     const { cacheRead } = data;
     const amount = formatK(cacheRead);
     return `💾 ${amount} cache`;
