@@ -10,8 +10,8 @@ import type { ToolEntry } from "../../providers/transcript-types.js";
 export interface ActiveToolsRenderData {
   /** Currently running tools */
   running: ToolEntry[];
-  /** Completed tools (aggregated by name with counts) */
-  completed: Map<string, number>;
+  /** Completed tools sorted by count (descending) */
+  completed: Array<[string, number]>;
   /** Tools with errors */
   errors: ToolEntry[];
 }
