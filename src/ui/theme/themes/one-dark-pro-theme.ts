@@ -23,5 +23,10 @@ export const ONE_DARK_PRO_THEME: ITheme = {
     model: rgb(171, 178, 191), // Gray
     duration: rgb(125, 148, 173), // Dark gray
     accent: rgb(97, 175, 239), // Blue
+    cacheHigh: rgb(152, 195, 121), // Green
+    cacheMedium: rgb(229, 192, 123), // Yellow
+    cacheLow: rgb(224, 108, 117), // Red
+    cacheRead: rgb(97, 175, 239), // Blue
+    cacheWrite: rgb(171, 178, 191), // Gray
   }),
 };

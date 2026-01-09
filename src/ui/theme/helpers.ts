@@ -71,6 +71,11 @@ export function createThemeColors(params: {
   model: string;
   duration: string;
   accent: string;
+  cacheHigh: string;
+  cacheMedium: string;
+  cacheLow: string;
+  cacheRead: string;
+  cacheWrite: string;
 }): IThemeColors {
   const base = createBaseColors({
     modelColor: params.model,
@@ -118,6 +123,13 @@ export function createThemeColors(params: {
       participating: params.model,
       nonParticipating: params.duration,
       result: params.accent,
+    },
+    cache: {
+      high: params.cacheHigh,
+      medium: params.cacheMedium,
+      low: params.cacheLow,
+      read: params.cacheRead,
+      write: params.cacheWrite,
     },
   };
 }

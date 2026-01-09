@@ -23,5 +23,10 @@ export const SEMANTIC_CLASSIC_THEME: ITheme = {
     model: rgb(99, 102, 241), // Indigo
     duration: rgb(107, 114, 128), // Gray
     accent: rgb(59, 130, 246), // Blue
+    cacheHigh: rgb(34, 197, 94), // Green
+    cacheMedium: rgb(234, 179, 8), // Yellow
+    cacheLow: rgb(239, 68, 68), // Red
+    cacheRead: rgb(59, 130, 246), // Blue
+    cacheWrite: rgb(99, 102, 241), // Indigo
   }),
 };

@@ -23,5 +23,10 @@ export const TOKYO_NIGHT_THEME: ITheme = {
     model: rgb(169, 177, 214), // White-ish
     duration: rgb(113, 119, 161), // Dark blue-gray
     accent: rgb(122, 132, 173), // Blue
+    cacheHigh: rgb(146, 180, 203), // Cyan
+    cacheMedium: rgb(232, 166, 162), // Pink-red
+    cacheLow: rgb(249, 86, 119), // Red
+    cacheRead: rgb(122, 132, 173), // Blue
+    cacheWrite: rgb(169, 177, 214), // White-ish
   }),
 };

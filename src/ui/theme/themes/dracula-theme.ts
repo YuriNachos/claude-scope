@@ -23,5 +23,10 @@ export const DRACULA_THEME: ITheme = {
     model: rgb(98, 114, 164), // Comment gray
     duration: rgb(68, 71, 90), // Selection gray
     accent: rgb(189, 147, 249), // Purple
+    cacheHigh: rgb(80, 250, 123), // Green
+    cacheMedium: rgb(241, 250, 140), // Yellow
+    cacheLow: rgb(255, 85, 85), // Red
+    cacheRead: rgb(139, 233, 253), // Cyan
+    cacheWrite: rgb(189, 147, 249), // Purple
   }),
 };

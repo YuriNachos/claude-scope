@@ -83,6 +83,22 @@ export interface IPokerColors {
 }
 
 /**
+ * Cache metrics widget colors
+ */
+export interface ICacheColors {
+  /** Color for high cache hit rate (>70%) */
+  high: string;
+  /** Color for medium cache hit rate (40-70%) */
+  medium: string;
+  /** Color for low cache hit rate (<40%) */
+  low: string;
+  /** Color for cache read amount */
+  read: string;
+  /** Color for cache write amount */
+  write: string;
+}
+
+/**
  * Unified theme colors interface
  * All widget colors in one place for consistent theming
  */
@@ -96,6 +112,7 @@ export interface IThemeColors {
   duration: IDurationColors;
   model: IModelColors;
   poker: IPokerColors;
+  cache: ICacheColors;
 }
 
 /**

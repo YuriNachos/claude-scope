@@ -23,5 +23,10 @@ export const GRAY_THEME: ITheme = {
     model: gray,
     duration: gray,
     accent: gray,
+    cacheHigh: gray,
+    cacheMedium: gray,
+    cacheLow: gray,
+    cacheRead: gray,
+    cacheWrite: gray,
   }),
 };

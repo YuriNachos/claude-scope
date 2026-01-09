@@ -23,5 +23,10 @@ export const MUTED_GRAY_THEME: ITheme = {
     model: rgb(148, 163, 184),
     duration: rgb(107, 114, 128),
     accent: rgb(156, 163, 175),
+    cacheHigh: rgb(148, 163, 184),
+    cacheMedium: rgb(160, 174, 192),
+    cacheLow: rgb(175, 188, 201),
+    cacheRead: rgb(156, 163, 175),
+    cacheWrite: rgb(148, 163, 184),
   }),
 };

@@ -23,5 +23,10 @@ export const CYBERPUNK_NEON_THEME: ITheme = {
     model: rgb(140, 27, 255), // Purple neon
     duration: rgb(0, 191, 255), // Cyan neon
     accent: rgb(255, 0, 122), // Magenta neon
+    cacheHigh: rgb(0, 255, 122), // Green neon
+    cacheMedium: rgb(255, 214, 0), // Yellow neon
+    cacheLow: rgb(255, 0, 122), // Magenta neon
+    cacheRead: rgb(0, 191, 255), // Cyan neon
+    cacheWrite: rgb(140, 27, 255), // Purple neon
   }),
 };

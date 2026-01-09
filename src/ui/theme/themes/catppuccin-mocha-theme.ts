@@ -23,5 +23,10 @@ export const CATPPUCCIN_MOCHA_THEME: ITheme = {
     model: rgb(203, 166, 247), // Mauve
     duration: rgb(147, 153, 178), // Text gray
     accent: rgb(243, 139, 168), // Pink
+    cacheHigh: rgb(166, 227, 161), // Green
+    cacheMedium: rgb(238, 212, 159), // Yellow
+    cacheLow: rgb(243, 139, 168), // Red
+    cacheRead: rgb(137, 180, 250), // Blue
+    cacheWrite: rgb(203, 166, 247), // Mauve
   }),
 };

@@ -24,5 +24,10 @@ export const VSCODE_DARK_PLUS_THEME: ITheme = {
     model: rgb(171, 178, 191), // Gray
     duration: rgb(125, 148, 173), // Dark gray
     accent: rgb(0, 122, 204), // VSCode blue
+    cacheHigh: rgb(78, 201, 176), // Teal
+    cacheMedium: rgb(220, 220, 170), // Yellow
+    cacheLow: rgb(244, 71, 71), // Red
+    cacheRead: rgb(0, 122, 204), // VSCode blue
+    cacheWrite: rgb(171, 178, 191), // Gray
   }),
 };

@@ -23,5 +23,10 @@ export const SLATE_BLUE_THEME: ITheme = {
     model: rgb(148, 163, 184),
     duration: rgb(100, 116, 139),
     accent: rgb(100, 116, 139),
+    cacheHigh: rgb(148, 163, 184),
+    cacheMedium: rgb(160, 174, 192),
+    cacheLow: rgb(175, 188, 201),
+    cacheRead: rgb(100, 116, 139),
+    cacheWrite: rgb(148, 163, 184),
   }),
 };

@@ -23,5 +23,10 @@ export const NORD_THEME: ITheme = {
     model: rgb(129, 161, 193), // Nordic blue
     duration: rgb(94, 129, 172), // Nordic dark blue
     accent: rgb(136, 192, 208), // Nordic cyan
+    cacheHigh: rgb(163, 190, 140), // Nordic green
+    cacheMedium: rgb(235, 203, 139), // Nordic yellow
+    cacheLow: rgb(191, 97, 106), // Nordic red
+    cacheRead: rgb(136, 192, 208), // Nordic cyan
+    cacheWrite: rgb(129, 161, 193), // Nordic blue
   }),
 };

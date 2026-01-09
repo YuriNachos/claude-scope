@@ -23,5 +23,10 @@ export const DUSTY_SAGE_THEME: ITheme = {
     model: rgb(148, 163, 184),
     duration: rgb(120, 130, 140),
     accent: rgb(120, 140, 130),
+    cacheHigh: rgb(135, 145, 140),
+    cacheMedium: rgb(150, 160, 145),
+    cacheLow: rgb(165, 175, 160),
+    cacheRead: rgb(120, 140, 130),
+    cacheWrite: rgb(148, 163, 184),
   }),
 };

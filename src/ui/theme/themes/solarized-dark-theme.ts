@@ -23,5 +23,10 @@ export const SOLARIZED_DARK_THEME: ITheme = {
     model: rgb(131, 148, 150), // Base0
     duration: rgb(88, 110, 117), // Base01
     accent: rgb(38, 139, 210), // Blue
+    cacheHigh: rgb(133, 153, 0), // Olive
+    cacheMedium: rgb(181, 137, 0), // Yellow
+    cacheLow: rgb(220, 50, 47), // Red
+    cacheRead: rgb(38, 139, 210), // Blue
+    cacheWrite: rgb(147, 161, 161), // Base1
   }),
 };
