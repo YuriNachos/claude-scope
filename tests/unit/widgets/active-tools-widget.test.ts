@@ -213,6 +213,149 @@ describe("ActiveToolsWidget", () => {
       expect(result).to.include("Edits");
       expect(result).to.include("2");
     });
+
+    it("should sort completed tools by usage count (highest first)", async () => {
+      writeFileSync(
+        transcriptPath,
+        `${[
+          // 1 Read
+          JSON.stringify({
+            message: {
+              content: [
+                { type: "tool_use", id: "read-1", name: "Read", input: { file_path: "/f1.ts" } },
+              ],
+            },
+          }),
+          JSON.stringify({
+            message: {
+              content: [{ type: "tool_result", tool_use_id: "read-1", is_error: false }],
+            },
+          }),
+          // 5 Edits (most used)
+          ...Array.from({ length: 5 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  {
+                    type: "tool_use",
+                    id: `edit-${i}`,
+                    name: "Edit",
+                    input: { file_path: `/e${i}.ts` },
+                  },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `edit-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          // 3 Bash (second most)
+          ...Array.from({ length: 3 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  { type: "tool_use", id: `bash-${i}`, name: "Bash", input: { command: "echo" } },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `bash-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          // 2 Write (third most)
+          ...Array.from({ length: 2 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  {
+                    type: "tool_use",
+                    id: `write-${i}`,
+                    name: "Write",
+                    input: { file_path: `/w${i}.ts` },
+                  },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `write-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+        ].join("\n")}\n`
+      );
+
+      const data = createMockStdinData({ transcript_path: transcriptPath });
+      await widget.update(data);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      const plainText = stripAnsiCodes(result || "");
+
+      // Order should be: Edits (5), Bash (3), Writes (2), Reads (1)
+      const editIndex = plainText.indexOf("Edits");
+      const bashIndex = plainText.indexOf("Bash");
+      const writeIndex = plainText.indexOf("Writes");
+      const readIndex = plainText.indexOf("Reads");
+
+      expect(editIndex).to.not.equal(-1);
+      expect(bashIndex).to.be.greaterThan(editIndex);
+      expect(writeIndex).to.be.greaterThan(bashIndex);
+      expect(readIndex).to.be.greaterThan(writeIndex);
+    });
+
+    it("should sort tools with equal counts alphabetically", async () => {
+      writeFileSync(
+        transcriptPath,
+        `${[
+          // 2 Edit, 2 Bash, 2 Read - all equal counts
+          ...["Edit", "Bash", "Read"].flatMap((name) => [
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_use", id: `${name.toLowerCase()}-1`, name, input: {} }],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [
+                  { type: "tool_result", tool_use_id: `${name.toLowerCase()}-1`, is_error: false },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_use", id: `${name.toLowerCase()}-2`, name, input: {} }],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [
+                  { type: "tool_result", tool_use_id: `${name.toLowerCase()}-2`, is_error: false },
+                ],
+              },
+            }),
+          ]),
+        ].join("\n")}\n`
+      );
+
+      const data = createMockStdinData({ transcript_path: transcriptPath });
+      await widget.update(data);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      const plainText = stripAnsiCodes(result || "");
+
+      // Alphabetical order: Bash, Edit, Read
+      const bashIndex = plainText.indexOf("Bash");
+      const editIndex = plainText.indexOf("Edits");
+      const readIndex = plainText.indexOf("Reads");
+
+      expect(bashIndex).to.not.equal(-1);
+      expect(editIndex).to.be.greaterThan(bashIndex);
+      expect(readIndex).to.be.greaterThan(editIndex);
+    });
   });
 
   describe("new format: mixed running and completed", () => {

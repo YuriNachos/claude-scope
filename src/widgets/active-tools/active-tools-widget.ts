@@ -62,8 +62,13 @@ export class ActiveToolsWidget extends StdinDataWidget {
         counts.set(tool.name, current + 1);
       }
     }
-    // Convert to array and sort by count descending
-    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
+    // Convert to array and sort by count descending, then name ascending for tie-break
+    return Array.from(counts.entries()).sort((a, b) => {
+      if (b[1] !== a[1]) {
+        return b[1] - a[1]; // Count descending
+      }
+      return a[0].localeCompare(b[0]); // Name ascending for tie-break
+    });
   }
 
   /**
