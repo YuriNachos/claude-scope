@@ -8,7 +8,7 @@ import { PokerWidget } from "../../../src/widgets/poker-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
 import { stripAnsi } from "../../helpers/snapshot.js";
 
-describe.skip("PokerWidget (CI skip - Node version specific issues)", () => {
+describe("PokerWidget", () => {
   it("should have correct id and metadata", () => {
     const widget = new PokerWidget();
     assert.strictEqual(widget.id, "poker");
@@ -62,7 +62,7 @@ describe.skip("PokerWidget (CI skip - Node version specific issues)", () => {
     assert.ok(result?.includes("\x1b[90m"));
   });
 
-  it.skip("should show hand result with emoji (skipped on CI - Node version specific issue)", async () => {
+  it("should show hand result with emoji", async () => {
     const widget = new PokerWidget();
     await widget.update(createMockStdinData({}));
 

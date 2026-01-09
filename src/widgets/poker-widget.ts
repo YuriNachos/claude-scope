@@ -56,7 +56,8 @@ export class PokerWidget extends StdinDataWidget {
     const now = Date.now();
 
     // Check if enough time has passed since last update
-    if (now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
+    // First update (lastUpdateTimestamp === 0) should always proceed
+    if (this.lastUpdateTimestamp > 0 && now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
       // Skip update - keep current hand
       return;
     }
