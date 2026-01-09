@@ -2,15 +2,28 @@
  * Unit tests for ActiveToolsWidget
  */
 
+import { existsSync, unlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { before, describe, it } from "node:test";
 import { expect } from "chai";
-import { existsSync, unlinkSync, writeFileSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
 import { TranscriptProvider } from "../../../src/providers/transcript-provider.js";
 import { DEFAULT_THEME } from "../../../src/ui/theme/index.js";
 import { ActiveToolsWidget } from "../../../src/widgets/active-tools/active-tools-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
+
+/**
+ * Strip ANSI escape codes from a string
+ * @param text - Text that may contain ANSI codes
+ * @returns Text with ANSI codes removed
+ */
+function stripAnsiCodes(text: string): string {
+  // ESC pattern (escape character 0x1b) followed by [parameters]m
+  // Using the escape character directly to avoid Biome linting issues
+  const escapeChar = String.fromCharCode(27);
+  const ansiEscape = new RegExp(`${escapeChar}\\[[0-9;]*m`, "g");
+  return text.replace(ansiEscape, "");
+}
 
 describe("ActiveToolsWidget", () => {
   let widget: ActiveToolsWidget;
@@ -44,11 +57,11 @@ describe("ActiveToolsWidget", () => {
   });
 
   describe("rendering with running tools", () => {
-    it("should render running tools with balanced style", async () => {
+    it("should render running tools with balanced style (new format)", async () => {
       // Create transcript with running tool
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               {
@@ -59,7 +72,7 @@ describe("ActiveToolsWidget", () => {
               },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       const data = createMockStdinData({ transcript_path: transcriptPath });
@@ -68,13 +81,14 @@ describe("ActiveToolsWidget", () => {
 
       expect(result).to.not.be.null;
       expect(result).to.include("Read");
-      expect(result).to.include("◐"); // Running indicator
+      expect(result).to.include("running"); // New text format
+      expect(result).to.not.include("◐"); // No spinner symbol
     });
 
     it("should render multiple running tools", async () => {
       writeFileSync(
         transcriptPath,
-        [
+        `${[
           JSON.stringify({
             message: {
               content: [
@@ -89,7 +103,7 @@ describe("ActiveToolsWidget", () => {
               ],
             },
           }),
-        ].join("\n") + "\n"
+        ].join("\n")}\n`
       );
 
       const data = createMockStdinData({ transcript_path: transcriptPath });
@@ -98,15 +112,15 @@ describe("ActiveToolsWidget", () => {
 
       expect(result).to.include("Read");
       expect(result).to.include("Edit");
-      expect(result).to.include("◐");
+      expect(result).to.include("running");
     });
   });
 
   describe("rendering with completed tools", () => {
-    it("should render completed tools with counts", async () => {
+    it("should render completed tools with counts (new format)", async () => {
       writeFileSync(
         transcriptPath,
-        [
+        `${[
           JSON.stringify({
             message: {
               content: [
@@ -131,22 +145,22 @@ describe("ActiveToolsWidget", () => {
               content: [{ type: "tool_result", tool_use_id: "tool-2", is_error: false }],
             },
           }),
-        ].join("\n") + "\n"
+        ].join("\n")}\n`
       );
 
       const data = createMockStdinData({ transcript_path: transcriptPath });
       await widget.update(data);
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("Read");
-      expect(result).to.include("×2"); // Count
-      expect(result).to.include("✓"); // Completed indicator
+      expect(result).to.include("Reads"); // Pluralized
+      expect(result).to.include("2"); // Count (no × symbol)
+      expect(result).to.not.include("✓"); // No checkmark symbol
     });
 
     it("should aggregate completed tools by name", async () => {
       writeFileSync(
         transcriptPath,
-        [
+        `${[
           // 3 Read operations
           ...["f1.ts", "f2.ts", "f3.ts"].flatMap((f) => [
             JSON.stringify({
@@ -187,17 +201,142 @@ describe("ActiveToolsWidget", () => {
               },
             }),
           ]),
-        ].join("\n") + "\n"
+        ].join("\n")}\n`
       );
 
       const data = createMockStdinData({ transcript_path: transcriptPath });
       await widget.update(data);
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("Read");
-      expect(result).to.include("×3");
-      expect(result).to.include("Edit");
-      expect(result).to.include("×2");
+      expect(result).to.include("Reads");
+      expect(result).to.include("3");
+      expect(result).to.include("Edits");
+      expect(result).to.include("2");
+    });
+  });
+
+  describe("new format: mixed running and completed", () => {
+    it("should render tools with both running and completed instances", async () => {
+      writeFileSync(
+        transcriptPath,
+        `${[
+          // 6 completed Task operations
+          ...Array.from({ length: 6 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  { type: "tool_use", id: `task-${i}`, name: "Task", input: { task: "test" } },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `task-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          // 1 running Task
+          JSON.stringify({
+            message: {
+              content: [
+                { type: "tool_use", id: "task-running", name: "Task", input: { task: "running" } },
+              ],
+            },
+          }),
+          // 6 completed TodoWrite
+          ...Array.from({ length: 6 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  { type: "tool_use", id: `todo-${i}`, name: "TodoWrite", input: { todos: [] } },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `todo-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          // 4 completed Bash
+          ...Array.from({ length: 4 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_use", id: `bash-${i}`, name: "Bash", input: {} }],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `bash-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+        ].join("\n")}\n`
+      );
+
+      const data = createMockStdinData({ transcript_path: transcriptPath });
+      await widget.update(data);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      // Strip ANSI codes for assertions
+      const plainText = result ? stripAnsiCodes(result) : "";
+
+      expect(plainText).to.include("Task (1 running, 6 done)");
+      expect(plainText).to.include("TodoWrites: 6");
+      expect(plainText).to.include("Bash: 4");
+      expect(plainText).to.not.include("◐"); // No spinner
+      expect(plainText).to.not.include("✓"); // No checkmark
+    });
+
+    it("should handle multiple tools with mixed states", async () => {
+      writeFileSync(
+        transcriptPath,
+        `${[
+          // Read: 2 running, 3 completed
+          ...Array.from({ length: 3 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_use", id: `read-done-${i}`, name: "Read", input: {} }],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `read-done-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          ...Array.from({ length: 2 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_use", id: `read-run-${i}`, name: "Read", input: {} }],
+              },
+            }),
+          ]).flat(),
+          // Edit: 0 running, 2 completed
+          ...Array.from({ length: 2 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_use", id: `edit-${i}`, name: "Edit", input: {} }],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `edit-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+        ].join("\n")}\n`
+      );
+
+      const data = createMockStdinData({ transcript_path: transcriptPath });
+      await widget.update(data);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      // Strip ANSI codes for assertions
+      const plainText = result ? stripAnsiCodes(result) : "";
+
+      expect(plainText).to.include("Read (2 running, 3 done)");
+      expect(plainText).to.include("Edits: 2");
     });
   });
 
@@ -205,7 +344,7 @@ describe("ActiveToolsWidget", () => {
     it("should support compact style", async () => {
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               {
@@ -216,7 +355,7 @@ describe("ActiveToolsWidget", () => {
               },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       widget.setStyle("compact");
@@ -233,7 +372,7 @@ describe("ActiveToolsWidget", () => {
     it("should support playful style with emojis", async () => {
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               {
@@ -244,7 +383,7 @@ describe("ActiveToolsWidget", () => {
               },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       widget.setStyle("playful");
@@ -258,13 +397,13 @@ describe("ActiveToolsWidget", () => {
     it("should support minimal style", async () => {
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               { type: "tool_use", id: "tool-1", name: "Bash", input: { command: "npm test" } },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       widget.setStyle("minimal");
@@ -278,13 +417,13 @@ describe("ActiveToolsWidget", () => {
     it("should support verbose style", async () => {
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               { type: "tool_use", id: "tool-1", name: "Read", input: { file_path: "/test.ts" } },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       widget.setStyle("verbose");
@@ -298,13 +437,13 @@ describe("ActiveToolsWidget", () => {
     it("should support labeled style", async () => {
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               { type: "tool_use", id: "tool-1", name: "Grep", input: { pattern: "function" } },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       widget.setStyle("labeled");
@@ -318,13 +457,13 @@ describe("ActiveToolsWidget", () => {
     it("should support indicator style", async () => {
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               { type: "tool_use", id: "tool-1", name: "Glob", input: { pattern: "**/*.ts" } },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       widget.setStyle("indicator");
@@ -380,7 +519,7 @@ describe("ActiveToolsWidget", () => {
           })
         );
       }
-      writeFileSync(transcriptPath, lines.join("\n") + "\n");
+      writeFileSync(transcriptPath, `${lines.join("\n")}\n`);
 
       const data = createMockStdinData({ transcript_path: transcriptPath });
       await widget.update(data);
@@ -392,7 +531,7 @@ describe("ActiveToolsWidget", () => {
     it("should handle malformed JSON in transcript", async () => {
       writeFileSync(
         transcriptPath,
-        [
+        `${[
           "invalid json line",
           JSON.stringify({
             message: {
@@ -401,7 +540,7 @@ describe("ActiveToolsWidget", () => {
               ],
             },
           }),
-        ].join("\n") + "\n"
+        ].join("\n")}\n`
       );
 
       const data = createMockStdinData({ transcript_path: transcriptPath });
@@ -417,13 +556,13 @@ describe("ActiveToolsWidget", () => {
     it("should return true when there are tools", async () => {
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               { type: "tool_use", id: "tool-1", name: "Read", input: { file_path: "/test.ts" } },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       const data = createMockStdinData({ transcript_path: transcriptPath });
