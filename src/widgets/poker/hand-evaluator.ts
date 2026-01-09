@@ -125,7 +125,10 @@ function getStraightIndices(cards: Card[], highCard: number): number[] {
         indices.push(cardIndicesByRank.get(next1)![0]);
         indices.push(cardIndicesByRank.get(next2)![0]);
         indices.push(cardIndicesByRank.get(next3)![0]);
-        indices.push(cardIndicesByRank.get(next4)![0]);
+        // Handle wheel straight (A-2-3-4-5) where next4 might be 1 (Ace low)
+        // In this case, use rank 14 (Ace high) cards
+        const rank4 = next4 === 1 ? 14 : next4;
+        indices.push(cardIndicesByRank.get(rank4)![0]);
         return indices;
       }
     }
