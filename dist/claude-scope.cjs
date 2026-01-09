@@ -1517,7 +1517,7 @@ var activeToolsStyles = {
     for (const tool of data.running) {
       allToolNames.add(tool.name);
     }
-    for (const [name] of data.completed) {
+    for (const [name] of data.completed.slice(0, 3)) {
       allToolNames.add(name);
     }
     const completedMap = new Map(data.completed);
