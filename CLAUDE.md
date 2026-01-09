@@ -398,7 +398,7 @@ breakdown:   💾 35.0k cache | Hit: 35.0k, Write: 5.0k | $0.03 saved
 
 **ActiveToolsWidget** (shows active and completed tools):
 ```
-balanced:    ◐ Read: /src/example.ts | ✓ Edit ×3 | ✓ Read ×2
+balanced:    Edits: 5 | Bash: 3 | Writes: 2  (top-3 by usage, all running shown)
 compact:     [Read] [Edit] [Edit] [Edit] [Read] [Read]
 minimal:     [Read] [Edit] [Edit] [Edit] [Read] [Read]
 playful:     📖 Read, ✏️ Edit, 📖 Read
@@ -573,6 +573,8 @@ abstract class StdinDataWidget implements IWidget {
   - Aggregates completed tools by name with counts (×3)
   - **Sorts completed tools by usage count (descending)** - most used tools appear first
   - **Alphabetical tie-breaker** - tools with equal counts are sorted alphabetically
+  - **Balanced style shows top-3 completed tools** - most relevant tools at a glance
+  - **All running tools are shown** - active tools never hidden
   - Displays tool targets (file paths, patterns, commands)
   - Supports multiple display styles (balanced, compact, playful, etc.)
   - Limits to last 20 tool entries

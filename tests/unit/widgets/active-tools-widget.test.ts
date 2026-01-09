@@ -447,6 +447,101 @@ describe("ActiveToolsWidget", () => {
       // Should NOT show Read (1) - not in top 3
       expect(plainText).to.not.include("Reads");
     });
+
+    it("should show all running tools in balanced style regardless of count", async () => {
+      writeFileSync(
+        transcriptPath,
+        `${[
+          // 5 running tools (all should show)
+          ...Array.from({ length: 5 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_use", id: `tool-${i}`, name: `Tool${i}`, input: {} }],
+              },
+            }),
+          ]).flat(),
+          // 10 completed Read (most used)
+          ...Array.from({ length: 10 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  {
+                    type: "tool_use",
+                    id: `read-${i}`,
+                    name: "Read",
+                    input: { file_path: `/f${i}.ts` },
+                  },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `read-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+        ].join("\n")}\n`
+      );
+
+      const data = createMockStdinData({ transcript_path: transcriptPath });
+      await widget.update(data);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      const plainText = stripAnsiCodes(result || "");
+
+      // All 5 running tools should appear
+      expect(plainText).to.include("Tool0");
+      expect(plainText).to.include("Tool1");
+      expect(plainText).to.include("Tool2");
+      expect(plainText).to.include("Tool3");
+      expect(plainText).to.include("Tool4");
+
+      // Read should appear (top completed tool)
+      expect(plainText).to.include("Reads");
+    });
+
+    it("should show all completed tools when fewer than 3 exist", async () => {
+      writeFileSync(
+        transcriptPath,
+        `${[
+          // Only 2 completed tools
+          JSON.stringify({
+            message: {
+              content: [
+                { type: "tool_use", id: "edit-1", name: "Edit", input: { file_path: "/e1.ts" } },
+              ],
+            },
+          }),
+          JSON.stringify({
+            message: {
+              content: [{ type: "tool_result", tool_use_id: "edit-1", is_error: false }],
+            },
+          }),
+          JSON.stringify({
+            message: {
+              content: [
+                { type: "tool_use", id: "read-1", name: "Read", input: { file_path: "/f1.ts" } },
+              ],
+            },
+          }),
+          JSON.stringify({
+            message: {
+              content: [{ type: "tool_result", tool_use_id: "read-1", is_error: false }],
+            },
+          }),
+        ].join("\n")}\n`
+      );
+
+      const data = createMockStdinData({ transcript_path: transcriptPath });
+      await widget.update(data);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      const plainText = stripAnsiCodes(result || "");
+
+      // Both tools should show (less than 3, so no truncation)
+      expect(plainText).to.include("Edits");
+      expect(plainText).to.include("Reads");
+    });
   });
 
   describe("new format: mixed running and completed", () => {
