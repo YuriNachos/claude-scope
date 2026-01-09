@@ -60,14 +60,16 @@ export const activeToolsStyles = {
     balanced: (data, colors) => {
         const parts = [];
         const c = colors ?? getDefaultColors();
-        // Group all tool names (running + completed)
+        // Get all unique tool names (running + completed)
         const allToolNames = new Set();
         for (const tool of data.running) {
             allToolNames.add(tool.name);
         }
-        for (const name of data.completed.keys()) {
+        for (const [name] of data.completed) {
             allToolNames.add(name);
         }
+        // Create a Map from completed array for O(1) lookup
+        const completedMap = new Map(data.completed);
         // Count running tools by name
         const runningCounts = new Map();
         for (const tool of data.running) {
@@ -76,7 +78,7 @@ export const activeToolsStyles = {
         // Build display for each tool
         for (const name of allToolNames) {
             const runningCount = runningCounts.get(name) ?? 0;
-            const completedCount = data.completed.get(name) ?? 0;
+            const completedCount = completedMap.get(name) ?? 0;
             if (runningCount > 0 && completedCount > 0) {
                 // Both running and completed: "ToolName (1 running, 6 done)"
                 const nameStr = colorize(name, c.tools.name);
@@ -113,7 +115,7 @@ export const activeToolsStyles = {
         for (const tool of data.running) {
             parts.push(`[${colorize(tool.name, c.tools.name)}]`);
         }
-        for (const [name] of Array.from(data.completed.entries()).slice(0, 3)) {
+        for (const [name] of data.completed.slice(0, 3)) {
             parts.push(`[${colorize(name, c.tools.completed)}]`);
         }
         if (parts.length === 0) {
@@ -163,9 +165,7 @@ export const activeToolsStyles = {
             const label = colorize("Running:", c.tools.running);
             parts.push(`${label} ${formatTool(tool.name, tool.target, c)}`);
         }
-        const sorted = Array.from(data.completed.entries())
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 3);
+        const sorted = data.completed.slice(0, 3);
         for (const [name, count] of sorted) {
             const label = colorize("Completed:", c.tools.completed);
             const countStr = colorize(`(${count}x)`, c.tools.count);
@@ -186,9 +186,7 @@ export const activeToolsStyles = {
                 const indicator = colorize("◐", c.tools.running);
                 return `${indicator} ${formatTool(t.name, t.target, c)}`;
             }),
-            ...Array.from(data.completed.entries())
-                .slice(0, 3)
-                .map(([name, count]) => {
+            ...data.completed.slice(0, 3).map(([name, count]) => {
                 const indicator = colorize("✓", c.tools.completed);
                 const countStr = colorize(`×${count}`, c.tools.count);
                 return `${indicator} ${name} ${countStr}`;
@@ -210,7 +208,7 @@ export const activeToolsStyles = {
             const bullet = colorize("●", c.semantic.info);
             parts.push(`${bullet} ${formatTool(tool.name, tool.target, c)}`);
         }
-        for (const [name] of Array.from(data.completed.entries()).slice(0, 3)) {
+        for (const [name] of data.completed.slice(0, 3)) {
             const bullet = colorize("●", c.tools.completed);
             parts.push(`${bullet} ${name}`);
         }

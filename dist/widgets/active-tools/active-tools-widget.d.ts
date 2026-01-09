@@ -31,9 +31,9 @@ export declare class ActiveToolsWidget extends StdinDataWidget {
      */
     setStyle(style: ActiveToolsStyle): void;
     /**
-     * Aggregate completed tools by name
+     * Aggregate completed tools by name and sort by count (descending)
      * @param tools - Array of tool entries
-     * @returns Map of tool name to count
+     * @returns Array of [name, count] tuples sorted by count descending
      */
     private aggregateCompleted;
     /**
