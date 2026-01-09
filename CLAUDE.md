@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.6.0
+**Current version**: v0.6.9
 
 **Implemented features**:
 - Git branch and changes display
@@ -464,6 +464,83 @@ export type WidgetStyle =
   | "breakdown";  // CacheMetricsWidget multi-line style
 ```
 
+## UI Utilities
+
+### Formatters (`src/ui/utils/formatters.ts`)
+
+The project provides shared formatter utilities for consistent data display across widgets.
+
+#### formatDuration(ms: number): string
+
+Formats milliseconds to human-readable duration.
+
+**Examples:**
+- `formatDuration(45000)` → `"45s"`
+- `formatDuration(60000)` → `"1m 0s"`
+- `formatDuration(3600000)` → `"1h 0m 0s"`
+- `formatDuration(3665000)` → `"1h 1m 5s"`
+
+#### formatCostUSD(usd: number): string
+
+Formats cost in USD with 2 decimal places.
+
+**Examples:**
+- `formatCostUSD(0.42)` → `"$0.42"`
+- `formatCostUSD(1.5)` → `"$1.50"`
+
+Always formats with 2 decimal places for consistency.
+
+#### formatK(n: number): string
+
+Formats numbers with K suffix for thousands.
+
+**Examples:**
+- `formatK(0)` → `"0"`
+- `formatK(999)` → `"999"`
+- `formatK(1000)` → `"1.0k"`
+- `formatK(1500)` → `"1.5k"`
+- `formatK(10000)` → `"10k"`
+- `formatK(140000)` → `"140k"`
+- `formatK(-1000)` → `"-1.0k"`
+
+**Behavior:**
+- Shows 1 decimal place for values < 10k
+- Rounds to whole numbers for values >= 10k
+- Handles negative numbers correctly
+
+**Used by:** CacheMetricsWidget for compact token display.
+
+#### progressBar(percent: number, width?: number): string
+
+Creates a visual progress bar with Unicode block characters.
+
+**Parameters:**
+- `percent`: Percentage (0-100, automatically clamped)
+- `width`: Bar width in characters (default: 15)
+
+**Example:**
+```typescript
+progressBar(70, 15) → "██████████░░░░░"
+```
+
+#### getContextColor(percent: number): string
+
+Returns ANSI color code based on context usage percentage.
+
+**Thresholds:**
+- < 50%: Green (low usage)
+- 50-79%: Yellow (medium usage)
+- >= 80%: Red (high usage)
+
+#### colorize(text: string, color: string): string
+
+Wraps text with ANSI color codes for terminal display.
+
+**Example:**
+```typescript
+colorize("Hello", ANSI_COLORS.RED) → "\x1b[31mHello\x1b[0m"
+```
+
 ### Widget Base Class
 
 For widgets that receive `StdinData`, use the `StdinDataWidget` base class (Template Method Pattern):
@@ -500,6 +577,27 @@ abstract class StdinDataWidget implements IWidget {
   - Supports multiple display styles (balanced, compact, playful, etc.)
   - Limits to last 20 tool entries
   - Theme-integrated colors via `IToolsColors`
+
+## Bug Fixes
+
+### v0.6.9 - Cache Percentage Calculation Fix
+- **Fixed**: Cache hit rate showing >100% (e.g., 520059%)
+- **Root Cause**: The `input_tokens` field in Claude Code's stdin data only contains NEW (non-cached) tokens, not total input tokens
+- **Solution**: Corrected the cache percentage formula to account for all token types:
+  ```
+  cache_hit_rate = cache_read_tokens / (cache_read_tokens + cache_write_tokens + input_tokens) * 100
+  ```
+- **Impact**: Cache percentage now accurately represents true cache hit rate (0-100%)
+- **Affected Widget**: CacheMetricsWidget
+
+### v0.6.9 - formatK Utility Added
+- **Added**: Shared `formatK()` function in `src/ui/utils/formatters.ts`
+- **Purpose**: Format numbers with K suffix for thousands (e.g., 140000 → "140.0k")
+- **Used By**: CacheMetricsWidget for compact token display
+- **Features**:
+  - Shows 1 decimal place for values < 10k (e.g., "1.5k")
+  - Rounds to whole numbers for values >= 10k (e.g., "140k")
+  - Handles negative numbers correctly (e.g., "-1.5k")
 
 ### Line Distribution
 
