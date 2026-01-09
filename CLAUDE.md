@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.6.10
+**Current version**: v0.6.15
 
 **Implemented features**:
 - Git branch and changes display
@@ -115,7 +115,7 @@ src/
 │   ├── empty-line-widget.ts  # ✓ Implemented (blank separator)
 │   ├── active-tools/         # ✓ Implemented (transcript-based tool tracking)
 │   │   └── active-tools-widget.ts
-│   └── cache-metrics/        # ✓ Implemented (cache hit rate & savings)
+│   └── cache-metrics/        # ✓ Implemented (cache tokens & savings)
 │       └── cache-metrics-widget.ts
 │   ├── session-widget.ts     # PLANNED
 │   ├── agents-widget.ts      # PLANNED
