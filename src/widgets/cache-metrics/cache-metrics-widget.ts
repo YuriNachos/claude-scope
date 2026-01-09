@@ -2,9 +2,11 @@
  * Cache Metrics Widget
  *
  * Displays cache hit rate and savings from context usage data
+ * Uses cached values when current_usage is null to prevent flickering
  */
 
 import { createWidgetMetadata } from "../../core/widget-types.js";
+import { CacheManager } from "../../storage/cache-manager.js";
 import type { RenderContext, StdinData } from "../../types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
 import type { IThemeColors } from "../../ui/theme/types.js";
@@ -25,10 +27,12 @@ export class CacheMetricsWidget extends StdinDataWidget {
   private theme: IThemeColors;
   private style: CacheMetricsStyle = "balanced";
   private renderData?: CacheMetricsRenderData;
+  private cacheManager: CacheManager;
 
   constructor(theme?: IThemeColors) {
     super();
     this.theme = theme ?? DEFAULT_THEME;
+    this.cacheManager = new CacheManager();
   }
 
   /**
@@ -40,10 +44,19 @@ export class CacheMetricsWidget extends StdinDataWidget {
 
   /**
    * Calculate cache metrics from context usage data
-   * Returns null if no usage data is available
+   * Returns null if no usage data is available (current or cached)
    */
   private calculateMetrics(data: StdinData): CacheMetricsRenderData | null {
-    const usage = data.context_window?.current_usage;
+    let usage = data.context_window?.current_usage;
+
+    // Fall back to cache if current_usage is null
+    if (!usage) {
+      const cached = this.cacheManager.getCachedUsage(data.session_id);
+      if (cached) {
+        usage = cached.usage;
+      }
+    }
+
     if (!usage) {
       return null;
     }
@@ -79,9 +92,22 @@ export class CacheMetricsWidget extends StdinDataWidget {
 
   /**
    * Update widget with new data and calculate metrics
+   * Stores valid usage data in cache for future use
    */
   async update(data: StdinData): Promise<void> {
     await super.update(data);
+
+    // Store valid current_usage in cache
+    const usage = data.context_window?.current_usage;
+    if (usage) {
+      this.cacheManager.setCachedUsage(data.session_id, {
+        input_tokens: usage.input_tokens,
+        output_tokens: usage.output_tokens,
+        cache_creation_input_tokens: usage.cache_creation_input_tokens,
+        cache_read_input_tokens: usage.cache_read_input_tokens,
+      });
+    }
+
     const metrics = this.calculateMetrics(data);
     this.renderData = metrics ?? undefined;
   }

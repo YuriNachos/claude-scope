@@ -2,13 +2,21 @@
  * Unit tests for CacheMetricsWidget
  */
 
-import { describe, it } from "node:test";
+import assert from "node:assert";
+import { beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
+import { CacheManager } from "../../../src/storage/cache-manager.js";
 import { DEFAULT_THEME } from "../../../src/ui/theme/index.js";
 import { CacheMetricsWidget } from "../../../src/widgets/cache-metrics/cache-metrics-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
 
 describe("CacheMetricsWidget", () => {
+  beforeEach(() => {
+    // Clear cache before each test to ensure isolation
+    const cacheManager = new CacheManager();
+    cacheManager.clearCache();
+  });
+
   describe("metadata", () => {
     it("should have correct id and metadata", () => {
       const widget = new CacheMetricsWidget();
@@ -435,6 +443,71 @@ describe("CacheMetricsWidget", () => {
       // Calculation: 50000 / (50000 + 0 + 0) = 50000 / 50000 = 100%
       expect(result).to.contain("100%");
       expect(result).not.to.contain("101%");
+    });
+  });
+
+  describe("cache persistence", () => {
+    it("should use cached values when current_usage is null", async () => {
+      const widget = new CacheMetricsWidget();
+
+      // First update with valid data
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-cache-session",
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 100,
+              output_tokens: 50,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 1000,
+            },
+          },
+        })
+      );
+
+      const result1 = await widget.render({ width: 80, timestamp: 0 });
+      expect(result1).to.not.be.null;
+      expect(result1).to.include("1.0k"); // formatK converts 1000 to "1.0k"
+
+      // Second update with null current_usage (simulating tool execution)
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-cache-session",
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: null,
+          },
+        })
+      );
+
+      const result2 = await widget.render({ width: 80, timestamp: 0 });
+      // Should still render using cached values
+      expect(result2).to.not.be.null;
+      expect(result2).to.include("1.0k");
+    });
+
+    it("should return null when no cache and current_usage is null", async () => {
+      const widget = new CacheMetricsWidget();
+
+      await widget.update(
+        createMockStdinData({
+          session_id: "brand-new-session",
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: null,
+          },
+        })
+      );
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      expect(result).to.be.null;
     });
   });
 });
