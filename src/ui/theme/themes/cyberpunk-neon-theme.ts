@@ -28,5 +28,11 @@ export const CYBERPUNK_NEON_THEME: ITheme = {
     cacheLow: rgb(255, 0, 122), // Magenta neon
     cacheRead: rgb(0, 191, 255), // Cyan neon
     cacheWrite: rgb(140, 27, 255), // Purple neon
+    toolsRunning: rgb(255, 214, 0), // Yellow neon
+    toolsCompleted: rgb(0, 255, 122), // Green neon
+    toolsError: rgb(255, 0, 122), // Magenta neon
+    toolsName: rgb(0, 191, 255), // Cyan neon
+    toolsTarget: rgb(140, 27, 255), // Purple neon
+    toolsCount: rgb(255, 111, 97), // Orange neon
   }),
 };

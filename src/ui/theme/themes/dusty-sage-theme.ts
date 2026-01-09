@@ -28,5 +28,11 @@ export const DUSTY_SAGE_THEME: ITheme = {
     cacheLow: rgb(165, 175, 160),
     cacheRead: rgb(120, 140, 130),
     cacheWrite: rgb(148, 163, 184),
+    toolsRunning: rgb(150, 160, 145), // Medium sage
+    toolsCompleted: rgb(135, 145, 140), // Subtle sage
+    toolsError: rgb(165, 175, 160), // Light sage
+    toolsName: rgb(120, 140, 130), // Dusty green
+    toolsTarget: rgb(148, 163, 184), // Gray
+    toolsCount: rgb(156, 163, 175), // Light gray
   }),
 };

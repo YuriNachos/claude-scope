@@ -28,5 +28,11 @@ export const CATPPUCCIN_MOCHA_THEME: ITheme = {
     cacheLow: rgb(243, 139, 168), // Red
     cacheRead: rgb(137, 180, 250), // Blue
     cacheWrite: rgb(203, 166, 247), // Mauve
+    toolsRunning: rgb(238, 212, 159), // Yellow
+    toolsCompleted: rgb(166, 227, 161), // Green
+    toolsError: rgb(243, 139, 168), // Red
+    toolsName: rgb(137, 180, 250), // Blue
+    toolsTarget: rgb(147, 153, 178), // Gray
+    toolsCount: rgb(203, 166, 247), // Mauve
   }),
 };

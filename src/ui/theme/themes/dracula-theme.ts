@@ -28,5 +28,11 @@ export const DRACULA_THEME: ITheme = {
     cacheLow: rgb(255, 85, 85), // Red
     cacheRead: rgb(139, 233, 253), // Cyan
     cacheWrite: rgb(189, 147, 249), // Purple
+    toolsRunning: rgb(241, 250, 140), // Yellow
+    toolsCompleted: rgb(80, 250, 123), // Green
+    toolsError: rgb(255, 85, 85), // Red
+    toolsName: rgb(139, 233, 253), // Cyan
+    toolsTarget: rgb(98, 114, 164), // Gray
+    toolsCount: rgb(189, 147, 249), // Purple
   }),
 };

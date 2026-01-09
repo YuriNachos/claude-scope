@@ -28,5 +28,11 @@ export const GRAY_THEME: ITheme = {
     cacheLow: gray,
     cacheRead: gray,
     cacheWrite: gray,
+    toolsRunning: gray,
+    toolsCompleted: gray,
+    toolsError: gray,
+    toolsName: gray,
+    toolsTarget: gray,
+    toolsCount: gray,
   }),
 };

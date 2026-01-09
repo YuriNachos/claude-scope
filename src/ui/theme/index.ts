@@ -47,6 +47,7 @@ export type {
   ISemanticColors,
   ITheme,
   IThemeColors,
+  IToolsColors,
 } from "./types.js";
 
 // Export all themes

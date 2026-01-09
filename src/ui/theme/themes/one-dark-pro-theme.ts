@@ -28,5 +28,11 @@ export const ONE_DARK_PRO_THEME: ITheme = {
     cacheLow: rgb(224, 108, 117), // Red
     cacheRead: rgb(97, 175, 239), // Blue
     cacheWrite: rgb(171, 178, 191), // Gray
+    toolsRunning: rgb(229, 192, 123), // Yellow
+    toolsCompleted: rgb(152, 195, 121), // Green
+    toolsError: rgb(224, 108, 117), // Red
+    toolsName: rgb(97, 175, 239), // Blue
+    toolsTarget: rgb(171, 178, 191), // Gray
+    toolsCount: rgb(209, 154, 102), // Orange
   }),
 };

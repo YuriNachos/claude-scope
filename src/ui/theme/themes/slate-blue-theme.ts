@@ -28,5 +28,11 @@ export const SLATE_BLUE_THEME: ITheme = {
     cacheLow: rgb(175, 188, 201),
     cacheRead: rgb(100, 116, 139),
     cacheWrite: rgb(148, 163, 184),
+    toolsRunning: rgb(160, 174, 192), // Medium slate
+    toolsCompleted: rgb(148, 163, 184), // Subtle slate-blue
+    toolsError: rgb(175, 188, 201), // Light slate
+    toolsName: rgb(100, 116, 139), // Cool slate
+    toolsTarget: rgb(148, 163, 184), // Neutral slate
+    toolsCount: rgb(156, 163, 175), // Light slate
   }),
 };

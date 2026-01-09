@@ -76,6 +76,12 @@ export function createThemeColors(params: {
   cacheLow: string;
   cacheRead: string;
   cacheWrite: string;
+  toolsRunning: string;
+  toolsCompleted: string;
+  toolsError: string;
+  toolsName: string;
+  toolsTarget: string;
+  toolsCount: string;
 }): IThemeColors {
   const base = createBaseColors({
     modelColor: params.model,
@@ -130,6 +136,14 @@ export function createThemeColors(params: {
       low: params.cacheLow,
       read: params.cacheRead,
       write: params.cacheWrite,
+    },
+    tools: {
+      running: params.toolsRunning,
+      completed: params.toolsCompleted,
+      error: params.toolsError,
+      name: params.toolsName,
+      target: params.toolsTarget,
+      count: params.toolsCount,
     },
   };
 }

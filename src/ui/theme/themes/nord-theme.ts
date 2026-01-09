@@ -28,5 +28,11 @@ export const NORD_THEME: ITheme = {
     cacheLow: rgb(191, 97, 106), // Nordic red
     cacheRead: rgb(136, 192, 208), // Nordic cyan
     cacheWrite: rgb(129, 161, 193), // Nordic blue
+    toolsRunning: rgb(235, 203, 139), // Nordic yellow
+    toolsCompleted: rgb(163, 190, 140), // Nordic green
+    toolsError: rgb(191, 97, 106), // Nordic red
+    toolsName: rgb(136, 192, 208), // Nordic cyan
+    toolsTarget: rgb(129, 161, 193), // Nordic blue
+    toolsCount: rgb(216, 222, 233), // Nordic white
   }),
 };

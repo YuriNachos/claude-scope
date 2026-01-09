@@ -28,5 +28,11 @@ export const MUTED_GRAY_THEME: ITheme = {
     cacheLow: rgb(175, 188, 201),
     cacheRead: rgb(156, 163, 175),
     cacheWrite: rgb(148, 163, 184),
+    toolsRunning: rgb(160, 174, 192), // Medium gray
+    toolsCompleted: rgb(148, 163, 184), // Subtle gray
+    toolsError: rgb(175, 188, 201), // Light gray
+    toolsName: rgb(156, 163, 175), // Slate gray
+    toolsTarget: rgb(148, 163, 184), // Lighter slate
+    toolsCount: rgb(156, 163, 175), // Slate gray
   }),
 };

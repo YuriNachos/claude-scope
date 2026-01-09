@@ -28,5 +28,11 @@ export const SEMANTIC_CLASSIC_THEME: ITheme = {
     cacheLow: rgb(239, 68, 68), // Red
     cacheRead: rgb(59, 130, 246), // Blue
     cacheWrite: rgb(99, 102, 241), // Indigo
+    toolsRunning: rgb(234, 179, 8), // Yellow
+    toolsCompleted: rgb(34, 197, 94), // Green
+    toolsError: rgb(239, 68, 68), // Red
+    toolsName: rgb(59, 130, 246), // Blue
+    toolsTarget: rgb(107, 114, 128), // Gray
+    toolsCount: rgb(99, 102, 241), // Indigo
   }),
 };

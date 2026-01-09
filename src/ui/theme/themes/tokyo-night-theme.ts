@@ -28,5 +28,11 @@ export const TOKYO_NIGHT_THEME: ITheme = {
     cacheLow: rgb(249, 86, 119), // Red
     cacheRead: rgb(122, 132, 173), // Blue
     cacheWrite: rgb(169, 177, 214), // White-ish
+    toolsRunning: rgb(232, 166, 162), // Pink-red
+    toolsCompleted: rgb(146, 180, 203), // Cyan
+    toolsError: rgb(249, 86, 119), // Red
+    toolsName: rgb(122, 132, 173), // Blue
+    toolsTarget: rgb(169, 177, 214), // White-ish
+    toolsCount: rgb(158, 206, 209), // Teal
   }),
 };

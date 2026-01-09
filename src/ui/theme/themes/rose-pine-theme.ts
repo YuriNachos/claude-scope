@@ -28,5 +28,11 @@ export const ROSE_PINE_THEME: ITheme = {
     cacheLow: rgb(235, 111, 146), // Pine red
     cacheRead: rgb(156, 207, 216), // Pine cyan
     cacheWrite: rgb(224, 208, 245), // Pine violet
+    toolsRunning: rgb(233, 201, 176), // Pine beige
+    toolsCompleted: rgb(156, 207, 216), // Pine cyan
+    toolsError: rgb(235, 111, 146), // Pine red
+    toolsName: rgb(156, 207, 216), // Pine cyan
+    toolsTarget: rgb(224, 208, 245), // Pine violet
+    toolsCount: rgb(226, 185, 218), // Pine pink
   }),
 };

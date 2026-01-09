@@ -29,5 +29,11 @@ export const VSCODE_DARK_PLUS_THEME: ITheme = {
     cacheLow: rgb(244, 71, 71), // Red
     cacheRead: rgb(0, 122, 204), // VSCode blue
     cacheWrite: rgb(171, 178, 191), // Gray
+    toolsRunning: rgb(251, 191, 36), // Yellow
+    toolsCompleted: rgb(74, 222, 128), // Green
+    toolsError: rgb(248, 113, 113), // Red
+    toolsName: rgb(96, 165, 250), // Blue
+    toolsTarget: rgb(156, 163, 175), // Gray
+    toolsCount: rgb(167, 139, 250), // Purple
   }),
 };
