@@ -1415,7 +1415,7 @@ var VSCODE_DARK_PLUS_THEME = {
 };
 
 // src/ui/theme/index.ts
-var DEFAULT_THEME = VSCODE_DARK_PLUS_THEME.colors;
+var DEFAULT_THEME = MONOKAI_THEME.colors;
 
 // src/widgets/core/stdin-data-widget.ts
 var StdinDataWidget = class {
@@ -1972,11 +1972,6 @@ function formatCurrency(usd) {
   }
   return `$${usd.toFixed(2)}`;
 }
-function createProgressBar(percentage, width) {
-  const filled = Math.round(percentage / 100 * width);
-  const empty = width - filled;
-  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
-}
 function getCacheColor(hitRate, colors) {
   if (hitRate > 70) {
     return colors.cache.high;
@@ -1988,74 +1983,70 @@ function getCacheColor(hitRate, colors) {
 }
 var cacheMetricsStyles = {
   /**
-   * balanced: 💾 70% cached (35.0k tokens) with color coding
+   * balanced: 💾 35.0k cache with color coding
    */
   balanced: (data, colors) => {
-    const { hitRate, cacheRead } = data;
+    const { cacheRead, hitRate } = data;
     const color = colors ? getCacheColor(hitRate, colors) : "";
-    const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
-    const tokens = colors ? `${colors.cache.read}${formatK(cacheRead)} tokens` : `${formatK(cacheRead)} tokens`;
-    return `\u{1F4BE} ${percentage} cached (${tokens})`;
+    const amount = color ? `${color}${formatK(cacheRead)} cache` : `${formatK(cacheRead)} cache`;
+    return `\u{1F4BE} ${amount}`;
   },
   /**
-   * compact: Cache: 70%
+   * compact: Cache: 35.0k
    */
   compact: (data, colors) => {
-    const hitRate = data.hitRate.toFixed(0);
+    const { cacheRead } = data;
+    const amount = formatK(cacheRead);
     if (colors) {
-      return `${colors.cache.read}Cache: ${hitRate}%`;
+      return `${colors.cache.read}Cache: ${amount}`;
     }
-    return `Cache: ${hitRate}%`;
+    return `Cache: ${amount}`;
   },
   /**
-   * playful: 💾 [███████░] 70% with progress bar
+   * playful: 💾 35.0k cache
    */
-  playful: (data, colors) => {
-    const { hitRate } = data;
-    const bar = createProgressBar(hitRate, 7);
-    const color = colors ? getCacheColor(hitRate, colors) : "";
-    const barAndPercent = color ? `${color}[${bar}] ${hitRate.toFixed(0)}%` : `[${bar}] ${hitRate.toFixed(0)}%`;
-    return `\u{1F4BE} ${barAndPercent}`;
+  playful: (data, _colors) => {
+    const { cacheRead } = data;
+    const amount = formatK(cacheRead);
+    return `\u{1F4BE} ${amount} cache`;
   },
   /**
-   * verbose: Cache: 35.0k tokens (70%) | $0.03 saved
+   * verbose: Cache: 35.0k | $0.03 saved
    */
   verbose: (data, colors) => {
-    const { cacheRead, hitRate, savings } = data;
-    const tokens = colors ? `${colors.cache.read}${formatK(cacheRead)} tokens` : `${formatK(cacheRead)} tokens`;
-    const percent = `${hitRate.toFixed(0)}%`;
+    const { cacheRead, savings } = data;
+    const amount = formatK(cacheRead);
     const saved = colors ? `${colors.cache.write}${formatCurrency(savings)} saved` : `${formatCurrency(savings)} saved`;
-    return `Cache: ${tokens} (${percent}) | ${saved}`;
+    return `Cache: ${amount} | ${saved}`;
   },
   /**
-   * labeled: Cache Hit: 70% | $0.03 saved
+   * labeled: Cache: 35.0k | $0.03 saved
    */
   labeled: (data, colors) => {
-    const { hitRate, savings } = data;
-    const percent = colors ? `${colors.cache.read}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    const { cacheRead, savings } = data;
+    const amount = formatK(cacheRead);
     const saved = colors ? `${colors.cache.write}${formatCurrency(savings)} saved` : `${formatCurrency(savings)} saved`;
-    return `Cache Hit: ${percent} | ${saved}`;
+    return `Cache: ${amount} | ${saved}`;
   },
   /**
-   * indicator: ● 70% cached
+   * indicator: ● 35.0k cache with color coding
    */
   indicator: (data, colors) => {
-    const { hitRate } = data;
+    const { cacheRead, hitRate } = data;
     const color = colors ? getCacheColor(hitRate, colors) : "";
-    const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
-    return `\u25CF ${percentage} cached`;
+    const amount = color ? `${color}${formatK(cacheRead)} cache` : `${formatK(cacheRead)} cache`;
+    return `\u25CF ${amount}`;
   },
   /**
-   * breakdown: Multi-line with ├─ Read: and └─ Write: breakdown
+   * breakdown: Single-line with Hit: and Write: breakdown
    */
   breakdown: (data, colors) => {
-    const { cacheRead, cacheWrite, hitRate, savings } = data;
-    const color = colors ? getCacheColor(hitRate, colors) : "";
-    const percent = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    const { cacheRead, cacheWrite, savings } = data;
+    const amount = formatK(cacheRead);
     const saved = colors ? `${colors.cache.write}${formatCurrency(savings)} saved` : `${formatCurrency(savings)} saved`;
-    const read = colors ? `${colors.cache.read}${formatK(cacheRead)}` : formatK(cacheRead);
-    const write = colors ? `${colors.cache.write}${formatK(cacheWrite)}` : formatK(cacheWrite);
-    return [`\u{1F4BE} ${percent} cached | ${saved}`, `\u251C\u2500 Read: ${read}`, `\u2514\u2500 Write: ${write}`].join("\n");
+    const read = formatK(cacheRead);
+    const write = formatK(cacheWrite);
+    return `\u{1F4BE} ${amount} cache | Hit: ${read}, Write: ${write} | ${saved}`;
   }
 };
 

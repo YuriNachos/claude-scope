@@ -13,16 +13,6 @@ function formatCurrency(usd) {
     return `$${usd.toFixed(2)}`;
 }
 /**
- * Create a progress bar with █ and ░ characters
- * @param percentage - Percentage (0-100)
- * @param width - Total width of the bar in characters
- */
-function createProgressBar(percentage, width) {
-    const filled = Math.round((percentage / 100) * width);
-    const empty = width - filled;
-    return "█".repeat(filled) + "░".repeat(empty);
-}
-/**
  * Get the appropriate color based on cache hit rate percentage
  */
 function getCacheColor(hitRate, colors) {
@@ -41,88 +31,76 @@ function getCacheColor(hitRate, colors) {
  */
 export const cacheMetricsStyles = {
     /**
-     * balanced: 💾 70% cached (35.0k tokens) with color coding
+     * balanced: 💾 35.0k cache with color coding
      */
     balanced: (data, colors) => {
-        const { hitRate, cacheRead } = data;
+        const { cacheRead, hitRate } = data;
         const color = colors ? getCacheColor(hitRate, colors) : "";
-        const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
-        const tokens = colors
-            ? `${colors.cache.read}${formatK(cacheRead)} tokens`
-            : `${formatK(cacheRead)} tokens`;
-        return `💾 ${percentage} cached (${tokens})`;
+        const amount = color ? `${color}${formatK(cacheRead)} cache` : `${formatK(cacheRead)} cache`;
+        return `💾 ${amount}`;
     },
     /**
-     * compact: Cache: 70%
+     * compact: Cache: 35.0k
      */
     compact: (data, colors) => {
-        const hitRate = data.hitRate.toFixed(0);
+        const { cacheRead } = data;
+        const amount = formatK(cacheRead);
         if (colors) {
-            return `${colors.cache.read}Cache: ${hitRate}%`;
+            return `${colors.cache.read}Cache: ${amount}`;
         }
-        return `Cache: ${hitRate}%`;
+        return `Cache: ${amount}`;
     },
     /**
-     * playful: 💾 [███████░] 70% with progress bar
+     * playful: 💾 35.0k cache
      */
-    playful: (data, colors) => {
-        const { hitRate } = data;
-        const bar = createProgressBar(hitRate, 7);
-        const color = colors ? getCacheColor(hitRate, colors) : "";
-        const barAndPercent = color
-            ? `${color}[${bar}] ${hitRate.toFixed(0)}%`
-            : `[${bar}] ${hitRate.toFixed(0)}%`;
-        return `💾 ${barAndPercent}`;
+    playful: (data, _colors) => {
+        const { cacheRead } = data;
+        const amount = formatK(cacheRead);
+        return `💾 ${amount} cache`;
     },
     /**
-     * verbose: Cache: 35.0k tokens (70%) | $0.03 saved
+     * verbose: Cache: 35.0k | $0.03 saved
      */
     verbose: (data, colors) => {
-        const { cacheRead, hitRate, savings } = data;
-        const tokens = colors
-            ? `${colors.cache.read}${formatK(cacheRead)} tokens`
-            : `${formatK(cacheRead)} tokens`;
-        const percent = `${hitRate.toFixed(0)}%`;
+        const { cacheRead, savings } = data;
+        const amount = formatK(cacheRead);
         const saved = colors
             ? `${colors.cache.write}${formatCurrency(savings)} saved`
             : `${formatCurrency(savings)} saved`;
-        return `Cache: ${tokens} (${percent}) | ${saved}`;
+        return `Cache: ${amount} | ${saved}`;
     },
     /**
-     * labeled: Cache Hit: 70% | $0.03 saved
+     * labeled: Cache: 35.0k | $0.03 saved
      */
     labeled: (data, colors) => {
-        const { hitRate, savings } = data;
-        const percent = colors
-            ? `${colors.cache.read}${hitRate.toFixed(0)}%`
-            : `${hitRate.toFixed(0)}%`;
+        const { cacheRead, savings } = data;
+        const amount = formatK(cacheRead);
         const saved = colors
             ? `${colors.cache.write}${formatCurrency(savings)} saved`
             : `${formatCurrency(savings)} saved`;
-        return `Cache Hit: ${percent} | ${saved}`;
+        return `Cache: ${amount} | ${saved}`;
     },
     /**
-     * indicator: ● 70% cached
+     * indicator: ● 35.0k cache with color coding
      */
     indicator: (data, colors) => {
-        const { hitRate } = data;
+        const { cacheRead, hitRate } = data;
         const color = colors ? getCacheColor(hitRate, colors) : "";
-        const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
-        return `● ${percentage} cached`;
+        const amount = color ? `${color}${formatK(cacheRead)} cache` : `${formatK(cacheRead)} cache`;
+        return `● ${amount}`;
     },
     /**
-     * breakdown: Multi-line with ├─ Read: and └─ Write: breakdown
+     * breakdown: Single-line with Hit: and Write: breakdown
      */
     breakdown: (data, colors) => {
-        const { cacheRead, cacheWrite, hitRate, savings } = data;
-        const color = colors ? getCacheColor(hitRate, colors) : "";
-        const percent = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+        const { cacheRead, cacheWrite, savings } = data;
+        const amount = formatK(cacheRead);
         const saved = colors
             ? `${colors.cache.write}${formatCurrency(savings)} saved`
             : `${formatCurrency(savings)} saved`;
-        const read = colors ? `${colors.cache.read}${formatK(cacheRead)}` : formatK(cacheRead);
-        const write = colors ? `${colors.cache.write}${formatK(cacheWrite)}` : formatK(cacheWrite);
-        return [`💾 ${percent} cached | ${saved}`, `├─ Read: ${read}`, `└─ Write: ${write}`].join("\n");
+        const read = formatK(cacheRead);
+        const write = formatK(cacheWrite);
+        return `💾 ${amount} cache | Hit: ${read}, Write: ${write} | ${saved}`;
     },
 };
 /**

@@ -9,7 +9,7 @@
  * - Intuitive: Semantic Classic, Professional Blue
  * - Muted: Muted Gray, Slate Blue, Dusty Sage
  *
- * Default: VSCode Dark+
+ * Default: Monokai
  */
 import { GRAY_THEME } from "./gray-theme.js";
 // Import all themes
@@ -35,7 +35,7 @@ export { createBaseColors, createSemanticColors, createThemeColors } from "./hel
 export { CATPPUCCIN_MOCHA_THEME, CYBERPUNK_NEON_THEME, DRACULA_THEME, DUSTY_SAGE_THEME, GITHUB_DARK_DIMMED_THEME, MONOKAI_THEME, MUTED_GRAY_THEME, NORD_THEME, ONE_DARK_PRO_THEME, PROFESSIONAL_BLUE_THEME, ROSE_PINE_THEME, SEMANTIC_CLASSIC_THEME, SLATE_BLUE_THEME, SOLARIZED_DARK_THEME, TOKYO_NIGHT_THEME, VSCODE_DARK_PLUS_THEME, GRAY_THEME, };
 /**
  * All available themes in alphabetical order
- * Default theme is VSCode Dark+
+ * Default theme is Monokai
  */
 export const AVAILABLE_THEMES = [
     CATPPUCCIN_MOCHA_THEME,
@@ -58,24 +58,24 @@ export const AVAILABLE_THEMES = [
 ];
 /**
  * Default theme colors for all widgets
- * Uses VSCode Dark+ as the default theme
+ * Uses Monokai as the default theme
  */
-export const DEFAULT_THEME = VSCODE_DARK_PLUS_THEME.colors;
+export const DEFAULT_THEME = MONOKAI_THEME.colors;
 /**
- * Default theme object (VSCode Dark+)
+ * Default theme object (Monokai)
  */
-export const DEFAULT_THEME_OBJECT = VSCODE_DARK_PLUS_THEME;
+export const DEFAULT_THEME_OBJECT = MONOKAI_THEME;
 /**
  * Get theme by name
- * @param name - Theme name (e.g., "vscode-dark-plus", "nord", "dracula")
- * @returns Theme object or VSCode Dark+ as default
+ * @param name - Theme name (e.g., "monokai", "nord", "dracula")
+ * @returns Theme object or Monokai as default
  *
  * @example
  * const theme = getThemeByName("nord");
- * const defaultTheme = getThemeByName("unknown"); // Returns VSCode Dark+
+ * const defaultTheme = getThemeByName("unknown"); // Returns Monokai
  */
 export function getThemeByName(name) {
     const theme = AVAILABLE_THEMES.find((t) => t.name === name);
-    return theme ?? VSCODE_DARK_PLUS_THEME;
+    return theme ?? MONOKAI_THEME;
 }
 //# sourceMappingURL=index.js.map
