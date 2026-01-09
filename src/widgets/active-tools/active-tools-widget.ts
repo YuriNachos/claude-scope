@@ -50,11 +50,11 @@ export class ActiveToolsWidget extends StdinDataWidget {
   }
 
   /**
-   * Aggregate completed tools by name
+   * Aggregate completed tools by name and sort by count (descending)
    * @param tools - Array of tool entries
-   * @returns Map of tool name to count
+   * @returns Array of [name, count] tuples sorted by count descending
    */
-  private aggregateCompleted(tools: ToolEntry[]): Map<string, number> {
+  private aggregateCompleted(tools: ToolEntry[]): Array<[string, number]> {
     const counts = new Map<string, number>();
     for (const tool of tools) {
       if (tool.status === "completed" || tool.status === "error") {
@@ -62,7 +62,8 @@ export class ActiveToolsWidget extends StdinDataWidget {
         counts.set(tool.name, current + 1);
       }
     }
-    return counts;
+    // Convert to array and sort by count descending
+    return Array.from(counts.entries()).sort((a, b) => b[1] - a[1]);
   }
 
   /**
