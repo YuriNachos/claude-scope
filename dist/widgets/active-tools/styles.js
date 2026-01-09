@@ -30,27 +30,74 @@ function formatTool(name, target, colors) {
     return nameStr;
 }
 /**
+ * Pluralize a tool name
+ * @param name - Tool name to pluralize
+ * @returns Pluralized tool name
+ */
+function pluralizeTool(name) {
+    // Common irregular plurals
+    const irregular = {
+        Task: "Tasks",
+        Bash: "Bash",
+        Edit: "Edits",
+        Read: "Reads",
+        Write: "Writes",
+        Grep: "Greps",
+        Glob: "Globs",
+    };
+    return irregular[name] || `${name}s`;
+}
+/**
  * Style implementations for active tools display
  */
 export const activeToolsStyles = {
     /**
-     * balanced: Running tools with ◐ spinner, completed aggregated with ✓ ×count
+     * balanced: Group tools by name, showing running and completed counts together
+     * - Running + completed: "ToolName (1 running, 6 done)"
+     * - Only completed: "Tools: 6"
+     * - No symbols, just text format
      */
     balanced: (data, colors) => {
         const parts = [];
-        // Show running tools with spinner (last 2)
-        for (const tool of data.running.slice(-2)) {
-            const indicator = colors ? colorize("◐", colors.tools.running) : "◐";
-            parts.push(`${indicator} ${formatTool(tool.name, tool.target, colors ?? getDefaultColors())}`);
+        const c = colors ?? getDefaultColors();
+        // Group all tool names (running + completed)
+        const allToolNames = new Set();
+        for (const tool of data.running) {
+            allToolNames.add(tool.name);
         }
-        // Show completed tools aggregated (top 4 by count)
-        const sorted = Array.from(data.completed.entries())
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 4);
-        for (const [name, count] of sorted) {
-            const check = colors ? colorize("✓", colors.tools.completed) : "✓";
-            const countStr = colors ? colorize(`×${count}`, colors.tools.count) : `×${count}`;
-            parts.push(`${check} ${name} ${countStr}`);
+        for (const name of data.completed.keys()) {
+            allToolNames.add(name);
+        }
+        // Count running tools by name
+        const runningCounts = new Map();
+        for (const tool of data.running) {
+            runningCounts.set(tool.name, (runningCounts.get(tool.name) ?? 0) + 1);
+        }
+        // Build display for each tool
+        for (const name of allToolNames) {
+            const runningCount = runningCounts.get(name) ?? 0;
+            const completedCount = data.completed.get(name) ?? 0;
+            if (runningCount > 0 && completedCount > 0) {
+                // Both running and completed: "ToolName (1 running, 6 done)"
+                const nameStr = colorize(name, c.tools.name);
+                const runningStr = colorize(`${runningCount} running`, c.tools.running);
+                const doneStr = colorize(`${completedCount} done`, c.tools.completed);
+                parts.push(`${nameStr} (${runningStr}, ${doneStr})`);
+            }
+            else if (completedCount > 0) {
+                // Only completed: "Tools: 6" (pluralized)
+                const pluralName = pluralizeTool(name);
+                const nameStr = colorize(pluralName, c.tools.name);
+                const countStr = colorize(`${completedCount}`, c.tools.count);
+                parts.push(`${nameStr}: ${countStr}`);
+            }
+            else if (runningCount > 0) {
+                // Only running: "ToolName (1 running, 0 done)"
+                const nameStr = colorize(name, c.tools.name);
+                const runningStr = colorize(`${runningCount} running`, c.tools.running);
+                const doneStr = colorize("0 done", c.tools.completed);
+                parts.push(`${nameStr} (${runningStr}, ${doneStr})`);
+            }
         }
         if (parts.length === 0) {
             return "";
