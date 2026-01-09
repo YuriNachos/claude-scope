@@ -47,10 +47,9 @@ describe("CacheMetricsWidget", () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.not.be.null;
-      // New calculation: 35000 / (35000 + 5000 + 50000) = 35000 / 90000 = 38.89% → 39%
-      expect(result).to.include("39%");
+      // New format shows token amounts, not percentages
       expect(result).to.include("35k");
-      expect(result).to.include("tokens");
+      expect(result).to.include("cache");
     });
 
     it("should return null when no context usage data available", async () => {
@@ -92,7 +91,7 @@ describe("CacheMetricsWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("Cache: 39%");
+      expect(result).to.include("Cache: 35k");
     });
 
     it("should support breakdown style with multiple lines", async () => {
@@ -116,9 +115,10 @@ describe("CacheMetricsWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("\n");
-      expect(result).to.include("├─ Read:");
-      expect(result).to.include("└─ Write:");
+      // Breakdown style is now single-line with Hit: and Write:
+      expect(result).to.include("Hit:");
+      expect(result).to.include("Write:");
+      expect(result).not.to.include("\n"); // single-line now
     });
 
     it("should handle zero cache values", async () => {
@@ -141,7 +141,8 @@ describe("CacheMetricsWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("0%");
+      // New format shows token amounts (0 cache)
+      expect(result).to.include("0 cache");
     });
 
     it("should calculate cost savings correctly", async () => {
@@ -272,8 +273,8 @@ describe("CacheMetricsWidget", () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.include("💾");
-      expect(result).to.include("[");
-      expect(result).to.include("]");
+      expect(result).to.include("63k"); // formatK(63000)
+      expect(result).to.include("cache");
     });
 
     it("should render verbose style with full details", async () => {
@@ -283,9 +284,8 @@ describe("CacheMetricsWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("Cache:");
-      expect(result).to.include("tokens");
-      expect(result).to.include("saved");
+      expect(result).to.include("63k"); // formatK(63000)
+      expect(result).to.include("$0.17 saved"); // formatCurrency(0.17)
     });
 
     it("should render labeled style with labels", async () => {
@@ -295,7 +295,7 @@ describe("CacheMetricsWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("Cache Hit:");
+      expect(result).to.include("Cache: 63k"); // formatK(63000)
     });
 
     it("should render indicator style with bullet", async () => {
@@ -306,6 +306,8 @@ describe("CacheMetricsWidget", () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
 
       expect(result).to.include("●");
+      expect(result).to.include("63k"); // formatK(63000)
+      expect(result).to.include("cache");
     });
   });
 
@@ -369,10 +371,11 @@ describe("CacheMetricsWidget", () => {
       await widget.update(data);
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      // Should be ~97%, not 520059%
+      // New format shows token amounts, not percentages
       // Calculation: 140000 / (140000 + 5000 + 27) = 140000 / 145027 = 96.54% → rounds to 97%
-      expect(result).to.contain("97%");
-      expect(result).not.to.contain("520059%");
+      // Color coding still uses hitRate internally (97% → high color)
+      expect(result).to.contain("140k"); // formatK(140000)
+      expect(result).not.to.contain("520059%"); // Bug fix: no more >100% percentages
     });
 
     it("should handle 100% cache hit rate", async () => {
@@ -394,7 +397,10 @@ describe("CacheMetricsWidget", () => {
       await widget.update(data);
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.contain("100%");
+      // New format shows token amounts
+      // Calculation: 50000 / (50000 + 0 + 0) = 100%
+      // Color coding still uses hitRate internally (100% → high color)
+      expect(result).to.contain("50k"); // formatK(50000)
     });
 
     it("should handle 0% cache hit rate", async () => {
@@ -416,7 +422,10 @@ describe("CacheMetricsWidget", () => {
       await widget.update(data);
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.contain("0%");
+      // New format shows token amounts (0 cache)
+      // Calculation: 0 / (0 + 0 + 50000) = 0%
+      // Color coding still uses hitRate internally (0% → low color)
+      expect(result).to.contain("0 cache");
     });
 
     it("should cap hit rate at 100%", async () => {
@@ -438,10 +447,10 @@ describe("CacheMetricsWidget", () => {
       await widget.update(data);
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      // Should be exactly 100%, not more
-      // Calculation: 50000 / (50000 + 0 + 0) = 50000 / 50000 = 100%
-      expect(result).to.contain("100%");
-      expect(result).not.to.contain("101%");
+      // New format shows token amounts
+      // Calculation: 50000 / (50000 + 0 + 0) = 100%
+      // Color coding still uses hitRate internally (100% → high color)
+      expect(result).to.contain("50k"); // formatK(50000)
     });
   });
 
