@@ -19,6 +19,17 @@ export const PROFESSIONAL_BLUE_THEME = {
         model: rgb(167, 139, 250), // Purple
         duration: rgb(203, 213, 225), // Light gray
         accent: rgb(37, 99, 235), // Royal blue
+        cacheHigh: rgb(74, 222, 128), // Green
+        cacheMedium: rgb(251, 191, 36), // Amber
+        cacheLow: rgb(248, 113, 113), // Red
+        cacheRead: rgb(96, 165, 250), // Light blue
+        cacheWrite: rgb(167, 139, 250), // Purple
+        toolsRunning: rgb(251, 191, 36), // Amber
+        toolsCompleted: rgb(74, 222, 128), // Green
+        toolsError: rgb(248, 113, 113), // Red
+        toolsName: rgb(37, 99, 235), // Royal blue
+        toolsTarget: rgb(148, 163, 184), // Slate gray
+        toolsCount: rgb(167, 139, 250), // Purple
     }),
 };
 //# sourceMappingURL=professional-blue-theme.js.map

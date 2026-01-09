@@ -1,5 +1,5 @@
 import { randomInt } from "node:crypto";
-import { Suit, Rank } from "./types.js";
+import { Rank, Suit } from "./types.js";
 const ALL_SUITS = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs];
 const ALL_RANKS = [
     Rank.Two,

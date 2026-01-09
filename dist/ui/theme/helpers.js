@@ -89,6 +89,21 @@ export function createThemeColors(params) {
             nonParticipating: params.duration,
             result: params.accent,
         },
+        cache: {
+            high: params.cacheHigh,
+            medium: params.cacheMedium,
+            low: params.cacheLow,
+            read: params.cacheRead,
+            write: params.cacheWrite,
+        },
+        tools: {
+            running: params.toolsRunning,
+            completed: params.toolsCompleted,
+            error: params.toolsError,
+            name: params.toolsName,
+            target: params.toolsTarget,
+            count: params.toolsCount,
+        },
     };
 }
 //# sourceMappingURL=helpers.js.map

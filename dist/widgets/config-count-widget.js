@@ -4,10 +4,10 @@
  * Displays Claude Code configuration counts on second statusline line.
  * Data source: ConfigProvider scans filesystem.
  */
+import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { ConfigProvider } from "../providers/config-provider.js";
 import { configCountStyles } from "./config-count/styles.js";
-import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 /**
  * Widget displaying configuration counts
  *
@@ -53,7 +53,7 @@ export class ConfigCountWidget {
             claudeMdCount,
             rulesCount,
             mcpCount,
-            hooksCount
+            hooksCount,
         };
         return this.styleFn(renderData);
     }

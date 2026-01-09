@@ -1,7 +1,7 @@
 /**
  * Core types for the widget display style system
  */
-export type WidgetStyle = "minimal" | "balanced" | "compact" | "playful" | "verbose" | "technical" | "symbolic" | "monochrome" | "compact-verbose" | "labeled" | "indicator" | "emoji";
+export type WidgetStyle = "minimal" | "balanced" | "compact" | "playful" | "verbose" | "technical" | "symbolic" | "monochrome" | "compact-verbose" | "labeled" | "indicator" | "emoji" | "breakdown";
 export declare const DEFAULT_WIDGET_STYLE: WidgetStyle;
 export interface WidgetStyleConfig {
     style: WidgetStyle;

@@ -13,7 +13,7 @@ import { pokerStyles } from "./poker/styles.js";
 import { formatCard, isRedSuit } from "./poker/types.js";
 export class PokerWidget extends StdinDataWidget {
     id = "poker";
-    metadata = createWidgetMetadata("Poker", "Displays random Texas Hold'em hands for entertainment", "1.0.0", "claude-scope", 2 // Third line (0-indexed)
+    metadata = createWidgetMetadata("Poker", "Displays random Texas Hold'em hands for entertainment", "1.0.0", "claude-scope", 4 // Fifth line (0-indexed)
     );
     holeCards = [];
     boardCards = [];

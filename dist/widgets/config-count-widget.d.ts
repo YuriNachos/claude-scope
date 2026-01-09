@@ -4,8 +4,8 @@
  * Displays Claude Code configuration counts on second statusline line.
  * Data source: ConfigProvider scans filesystem.
  */
-import type { IWidget, RenderContext, StdinData } from "../core/types.js";
 import type { WidgetStyle } from "../core/style-types.js";
+import type { IWidget, RenderContext, StdinData } from "../core/types.js";
 /**
  * Widget displaying configuration counts
  *

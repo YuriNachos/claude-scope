@@ -73,6 +73,38 @@ export interface IPokerColors {
     result: string;
 }
 /**
+ * Cache metrics widget colors
+ */
+export interface ICacheColors {
+    /** Color for high cache hit rate (>70%) */
+    high: string;
+    /** Color for medium cache hit rate (40-70%) */
+    medium: string;
+    /** Color for low cache hit rate (<40%) */
+    low: string;
+    /** Color for cache read amount */
+    read: string;
+    /** Color for cache write amount */
+    write: string;
+}
+/**
+ * Active tools widget colors
+ */
+export interface IToolsColors {
+    /** Color for running tool indicator */
+    running: string;
+    /** Color for completed tool indicator */
+    completed: string;
+    /** Color for error tool indicator */
+    error: string;
+    /** Color for tool name */
+    name: string;
+    /** Color for tool target/path */
+    target: string;
+    /** Color for tool count multiplier */
+    count: string;
+}
+/**
  * Unified theme colors interface
  * All widget colors in one place for consistent theming
  */
@@ -86,6 +118,8 @@ export interface IThemeColors {
     duration: IDurationColors;
     model: IModelColors;
     poker: IPokerColors;
+    cache: ICacheColors;
+    tools: IToolsColors;
 }
 /**
  * Theme interface with metadata

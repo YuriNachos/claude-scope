@@ -19,6 +19,17 @@ export const SLATE_BLUE_THEME = {
         model: rgb(148, 163, 184),
         duration: rgb(100, 116, 139),
         accent: rgb(100, 116, 139),
+        cacheHigh: rgb(148, 163, 184),
+        cacheMedium: rgb(160, 174, 192),
+        cacheLow: rgb(175, 188, 201),
+        cacheRead: rgb(100, 116, 139),
+        cacheWrite: rgb(148, 163, 184),
+        toolsRunning: rgb(160, 174, 192), // Medium slate
+        toolsCompleted: rgb(148, 163, 184), // Subtle slate-blue
+        toolsError: rgb(175, 188, 201), // Light slate
+        toolsName: rgb(100, 116, 139), // Cool slate
+        toolsTarget: rgb(148, 163, 184), // Neutral slate
+        toolsCount: rgb(156, 163, 175), // Light slate
     }),
 };
 //# sourceMappingURL=slate-blue-theme.js.map

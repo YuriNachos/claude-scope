@@ -2,7 +2,7 @@
  * Runtime type-safe schema for Claude Code stdin data
  * Custom validation system (no external dependencies)
  */
-import { string, number, literal, object, optional, nullable, } from "../validation/index.js";
+import { literal, nullable, number, object, optional, string, } from "../validation/index.js";
 export const ContextUsageSchema = object({
     input_tokens: number(),
     output_tokens: number(),

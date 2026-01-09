@@ -5,8 +5,8 @@
  * Cache invalidates after 5 seconds.
  */
 import * as fs from "fs/promises";
-import * as path from "path";
 import * as os from "os";
+import * as path from "path";
 /**
  * Provider for scanning Claude Code configuration with caching
  */

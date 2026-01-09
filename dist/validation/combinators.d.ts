@@ -1,4 +1,4 @@
-import type { Validator, InferValidator } from "./core.js";
+import type { InferValidator, Validator } from "./core.js";
 export declare function object<T extends Record<string, Validator<any>>>(shape: T): Validator<{
     [K in keyof T]: InferValidator<T[K]>;
 }>;

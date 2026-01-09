@@ -49,5 +49,16 @@ export declare function createThemeColors(params: {
     model: string;
     duration: string;
     accent: string;
+    cacheHigh: string;
+    cacheMedium: string;
+    cacheLow: string;
+    cacheRead: string;
+    cacheWrite: string;
+    toolsRunning: string;
+    toolsCompleted: string;
+    toolsError: string;
+    toolsName: string;
+    toolsTarget: string;
+    toolsCount: string;
 }): IThemeColors;
 //# sourceMappingURL=helpers.d.ts.map

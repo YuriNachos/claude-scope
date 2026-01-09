@@ -1,4 +1,4 @@
-import { HandRank, getRankValue } from "./types.js";
+import { getRankValue, HandRank } from "./types.js";
 /**
  * Hand display names with emojis
  */

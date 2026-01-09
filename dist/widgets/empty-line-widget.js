@@ -7,7 +7,7 @@ import { createWidgetMetadata } from "../core/widget-types.js";
 import { StdinDataWidget } from "./core/stdin-data-widget.js";
 export class EmptyLineWidget extends StdinDataWidget {
     id = "empty-line";
-    metadata = createWidgetMetadata("Empty Line", "Empty line separator", "1.0.0", "claude-scope", 3 // Fourth line (0-indexed)
+    metadata = createWidgetMetadata("Empty Line", "Empty line separator", "1.0.0", "claude-scope", 5 // Sixth line (0-indexed)
     );
     /**
      * All styles return the same value (Braille Pattern Blank).

@@ -19,6 +19,17 @@ export const SOLARIZED_DARK_THEME = {
         model: rgb(131, 148, 150), // Base0
         duration: rgb(88, 110, 117), // Base01
         accent: rgb(38, 139, 210), // Blue
+        cacheHigh: rgb(133, 153, 0), // Olive
+        cacheMedium: rgb(181, 137, 0), // Yellow
+        cacheLow: rgb(220, 50, 47), // Red
+        cacheRead: rgb(38, 139, 210), // Blue
+        cacheWrite: rgb(147, 161, 161), // Base1
+        toolsRunning: rgb(181, 137, 0), // Yellow
+        toolsCompleted: rgb(133, 153, 0), // Olive
+        toolsError: rgb(220, 50, 47), // Red
+        toolsName: rgb(38, 139, 210), // Blue
+        toolsTarget: rgb(131, 148, 150), // Base0
+        toolsCount: rgb(203, 75, 22), // Orange
     }),
 };
 //# sourceMappingURL=solarized-dark-theme.js.map

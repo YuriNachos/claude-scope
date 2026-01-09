@@ -19,6 +19,17 @@ export const NORD_THEME = {
         model: rgb(129, 161, 193), // Nordic blue
         duration: rgb(94, 129, 172), // Nordic dark blue
         accent: rgb(136, 192, 208), // Nordic cyan
+        cacheHigh: rgb(163, 190, 140), // Nordic green
+        cacheMedium: rgb(235, 203, 139), // Nordic yellow
+        cacheLow: rgb(191, 97, 106), // Nordic red
+        cacheRead: rgb(136, 192, 208), // Nordic cyan
+        cacheWrite: rgb(129, 161, 193), // Nordic blue
+        toolsRunning: rgb(235, 203, 139), // Nordic yellow
+        toolsCompleted: rgb(163, 190, 140), // Nordic green
+        toolsError: rgb(191, 97, 106), // Nordic red
+        toolsName: rgb(136, 192, 208), // Nordic cyan
+        toolsTarget: rgb(129, 161, 193), // Nordic blue
+        toolsCount: rgb(216, 222, 233), // Nordic white
     }),
 };
 //# sourceMappingURL=nord-theme.js.map

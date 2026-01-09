@@ -1,1 +1,1 @@
-{"version":3,"file":"semantic-classic-theme.d.ts","sourceRoot":"","sources":["../../../../src/ui/theme/themes/semantic-classic-theme.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAGH,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,aAAa,CAAC;AAE1C,eAAO,MAAM,sBAAsB,EAAE,MAiBpC,CAAC"}
+{"version":3,"file":"semantic-classic-theme.d.ts","sourceRoot":"","sources":["../../../../src/ui/theme/themes/semantic-classic-theme.ts"],"names":[],"mappings":"AAAA;;;;GAIG;AAGH,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,aAAa,CAAC;AAE1C,eAAO,MAAM,sBAAsB,EAAE,MA4BpC,CAAC"}

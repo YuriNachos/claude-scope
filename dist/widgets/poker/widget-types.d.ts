@@ -1,7 +1,7 @@
 /**
  * Types for PokerWidget style renderers
  */
-import { type Card } from "./types.js";
+import type { Card } from "./types.js";
 export interface PokerCardData {
     card: Card;
     isParticipating: boolean;

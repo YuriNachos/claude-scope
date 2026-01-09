@@ -19,6 +19,17 @@ export const GRAY_THEME = {
         model: gray,
         duration: gray,
         accent: gray,
+        cacheHigh: gray,
+        cacheMedium: gray,
+        cacheLow: gray,
+        cacheRead: gray,
+        cacheWrite: gray,
+        toolsRunning: gray,
+        toolsCompleted: gray,
+        toolsError: gray,
+        toolsName: gray,
+        toolsTarget: gray,
+        toolsCount: gray,
     }),
 };
 //# sourceMappingURL=gray-theme.js.map

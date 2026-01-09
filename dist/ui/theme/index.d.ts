@@ -29,7 +29,7 @@ import { SOLARIZED_DARK_THEME } from "./themes/solarized-dark-theme.js";
 import { TOKYO_NIGHT_THEME } from "./themes/tokyo-night-theme.js";
 import { VSCODE_DARK_PLUS_THEME } from "./themes/vscode-dark-plus-theme.js";
 export { createBaseColors, createSemanticColors, createThemeColors } from "./helpers.js";
-export type { IBaseColors, IContextColors, ICostColors, IDurationColors, IGitColors, ILinesColors, IModelColors, IPokerColors, ISemanticColors, ITheme, IThemeColors, } from "./types.js";
+export type { IBaseColors, ICacheColors, IContextColors, ICostColors, IDurationColors, IGitColors, ILinesColors, IModelColors, IPokerColors, ISemanticColors, ITheme, IThemeColors, IToolsColors, } from "./types.js";
 export { CATPPUCCIN_MOCHA_THEME, CYBERPUNK_NEON_THEME, DRACULA_THEME, DUSTY_SAGE_THEME, GITHUB_DARK_DIMMED_THEME, MONOKAI_THEME, MUTED_GRAY_THEME, NORD_THEME, ONE_DARK_PRO_THEME, PROFESSIONAL_BLUE_THEME, ROSE_PINE_THEME, SEMANTIC_CLASSIC_THEME, SLATE_BLUE_THEME, SOLARIZED_DARK_THEME, TOKYO_NIGHT_THEME, VSCODE_DARK_PLUS_THEME, GRAY_THEME, };
 /**
  * All available themes in alphabetical order

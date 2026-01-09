@@ -35,73 +35,14 @@ __export(index_exports, {
 });
 module.exports = __toCommonJS(index_exports);
 
-// src/core/widget-registry.ts
-var WidgetRegistry = class {
-  widgets = /* @__PURE__ */ new Map();
-  /**
-   * Register a widget
-   */
-  async register(widget, context) {
-    if (this.widgets.has(widget.id)) {
-      throw new Error(`Widget with id '${widget.id}' already registered`);
-    }
-    if (context) {
-      await widget.initialize(context);
-    }
-    this.widgets.set(widget.id, widget);
-  }
-  /**
-   * Unregister a widget
-   */
-  async unregister(id) {
-    const widget = this.widgets.get(id);
-    if (!widget) {
-      return;
-    }
-    try {
-      if (widget.cleanup) {
-        await widget.cleanup();
-      }
-    } finally {
-      this.widgets.delete(id);
-    }
-  }
-  /**
-   * Get a widget by id
-   */
-  get(id) {
-    return this.widgets.get(id);
-  }
-  /**
-   * Check if widget is registered
-   */
-  has(id) {
-    return this.widgets.has(id);
-  }
-  /**
-   * Get all registered widgets
-   */
-  getAll() {
-    return Array.from(this.widgets.values());
-  }
-  /**
-   * Get only enabled widgets
-   */
-  getEnabledWidgets() {
-    return this.getAll().filter((w) => w.isEnabled());
-  }
-  /**
-   * Clear all widgets
-   */
-  async clear() {
-    for (const widget of this.widgets.values()) {
-      if (widget.cleanup) {
-        await widget.cleanup();
-      }
-    }
-    this.widgets.clear();
-  }
+// src/config/widget-flags.ts
+var WIDGET_FLAGS = {
+  activeTools: true,
+  cacheMetrics: true
 };
+function isWidgetEnabled(name) {
+  return WIDGET_FLAGS[name] ?? true;
+}
 
 // src/constants.ts
 var TIME = {
@@ -207,73 +148,348 @@ var Renderer = class {
   }
 };
 
-// src/core/widget-types.ts
-function createWidgetMetadata(name, description, version = "1.0.0", author = "claude-scope", line = 0) {
+// src/core/widget-registry.ts
+var WidgetRegistry = class {
+  widgets = /* @__PURE__ */ new Map();
+  /**
+   * Register a widget
+   */
+  async register(widget, context) {
+    if (this.widgets.has(widget.id)) {
+      throw new Error(`Widget with id '${widget.id}' already registered`);
+    }
+    if (context) {
+      await widget.initialize(context);
+    }
+    this.widgets.set(widget.id, widget);
+  }
+  /**
+   * Unregister a widget
+   */
+  async unregister(id) {
+    const widget = this.widgets.get(id);
+    if (!widget) {
+      return;
+    }
+    try {
+      if (widget.cleanup) {
+        await widget.cleanup();
+      }
+    } finally {
+      this.widgets.delete(id);
+    }
+  }
+  /**
+   * Get a widget by id
+   */
+  get(id) {
+    return this.widgets.get(id);
+  }
+  /**
+   * Check if widget is registered
+   */
+  has(id) {
+    return this.widgets.has(id);
+  }
+  /**
+   * Get all registered widgets
+   */
+  getAll() {
+    return Array.from(this.widgets.values());
+  }
+  /**
+   * Get only enabled widgets
+   */
+  getEnabledWidgets() {
+    return this.getAll().filter((w) => w.isEnabled());
+  }
+  /**
+   * Clear all widgets
+   */
+  async clear() {
+    for (const widget of this.widgets.values()) {
+      if (widget.cleanup) {
+        await widget.cleanup();
+      }
+    }
+    this.widgets.clear();
+  }
+};
+
+// src/validation/result.ts
+function success(data) {
+  return { success: true, data };
+}
+function failure(path2, message, value) {
+  return { success: false, error: { path: path2, message, value } };
+}
+function formatError(error) {
+  const path2 = error.path.length > 0 ? error.path.join(".") : "root";
+  return `${path2}: ${error.message}`;
+}
+
+// src/validation/combinators.ts
+function object(shape) {
   return {
-    name,
-    description,
-    version,
-    author,
-    line
+    validate(value) {
+      if (typeof value !== "object" || value === null || Array.isArray(value)) {
+        return failure([], "Expected object", value);
+      }
+      const result = {};
+      for (const [key, validator] of Object.entries(shape)) {
+        const fieldValue = value[key];
+        const validationResult = validator.validate(fieldValue);
+        if (!validationResult.success) {
+          return {
+            success: false,
+            error: { ...validationResult.error, path: [key, ...validationResult.error.path] }
+          };
+        }
+        result[key] = validationResult.data;
+      }
+      return success(result);
+    }
+  };
+}
+function optional(validator) {
+  return {
+    validate(value) {
+      if (value === void 0) return success(void 0);
+      return validator.validate(value);
+    }
+  };
+}
+function nullable(validator) {
+  return {
+    validate(value) {
+      if (value === null) return success(null);
+      return validator.validate(value);
+    }
   };
 }
 
-// src/providers/git-provider.ts
-var import_node_child_process = require("node:child_process");
-var import_node_util = require("node:util");
-var execFileAsync = (0, import_node_util.promisify)(import_node_child_process.execFile);
-var NativeGit = class {
-  cwd;
-  constructor(cwd) {
-    this.cwd = cwd;
-  }
-  async status() {
-    try {
-      const { stdout } = await execFileAsync("git", ["status", "--branch", "--short"], {
-        cwd: this.cwd
-      });
-      const match = stdout.match(/^##\s+(\S+)/m);
-      const current = match ? match[1] : null;
-      return { current };
-    } catch {
-      return { current: null };
+// src/validation/validators.ts
+function string() {
+  return {
+    validate(value) {
+      if (typeof value === "string") return success(value);
+      return failure([], "Expected string", value);
     }
-  }
-  async diffSummary(options) {
-    const args = ["diff", "--shortstat"];
-    if (options) {
-      args.push(...options);
+  };
+}
+function number() {
+  return {
+    validate(value) {
+      if (typeof value === "number" && !Number.isNaN(value)) return success(value);
+      return failure([], "Expected number", value);
     }
-    try {
-      const { stdout } = await execFileAsync("git", args, {
-        cwd: this.cwd
-      });
-      const fileMatch = stdout.match(/(\d+)\s+file(s?)\s+changed/);
-      const insertionMatch = stdout.match(/(\d+)\s+insertion/);
-      const deletionMatch = stdout.match(/(\d+)\s+deletion/);
-      const fileCount = fileMatch ? parseInt(fileMatch[1], 10) : 0;
-      const insertions = insertionMatch ? parseInt(insertionMatch[1], 10) : 0;
-      const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
-      const files = insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
-      return { fileCount, files };
-    } catch {
-      return { fileCount: 0, files: [] };
+  };
+}
+function literal(expected) {
+  return {
+    validate(value) {
+      if (value === expected) return success(expected);
+      return failure([], `Expected '${expected}'`, value);
     }
+  };
+}
+
+// src/schemas/stdin-schema.ts
+var ContextUsageSchema = object({
+  input_tokens: number(),
+  output_tokens: number(),
+  cache_creation_input_tokens: number(),
+  cache_read_input_tokens: number()
+});
+var CostInfoSchema = object({
+  total_cost_usd: optional(number()),
+  total_duration_ms: optional(number()),
+  total_api_duration_ms: optional(number()),
+  total_lines_added: optional(number()),
+  total_lines_removed: optional(number())
+});
+var ContextWindowSchema = object({
+  total_input_tokens: number(),
+  total_output_tokens: number(),
+  context_window_size: number(),
+  current_usage: nullable(ContextUsageSchema)
+});
+var ModelInfoSchema = object({
+  id: string(),
+  display_name: string()
+});
+var WorkspaceSchema = object({
+  current_dir: string(),
+  project_dir: string()
+});
+var OutputStyleSchema = object({
+  name: string()
+});
+var StdinDataSchema = object({
+  hook_event_name: optional(literal("Status")),
+  session_id: string(),
+  transcript_path: string(),
+  cwd: string(),
+  model: ModelInfoSchema,
+  workspace: WorkspaceSchema,
+  version: string(),
+  output_style: OutputStyleSchema,
+  cost: optional(CostInfoSchema),
+  context_window: ContextWindowSchema
+});
+
+// src/data/stdin-provider.ts
+var StdinParseError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "StdinParseError";
   }
-  async latestTag() {
+};
+var StdinValidationError = class extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "StdinValidationError";
+  }
+};
+var StdinProvider = class {
+  /**
+   * Parse and validate JSON string from stdin
+   * @param input JSON string to parse
+   * @returns Validated StdinData object
+   * @throws StdinParseError if JSON is malformed
+   * @throws StdinValidationError if data doesn't match schema
+   */
+  async parse(input) {
+    if (!input || input.trim().length === 0) {
+      throw new StdinParseError("stdin data is empty");
+    }
+    let data;
     try {
-      const { stdout } = await execFileAsync("git", ["describe", "--tags", "--abbrev=0"], {
-        cwd: this.cwd
-      });
-      return stdout.trim();
-    } catch {
-      return null;
+      data = JSON.parse(input);
+    } catch (error) {
+      throw new StdinParseError(`Invalid JSON: ${error.message}`);
+    }
+    const result = StdinDataSchema.validate(data);
+    if (!result.success) {
+      throw new StdinValidationError(`Validation failed: ${formatError(result.error)}`);
+    }
+    return result.data;
+  }
+  /**
+   * Safe parse that returns result instead of throwing
+   * Useful for testing and optional validation
+   * @param input JSON string to parse
+   * @returns Result object with success flag
+   */
+  async safeParse(input) {
+    try {
+      const data = await this.parse(input);
+      return { success: true, data };
+    } catch (error) {
+      return { success: false, error: error.message };
     }
   }
 };
-function createGit(cwd) {
-  return new NativeGit(cwd);
-}
+
+// src/providers/transcript-provider.ts
+var import_fs = require("fs");
+var import_readline = require("readline");
+var TranscriptProvider = class {
+  MAX_TOOLS = 20;
+  /**
+   * Parse tools from a JSONL transcript file
+   * @param transcriptPath Path to the transcript file
+   * @returns Array of tool entries, limited to last 20
+   */
+  async parseTools(transcriptPath) {
+    if (!(0, import_fs.existsSync)(transcriptPath)) {
+      return [];
+    }
+    const toolMap = /* @__PURE__ */ new Map();
+    try {
+      const fileStream = (0, import_fs.createReadStream)(transcriptPath, { encoding: "utf-8" });
+      const rl = (0, import_readline.createInterface)({
+        input: fileStream,
+        crlfDelay: Infinity
+      });
+      for await (const line of rl) {
+        if (!line.trim()) continue;
+        try {
+          const entry = JSON.parse(line);
+          this.processLine(entry, toolMap);
+        } catch {
+        }
+      }
+      const tools = Array.from(toolMap.values());
+      return tools.slice(-this.MAX_TOOLS);
+    } catch {
+      return [];
+    }
+  }
+  /**
+   * Process a single transcript line and update tool map
+   */
+  processLine(line, toolMap) {
+    const blocks = line.message?.content ?? [];
+    const timestamp = /* @__PURE__ */ new Date();
+    for (const block of blocks) {
+      if (block.type === "tool_use" && block.id && block.name) {
+        const tool = {
+          id: block.id,
+          name: block.name,
+          target: this.extractTarget(block.name, block.input),
+          status: "running",
+          startTime: timestamp
+        };
+        toolMap.set(block.id, tool);
+      }
+      if (block.type === "tool_result" && block.tool_use_id) {
+        const existing = toolMap.get(block.tool_use_id);
+        if (existing) {
+          existing.status = block.is_error ? "error" : "completed";
+          existing.endTime = timestamp;
+        }
+      }
+    }
+  }
+  /**
+   * Extract target from tool input based on tool type
+   */
+  extractTarget(toolName, input) {
+    if (!input) return void 0;
+    switch (toolName) {
+      case "Read":
+      case "Write":
+      case "Edit":
+        return this.asString(input.file_path ?? input.path);
+      case "Glob":
+        return this.asString(input.pattern);
+      case "Grep":
+        return this.asString(input.pattern);
+      case "Bash": {
+        const cmd = this.asString(input.command);
+        return cmd ? this.truncateCommand(cmd) : void 0;
+      }
+      default:
+        return void 0;
+    }
+  }
+  /**
+   * Safely convert value to string
+   */
+  asString(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    return void 0;
+  }
+  /**
+   * Truncate long commands to 30 chars
+   */
+  truncateCommand(cmd) {
+    if (cmd.length <= 30) return cmd;
+    return cmd.slice(0, 30) + "...";
+  }
+};
 
 // src/ui/utils/colors.ts
 var reset = "\x1B[0m";
@@ -350,6 +566,21 @@ function createThemeColors(params) {
       participating: params.model,
       nonParticipating: params.duration,
       result: params.accent
+    },
+    cache: {
+      high: params.cacheHigh,
+      medium: params.cacheMedium,
+      low: params.cacheLow,
+      read: params.cacheRead,
+      write: params.cacheWrite
+    },
+    tools: {
+      running: params.toolsRunning,
+      completed: params.toolsCompleted,
+      error: params.toolsError,
+      name: params.toolsName,
+      target: params.toolsTarget,
+      count: params.toolsCount
     }
   };
 }
@@ -369,7 +600,18 @@ var GRAY_THEME = {
     cost: gray,
     model: gray,
     duration: gray,
-    accent: gray
+    accent: gray,
+    cacheHigh: gray,
+    cacheMedium: gray,
+    cacheLow: gray,
+    cacheRead: gray,
+    cacheWrite: gray,
+    toolsRunning: gray,
+    toolsCompleted: gray,
+    toolsError: gray,
+    toolsName: gray,
+    toolsTarget: gray,
+    toolsCount: gray
   })
 };
 
@@ -398,8 +640,30 @@ var CATPPUCCIN_MOCHA_THEME = {
     // Mauve
     duration: rgb(147, 153, 178),
     // Text gray
-    accent: rgb(243, 139, 168)
+    accent: rgb(243, 139, 168),
     // Pink
+    cacheHigh: rgb(166, 227, 161),
+    // Green
+    cacheMedium: rgb(238, 212, 159),
+    // Yellow
+    cacheLow: rgb(243, 139, 168),
+    // Red
+    cacheRead: rgb(137, 180, 250),
+    // Blue
+    cacheWrite: rgb(203, 166, 247),
+    // Mauve
+    toolsRunning: rgb(238, 212, 159),
+    // Yellow
+    toolsCompleted: rgb(166, 227, 161),
+    // Green
+    toolsError: rgb(243, 139, 168),
+    // Red
+    toolsName: rgb(137, 180, 250),
+    // Blue
+    toolsTarget: rgb(147, 153, 178),
+    // Gray
+    toolsCount: rgb(203, 166, 247)
+    // Mauve
   })
 };
 
@@ -428,8 +692,30 @@ var CYBERPUNK_NEON_THEME = {
     // Purple neon
     duration: rgb(0, 191, 255),
     // Cyan neon
-    accent: rgb(255, 0, 122)
+    accent: rgb(255, 0, 122),
     // Magenta neon
+    cacheHigh: rgb(0, 255, 122),
+    // Green neon
+    cacheMedium: rgb(255, 214, 0),
+    // Yellow neon
+    cacheLow: rgb(255, 0, 122),
+    // Magenta neon
+    cacheRead: rgb(0, 191, 255),
+    // Cyan neon
+    cacheWrite: rgb(140, 27, 255),
+    // Purple neon
+    toolsRunning: rgb(255, 214, 0),
+    // Yellow neon
+    toolsCompleted: rgb(0, 255, 122),
+    // Green neon
+    toolsError: rgb(255, 0, 122),
+    // Magenta neon
+    toolsName: rgb(0, 191, 255),
+    // Cyan neon
+    toolsTarget: rgb(140, 27, 255),
+    // Purple neon
+    toolsCount: rgb(255, 111, 97)
+    // Orange neon
   })
 };
 
@@ -458,7 +744,29 @@ var DRACULA_THEME = {
     // Comment gray
     duration: rgb(68, 71, 90),
     // Selection gray
-    accent: rgb(189, 147, 249)
+    accent: rgb(189, 147, 249),
+    // Purple
+    cacheHigh: rgb(80, 250, 123),
+    // Green
+    cacheMedium: rgb(241, 250, 140),
+    // Yellow
+    cacheLow: rgb(255, 85, 85),
+    // Red
+    cacheRead: rgb(139, 233, 253),
+    // Cyan
+    cacheWrite: rgb(189, 147, 249),
+    // Purple
+    toolsRunning: rgb(241, 250, 140),
+    // Yellow
+    toolsCompleted: rgb(80, 250, 123),
+    // Green
+    toolsError: rgb(255, 85, 85),
+    // Red
+    toolsName: rgb(139, 233, 253),
+    // Cyan
+    toolsTarget: rgb(98, 114, 164),
+    // Gray
+    toolsCount: rgb(189, 147, 249)
     // Purple
   })
 };
@@ -483,7 +791,24 @@ var DUSTY_SAGE_THEME = {
     cost: rgb(156, 163, 175),
     model: rgb(148, 163, 184),
     duration: rgb(120, 130, 140),
-    accent: rgb(120, 140, 130)
+    accent: rgb(120, 140, 130),
+    cacheHigh: rgb(135, 145, 140),
+    cacheMedium: rgb(150, 160, 145),
+    cacheLow: rgb(165, 175, 160),
+    cacheRead: rgb(120, 140, 130),
+    cacheWrite: rgb(148, 163, 184),
+    toolsRunning: rgb(150, 160, 145),
+    // Medium sage
+    toolsCompleted: rgb(135, 145, 140),
+    // Subtle sage
+    toolsError: rgb(165, 175, 160),
+    // Light sage
+    toolsName: rgb(120, 140, 130),
+    // Dusty green
+    toolsTarget: rgb(148, 163, 184),
+    // Gray
+    toolsCount: rgb(156, 163, 175)
+    // Light gray
   })
 };
 
@@ -512,8 +837,30 @@ var GITHUB_DARK_DIMMED_THEME = {
     // Gray
     duration: rgb(110, 118, 129),
     // Dark gray
-    accent: rgb(88, 166, 255)
+    accent: rgb(88, 166, 255),
     // GitHub blue
+    cacheHigh: rgb(35, 134, 54),
+    // GitHub green
+    cacheMedium: rgb(210, 153, 34),
+    // GitHub orange
+    cacheLow: rgb(248, 81, 73),
+    // GitHub red
+    cacheRead: rgb(88, 166, 255),
+    // GitHub blue
+    cacheWrite: rgb(163, 113, 247),
+    // Purple
+    toolsRunning: rgb(210, 153, 34),
+    // GitHub orange
+    toolsCompleted: rgb(35, 134, 54),
+    // GitHub green
+    toolsError: rgb(248, 81, 73),
+    // GitHub red
+    toolsName: rgb(88, 166, 255),
+    // GitHub blue
+    toolsTarget: rgb(201, 209, 217),
+    // Gray
+    toolsCount: rgb(163, 113, 247)
+    // Purple
   })
 };
 
@@ -542,8 +889,30 @@ var MONOKAI_THEME = {
     // Purple
     duration: rgb(102, 217, 239),
     // Cyan
-    accent: rgb(249, 26, 114)
+    accent: rgb(249, 26, 114),
     // Pink
+    cacheHigh: rgb(166, 226, 46),
+    // Green
+    cacheMedium: rgb(253, 151, 31),
+    // Orange
+    cacheLow: rgb(249, 26, 114),
+    // Pink
+    cacheRead: rgb(102, 217, 239),
+    // Cyan
+    cacheWrite: rgb(174, 129, 255),
+    // Purple
+    toolsRunning: rgb(253, 151, 31),
+    // Orange
+    toolsCompleted: rgb(166, 226, 46),
+    // Green
+    toolsError: rgb(249, 26, 114),
+    // Pink
+    toolsName: rgb(102, 217, 239),
+    // Cyan
+    toolsTarget: rgb(174, 129, 255),
+    // Purple
+    toolsCount: rgb(254, 128, 25)
+    // Bright orange
   })
 };
 
@@ -567,7 +936,24 @@ var MUTED_GRAY_THEME = {
     cost: rgb(156, 163, 175),
     model: rgb(148, 163, 184),
     duration: rgb(107, 114, 128),
-    accent: rgb(156, 163, 175)
+    accent: rgb(156, 163, 175),
+    cacheHigh: rgb(148, 163, 184),
+    cacheMedium: rgb(160, 174, 192),
+    cacheLow: rgb(175, 188, 201),
+    cacheRead: rgb(156, 163, 175),
+    cacheWrite: rgb(148, 163, 184),
+    toolsRunning: rgb(160, 174, 192),
+    // Medium gray
+    toolsCompleted: rgb(148, 163, 184),
+    // Subtle gray
+    toolsError: rgb(175, 188, 201),
+    // Light gray
+    toolsName: rgb(156, 163, 175),
+    // Slate gray
+    toolsTarget: rgb(148, 163, 184),
+    // Lighter slate
+    toolsCount: rgb(156, 163, 175)
+    // Slate gray
   })
 };
 
@@ -596,8 +982,30 @@ var NORD_THEME = {
     // Nordic blue
     duration: rgb(94, 129, 172),
     // Nordic dark blue
-    accent: rgb(136, 192, 208)
+    accent: rgb(136, 192, 208),
     // Nordic cyan
+    cacheHigh: rgb(163, 190, 140),
+    // Nordic green
+    cacheMedium: rgb(235, 203, 139),
+    // Nordic yellow
+    cacheLow: rgb(191, 97, 106),
+    // Nordic red
+    cacheRead: rgb(136, 192, 208),
+    // Nordic cyan
+    cacheWrite: rgb(129, 161, 193),
+    // Nordic blue
+    toolsRunning: rgb(235, 203, 139),
+    // Nordic yellow
+    toolsCompleted: rgb(163, 190, 140),
+    // Nordic green
+    toolsError: rgb(191, 97, 106),
+    // Nordic red
+    toolsName: rgb(136, 192, 208),
+    // Nordic cyan
+    toolsTarget: rgb(129, 161, 193),
+    // Nordic blue
+    toolsCount: rgb(216, 222, 233)
+    // Nordic white
   })
 };
 
@@ -626,8 +1034,30 @@ var ONE_DARK_PRO_THEME = {
     // Gray
     duration: rgb(125, 148, 173),
     // Dark gray
-    accent: rgb(97, 175, 239)
+    accent: rgb(97, 175, 239),
     // Blue
+    cacheHigh: rgb(152, 195, 121),
+    // Green
+    cacheMedium: rgb(229, 192, 123),
+    // Yellow
+    cacheLow: rgb(224, 108, 117),
+    // Red
+    cacheRead: rgb(97, 175, 239),
+    // Blue
+    cacheWrite: rgb(171, 178, 191),
+    // Gray
+    toolsRunning: rgb(229, 192, 123),
+    // Yellow
+    toolsCompleted: rgb(152, 195, 121),
+    // Green
+    toolsError: rgb(224, 108, 117),
+    // Red
+    toolsName: rgb(97, 175, 239),
+    // Blue
+    toolsTarget: rgb(171, 178, 191),
+    // Gray
+    toolsCount: rgb(209, 154, 102)
+    // Orange
   })
 };
 
@@ -656,8 +1086,30 @@ var PROFESSIONAL_BLUE_THEME = {
     // Purple
     duration: rgb(203, 213, 225),
     // Light gray
-    accent: rgb(37, 99, 235)
+    accent: rgb(37, 99, 235),
     // Royal blue
+    cacheHigh: rgb(74, 222, 128),
+    // Green
+    cacheMedium: rgb(251, 191, 36),
+    // Amber
+    cacheLow: rgb(248, 113, 113),
+    // Red
+    cacheRead: rgb(96, 165, 250),
+    // Light blue
+    cacheWrite: rgb(167, 139, 250),
+    // Purple
+    toolsRunning: rgb(251, 191, 36),
+    // Amber
+    toolsCompleted: rgb(74, 222, 128),
+    // Green
+    toolsError: rgb(248, 113, 113),
+    // Red
+    toolsName: rgb(37, 99, 235),
+    // Royal blue
+    toolsTarget: rgb(148, 163, 184),
+    // Slate gray
+    toolsCount: rgb(167, 139, 250)
+    // Purple
   })
 };
 
@@ -686,8 +1138,30 @@ var ROSE_PINE_THEME = {
     // Pine violet
     duration: rgb(148, 137, 176),
     // Pine mute
-    accent: rgb(235, 111, 146)
+    accent: rgb(235, 111, 146),
     // Pine red
+    cacheHigh: rgb(156, 207, 216),
+    // Pine cyan
+    cacheMedium: rgb(233, 201, 176),
+    // Pine beige
+    cacheLow: rgb(235, 111, 146),
+    // Pine red
+    cacheRead: rgb(156, 207, 216),
+    // Pine cyan
+    cacheWrite: rgb(224, 208, 245),
+    // Pine violet
+    toolsRunning: rgb(233, 201, 176),
+    // Pine beige
+    toolsCompleted: rgb(156, 207, 216),
+    // Pine cyan
+    toolsError: rgb(235, 111, 146),
+    // Pine red
+    toolsName: rgb(156, 207, 216),
+    // Pine cyan
+    toolsTarget: rgb(224, 208, 245),
+    // Pine violet
+    toolsCount: rgb(226, 185, 218)
+    // Pine pink
   })
 };
 
@@ -716,8 +1190,30 @@ var SEMANTIC_CLASSIC_THEME = {
     // Indigo
     duration: rgb(107, 114, 128),
     // Gray
-    accent: rgb(59, 130, 246)
+    accent: rgb(59, 130, 246),
     // Blue
+    cacheHigh: rgb(34, 197, 94),
+    // Green
+    cacheMedium: rgb(234, 179, 8),
+    // Yellow
+    cacheLow: rgb(239, 68, 68),
+    // Red
+    cacheRead: rgb(59, 130, 246),
+    // Blue
+    cacheWrite: rgb(99, 102, 241),
+    // Indigo
+    toolsRunning: rgb(234, 179, 8),
+    // Yellow
+    toolsCompleted: rgb(34, 197, 94),
+    // Green
+    toolsError: rgb(239, 68, 68),
+    // Red
+    toolsName: rgb(59, 130, 246),
+    // Blue
+    toolsTarget: rgb(107, 114, 128),
+    // Gray
+    toolsCount: rgb(99, 102, 241)
+    // Indigo
   })
 };
 
@@ -741,7 +1237,24 @@ var SLATE_BLUE_THEME = {
     cost: rgb(156, 163, 175),
     model: rgb(148, 163, 184),
     duration: rgb(100, 116, 139),
-    accent: rgb(100, 116, 139)
+    accent: rgb(100, 116, 139),
+    cacheHigh: rgb(148, 163, 184),
+    cacheMedium: rgb(160, 174, 192),
+    cacheLow: rgb(175, 188, 201),
+    cacheRead: rgb(100, 116, 139),
+    cacheWrite: rgb(148, 163, 184),
+    toolsRunning: rgb(160, 174, 192),
+    // Medium slate
+    toolsCompleted: rgb(148, 163, 184),
+    // Subtle slate-blue
+    toolsError: rgb(175, 188, 201),
+    // Light slate
+    toolsName: rgb(100, 116, 139),
+    // Cool slate
+    toolsTarget: rgb(148, 163, 184),
+    // Neutral slate
+    toolsCount: rgb(156, 163, 175)
+    // Light slate
   })
 };
 
@@ -770,8 +1283,30 @@ var SOLARIZED_DARK_THEME = {
     // Base0
     duration: rgb(88, 110, 117),
     // Base01
-    accent: rgb(38, 139, 210)
+    accent: rgb(38, 139, 210),
     // Blue
+    cacheHigh: rgb(133, 153, 0),
+    // Olive
+    cacheMedium: rgb(181, 137, 0),
+    // Yellow
+    cacheLow: rgb(220, 50, 47),
+    // Red
+    cacheRead: rgb(38, 139, 210),
+    // Blue
+    cacheWrite: rgb(147, 161, 161),
+    // Base1
+    toolsRunning: rgb(181, 137, 0),
+    // Yellow
+    toolsCompleted: rgb(133, 153, 0),
+    // Olive
+    toolsError: rgb(220, 50, 47),
+    // Red
+    toolsName: rgb(38, 139, 210),
+    // Blue
+    toolsTarget: rgb(131, 148, 150),
+    // Base0
+    toolsCount: rgb(203, 75, 22)
+    // Orange
   })
 };
 
@@ -800,8 +1335,30 @@ var TOKYO_NIGHT_THEME = {
     // White-ish
     duration: rgb(113, 119, 161),
     // Dark blue-gray
-    accent: rgb(122, 132, 173)
+    accent: rgb(122, 132, 173),
     // Blue
+    cacheHigh: rgb(146, 180, 203),
+    // Cyan
+    cacheMedium: rgb(232, 166, 162),
+    // Pink-red
+    cacheLow: rgb(249, 86, 119),
+    // Red
+    cacheRead: rgb(122, 132, 173),
+    // Blue
+    cacheWrite: rgb(169, 177, 214),
+    // White-ish
+    toolsRunning: rgb(232, 166, 162),
+    // Pink-red
+    toolsCompleted: rgb(146, 180, 203),
+    // Cyan
+    toolsError: rgb(249, 86, 119),
+    // Red
+    toolsName: rgb(122, 132, 173),
+    // Blue
+    toolsTarget: rgb(169, 177, 214),
+    // White-ish
+    toolsCount: rgb(158, 206, 209)
+    // Teal
   })
 };
 
@@ -830,294 +1387,35 @@ var VSCODE_DARK_PLUS_THEME = {
     // Gray
     duration: rgb(125, 148, 173),
     // Dark gray
-    accent: rgb(0, 122, 204)
+    accent: rgb(0, 122, 204),
     // VSCode blue
+    cacheHigh: rgb(78, 201, 176),
+    // Teal
+    cacheMedium: rgb(220, 220, 170),
+    // Yellow
+    cacheLow: rgb(244, 71, 71),
+    // Red
+    cacheRead: rgb(0, 122, 204),
+    // VSCode blue
+    cacheWrite: rgb(171, 178, 191),
+    // Gray
+    toolsRunning: rgb(251, 191, 36),
+    // Yellow
+    toolsCompleted: rgb(74, 222, 128),
+    // Green
+    toolsError: rgb(248, 113, 113),
+    // Red
+    toolsName: rgb(96, 165, 250),
+    // Blue
+    toolsTarget: rgb(156, 163, 175),
+    // Gray
+    toolsCount: rgb(167, 139, 250)
+    // Purple
   })
 };
 
 // src/ui/theme/index.ts
 var DEFAULT_THEME = VSCODE_DARK_PLUS_THEME.colors;
-
-// src/ui/utils/style-utils.ts
-function withLabel(prefix, value) {
-  if (prefix === "") return value;
-  return `${prefix}: ${value}`;
-}
-function withIndicator(value) {
-  return `\u25CF ${value}`;
-}
-function progressBar(percent, width = 10) {
-  const clamped = Math.max(0, Math.min(100, percent));
-  const filled = Math.round(clamped / 100 * width);
-  const empty = width - filled;
-  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
-}
-
-// src/widgets/git/styles.ts
-var gitStyles = {
-  minimal: (data, colors) => {
-    if (!colors) return data.branch;
-    return colorize(data.branch, colors.branch);
-  },
-  balanced: (data, colors) => {
-    if (data.changes && data.changes.files > 0) {
-      const parts = [];
-      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
-      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
-      if (parts.length > 0) {
-        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
-        const changes = colors ? colorize(`[${parts.join(" ")}]`, colors.changes) : `[${parts.join(" ")}]`;
-        return `${branch} ${changes}`;
-      }
-    }
-    return colors ? colorize(data.branch, colors.branch) : data.branch;
-  },
-  compact: (data, colors) => {
-    if (data.changes && data.changes.files > 0) {
-      const parts = [];
-      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
-      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
-      if (parts.length > 0) {
-        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
-        const changesStr = parts.join("/");
-        return `${branch} ${changesStr}`;
-      }
-    }
-    return colors ? colorize(data.branch, colors.branch) : data.branch;
-  },
-  playful: (data, colors) => {
-    if (data.changes && data.changes.files > 0) {
-      const parts = [];
-      if (data.changes.insertions > 0) parts.push(`\u2B06${data.changes.insertions}`);
-      if (data.changes.deletions > 0) parts.push(`\u2B07${data.changes.deletions}`);
-      if (parts.length > 0) {
-        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
-        return `\u{1F500} ${branch2} ${parts.join(" ")}`;
-      }
-    }
-    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
-    return `\u{1F500} ${branch}`;
-  },
-  verbose: (data, colors) => {
-    if (data.changes && data.changes.files > 0) {
-      const parts = [];
-      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions} insertions`);
-      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions} deletions`);
-      if (parts.length > 0) {
-        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
-        const changes = colors ? colorize(`[${parts.join(", ")}]`, colors.changes) : `[${parts.join(", ")}]`;
-        return `branch: ${branch2} ${changes}`;
-      }
-    }
-    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
-    return `branch: ${branch} (HEAD)`;
-  },
-  labeled: (data, colors) => {
-    if (data.changes && data.changes.files > 0) {
-      const parts = [];
-      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
-      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
-      if (parts.length > 0) {
-        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
-        const changes = `${data.changes.files} files: ${parts.join("/")}`;
-        return `Git: ${branch2} [${changes}]`;
-      }
-    }
-    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
-    return `Git: ${branch}`;
-  },
-  indicator: (data, colors) => {
-    if (data.changes && data.changes.files > 0) {
-      const parts = [];
-      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
-      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
-      if (parts.length > 0) {
-        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
-        const changes = colors ? colorize(`[${parts.join(" ")}]`, colors.changes) : `[${parts.join(" ")}]`;
-        return `\u25CF ${branch} ${changes}`;
-      }
-    }
-    return withIndicator(colors ? colorize(data.branch, colors.branch) : data.branch);
-  }
-};
-
-// src/widgets/git/git-widget.ts
-var GitWidget = class {
-  id = "git";
-  metadata = createWidgetMetadata(
-    "Git Widget",
-    "Displays current git branch",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  gitFactory;
-  git = null;
-  enabled = true;
-  cwd = null;
-  colors;
-  styleFn = gitStyles.balanced;
-  /**
-   * @param gitFactory - Optional factory function for creating IGit instances
-   *                     If not provided, uses default createGit (production)
-   *                     Tests can inject MockGit factory here
-   * @param colors - Optional theme colors
-   */
-  constructor(gitFactory, colors) {
-    this.gitFactory = gitFactory || createGit;
-    this.colors = colors ?? DEFAULT_THEME;
-  }
-  setStyle(style = "balanced") {
-    const fn = gitStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  async initialize(context) {
-    this.enabled = context.config?.enabled !== false;
-  }
-  async render(context) {
-    if (!this.enabled || !this.git || !this.cwd) {
-      return null;
-    }
-    try {
-      const status = await this.git.status();
-      const branch = status.current || null;
-      if (!branch) {
-        return null;
-      }
-      let changes;
-      try {
-        const diffSummary = await this.git.diffSummary();
-        if (diffSummary.fileCount > 0) {
-          let insertions = 0;
-          let deletions = 0;
-          for (const file of diffSummary.files) {
-            insertions += file.insertions || 0;
-            deletions += file.deletions || 0;
-          }
-          if (insertions > 0 || deletions > 0) {
-            changes = { files: diffSummary.fileCount, insertions, deletions };
-          }
-        }
-      } catch {
-      }
-      const renderData = { branch, changes };
-      return this.styleFn(renderData, this.colors.git);
-    } catch {
-      return null;
-    }
-  }
-  async update(data) {
-    if (data.cwd !== this.cwd) {
-      this.cwd = data.cwd;
-      this.git = this.gitFactory(data.cwd);
-    }
-  }
-  isEnabled() {
-    return this.enabled;
-  }
-  async cleanup() {
-  }
-};
-
-// src/widgets/git-tag/styles.ts
-var gitTagStyles = {
-  balanced: (data, colors) => {
-    const tag = data.tag || "\u2014";
-    if (!colors) return tag;
-    return colorize(tag, colors.branch);
-  },
-  compact: (data, colors) => {
-    if (!data.tag) return "\u2014";
-    const tag = data.tag.replace(/^v/, "");
-    if (!colors) return tag;
-    return colorize(tag, colors.branch);
-  },
-  playful: (data, colors) => {
-    const tag = data.tag || "\u2014";
-    if (!colors) return `\u{1F3F7}\uFE0F ${tag}`;
-    return `\u{1F3F7}\uFE0F ${colorize(tag, colors.branch)}`;
-  },
-  verbose: (data, colors) => {
-    if (!data.tag) return "version: none";
-    const tag = `version ${data.tag}`;
-    if (!colors) return tag;
-    return `version ${colorize(data.tag, colors.branch)}`;
-  },
-  labeled: (data, colors) => {
-    const tag = data.tag || "none";
-    if (!colors) return withLabel("Tag", tag);
-    return withLabel("Tag", colorize(tag, colors.branch));
-  },
-  indicator: (data, colors) => {
-    const tag = data.tag || "\u2014";
-    if (!colors) return withIndicator(tag);
-    return withIndicator(colorize(tag, colors.branch));
-  }
-};
-
-// src/widgets/git/git-tag-widget.ts
-var GitTagWidget = class {
-  id = "git-tag";
-  metadata = createWidgetMetadata(
-    "Git Tag Widget",
-    "Displays the latest git tag",
-    "1.0.0",
-    "claude-scope",
-    1
-    // Second line
-  );
-  gitFactory;
-  git = null;
-  enabled = true;
-  cwd = null;
-  colors;
-  styleFn = gitTagStyles.balanced;
-  /**
-   * @param gitFactory - Optional factory function for creating IGit instances
-   *                     If not provided, uses default createGit (production)
-   *                     Tests can inject MockGit factory here
-   * @param colors - Optional theme colors
-   */
-  constructor(gitFactory, colors) {
-    this.gitFactory = gitFactory || createGit;
-    this.colors = colors ?? DEFAULT_THEME;
-  }
-  setStyle(style = "balanced") {
-    const fn = gitTagStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  async initialize(context) {
-    this.enabled = context.config?.enabled !== false;
-  }
-  async render(context) {
-    if (!this.enabled || !this.git || !this.cwd) {
-      return null;
-    }
-    try {
-      const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
-      const renderData = { tag: latestTag };
-      return this.styleFn(renderData, this.colors.git);
-    } catch {
-      return null;
-    }
-  }
-  async update(data) {
-    if (data.cwd !== this.cwd) {
-      this.cwd = data.cwd;
-      this.git = this.gitFactory(data.cwd);
-    }
-  }
-  isEnabled() {
-    return this.enabled;
-  }
-  async cleanup() {
-  }
-};
 
 // src/widgets/core/stdin-data-widget.ts
 var StdinDataWidget = class {
@@ -1177,462 +1475,505 @@ var StdinDataWidget = class {
   }
 };
 
-// src/widgets/model/styles.ts
-function getShortName(displayName) {
-  return displayName.replace(/^Claude\s+/, "");
+// src/widgets/active-tools/styles.ts
+function truncatePath(path2) {
+  if (path2.length <= 30) {
+    return path2;
+  }
+  const parts = path2.split("/");
+  return `.../${parts[parts.length - 1]}`;
 }
-var modelStyles = {
+function formatTool(name, target, colors) {
+  const nameStr = colorize(name, colors.tools.name);
+  if (target) {
+    const targetStr = colorize(`: ${truncatePath(target)}`, colors.tools.target);
+    return `${nameStr}${targetStr}`;
+  }
+  return nameStr;
+}
+var activeToolsStyles = {
+  /**
+   * balanced: Running tools with ◐ spinner, completed aggregated with ✓ ×count
+   */
   balanced: (data, colors) => {
-    if (!colors) return data.displayName;
-    return colorize(data.displayName, colors.name);
-  },
-  compact: (data, colors) => {
-    const shortName = getShortName(data.displayName);
-    if (!colors) return shortName;
-    return colorize(shortName, colors.name);
-  },
-  playful: (data, colors) => {
-    const shortName = getShortName(data.displayName);
-    if (!colors) return `\u{1F916} ${shortName}`;
-    return `\u{1F916} ${colorize(shortName, colors.name)}`;
-  },
-  technical: (data, colors) => {
-    if (!colors) return data.id;
-    const match = data.id.match(/^(.+?)-(\d[\d.]*)$/);
-    if (match) {
-      return colorize(match[1], colors.name) + colorize(`-${match[2]}`, colors.version);
-    }
-    return colorize(data.id, colors.name);
-  },
-  symbolic: (data, colors) => {
-    const shortName = getShortName(data.displayName);
-    if (!colors) return `\u25C6 ${shortName}`;
-    return `\u25C6 ${colorize(shortName, colors.name)}`;
-  },
-  labeled: (data, colors) => {
-    const shortName = getShortName(data.displayName);
-    if (!colors) return withLabel("Model", shortName);
-    return withLabel("Model", colorize(shortName, colors.name));
-  },
-  indicator: (data, colors) => {
-    const shortName = getShortName(data.displayName);
-    if (!colors) return withIndicator(shortName);
-    return withIndicator(colorize(shortName, colors.name));
-  }
-};
-
-// src/widgets/model-widget.ts
-var ModelWidget = class extends StdinDataWidget {
-  id = "model";
-  metadata = createWidgetMetadata(
-    "Model",
-    "Displays the current Claude model name",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  colors;
-  styleFn = modelStyles.balanced;
-  constructor(colors) {
-    super();
-    this.colors = colors ?? DEFAULT_THEME;
-  }
-  setStyle(style = "balanced") {
-    const fn = modelStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  renderWithData(data, _context) {
-    const renderData = {
-      displayName: data.model.display_name,
-      id: data.model.id
-    };
-    return this.styleFn(renderData, this.colors.model);
-  }
-};
-
-// src/widgets/context/styles.ts
-function getContextColor(percent, colors) {
-  const clampedPercent = Math.max(0, Math.min(100, percent));
-  if (clampedPercent < 50) {
-    return colors.low;
-  } else if (clampedPercent < 80) {
-    return colors.medium;
-  } else {
-    return colors.high;
-  }
-}
-var contextStyles = {
-  balanced: (data, colors) => {
-    const bar = progressBar(data.percent, 10);
-    const output = `[${bar}] ${data.percent}%`;
-    if (!colors) return output;
-    return colorize(output, getContextColor(data.percent, colors));
-  },
-  compact: (data, colors) => {
-    const output = `${data.percent}%`;
-    if (!colors) return output;
-    return colorize(output, getContextColor(data.percent, colors));
-  },
-  playful: (data, colors) => {
-    const bar = progressBar(data.percent, 10);
-    const output = `\u{1F9E0} [${bar}] ${data.percent}%`;
-    if (!colors) return output;
-    return `\u{1F9E0} ` + colorize(`[${bar}] ${data.percent}%`, getContextColor(data.percent, colors));
-  },
-  verbose: (data, colors) => {
-    const usedFormatted = data.used.toLocaleString();
-    const maxFormatted = data.contextWindowSize.toLocaleString();
-    const output = `${usedFormatted} / ${maxFormatted} tokens (${data.percent}%)`;
-    if (!colors) return output;
-    return colorize(output, getContextColor(data.percent, colors));
-  },
-  symbolic: (data, colors) => {
-    const filled = Math.round(data.percent / 100 * 5);
-    const empty = 5 - filled;
-    const output = `${"\u25AE".repeat(filled)}${"\u25AF".repeat(empty)} ${data.percent}%`;
-    if (!colors) return output;
-    return colorize(output, getContextColor(data.percent, colors));
-  },
-  "compact-verbose": (data, colors) => {
-    const usedK = data.used >= 1e3 ? `${Math.floor(data.used / 1e3)}K` : data.used.toString();
-    const maxK = data.contextWindowSize >= 1e3 ? `${Math.floor(data.contextWindowSize / 1e3)}K` : data.contextWindowSize.toString();
-    const output = `${data.percent}% (${usedK}/${maxK})`;
-    if (!colors) return output;
-    return colorize(output, getContextColor(data.percent, colors));
-  },
-  indicator: (data, colors) => {
-    const output = `\u25CF ${data.percent}%`;
-    if (!colors) return output;
-    return colorize(output, getContextColor(data.percent, colors));
-  }
-};
-
-// src/widgets/context-widget.ts
-var ContextWidget = class extends StdinDataWidget {
-  id = "context";
-  metadata = createWidgetMetadata(
-    "Context",
-    "Displays context window usage with progress bar",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  colors;
-  styleFn = contextStyles.balanced;
-  constructor(colors) {
-    super();
-    this.colors = colors ?? DEFAULT_THEME;
-  }
-  setStyle(style = "balanced") {
-    const fn = contextStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  renderWithData(data, _context) {
-    const { current_usage, context_window_size } = data.context_window;
-    if (!current_usage) return null;
-    const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
-    const percent = Math.round(used / context_window_size * 100);
-    const renderData = {
-      used,
-      contextWindowSize: context_window_size,
-      percent
-    };
-    return this.styleFn(renderData, this.colors.context);
-  }
-};
-
-// src/ui/utils/formatters.ts
-function formatDuration(ms) {
-  if (ms <= 0) return "0s";
-  const seconds = Math.floor(ms / TIME.MS_PER_SECOND);
-  const hours = Math.floor(seconds / TIME.SECONDS_PER_HOUR);
-  const minutes = Math.floor(seconds % TIME.SECONDS_PER_HOUR / TIME.SECONDS_PER_MINUTE);
-  const secs = seconds % TIME.SECONDS_PER_MINUTE;
-  const parts = [];
-  if (hours > 0) {
-    parts.push(`${hours}h`);
-    parts.push(`${minutes}m`);
-    parts.push(`${secs}s`);
-  } else if (minutes > 0) {
-    parts.push(`${minutes}m`);
-    parts.push(`${secs}s`);
-  } else {
-    parts.push(`${secs}s`);
-  }
-  return parts.join(" ");
-}
-function formatCostUSD(usd) {
-  return `$${usd.toFixed(2)}`;
-}
-function colorize2(text, color) {
-  return `${color}${text}${ANSI_COLORS.RESET}`;
-}
-
-// src/widgets/cost/styles.ts
-var costStyles = {
-  balanced: (data, colors) => {
-    const formatted = formatCostUSD(data.costUsd);
-    if (!colors) return formatted;
-    const amountStr = data.costUsd.toFixed(2);
-    return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
-  },
-  compact: (data, colors) => {
-    return costStyles.balanced(data, colors);
-  },
-  playful: (data, colors) => {
-    const formatted = formatCostUSD(data.costUsd);
-    if (!colors) return `\u{1F4B0} ${formatted}`;
-    const amountStr = data.costUsd.toFixed(2);
-    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
-    return `\u{1F4B0} ${colored}`;
-  },
-  labeled: (data, colors) => {
-    const formatted = formatCostUSD(data.costUsd);
-    if (!colors) return withLabel("Cost", formatted);
-    const amountStr = data.costUsd.toFixed(2);
-    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
-    return withLabel("Cost", colored);
-  },
-  indicator: (data, colors) => {
-    const formatted = formatCostUSD(data.costUsd);
-    if (!colors) return withIndicator(formatted);
-    const amountStr = data.costUsd.toFixed(2);
-    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
-    return withIndicator(colored);
-  }
-};
-
-// src/widgets/cost-widget.ts
-var CostWidget = class extends StdinDataWidget {
-  id = "cost";
-  metadata = createWidgetMetadata(
-    "Cost",
-    "Displays session cost in USD",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  colors;
-  styleFn = costStyles.balanced;
-  constructor(colors) {
-    super();
-    this.colors = colors ?? DEFAULT_THEME;
-  }
-  setStyle(style = "balanced") {
-    const fn = costStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  renderWithData(data, _context) {
-    if (!data.cost || data.cost.total_cost_usd === void 0) return null;
-    const renderData = {
-      costUsd: data.cost.total_cost_usd
-    };
-    return this.styleFn(renderData, this.colors.cost);
-  }
-};
-
-// src/widgets/lines/styles.ts
-var linesStyles = {
-  balanced: (data, colors) => {
-    if (!colors) return `+${data.added}/-${data.removed}`;
-    const addedStr = colorize(`+${data.added}`, colors.added);
-    const removedStr = colorize(`-${data.removed}`, colors.removed);
-    return `${addedStr}/${removedStr}`;
-  },
-  compact: (data, colors) => {
-    if (!colors) return `+${data.added}-${data.removed}`;
-    const addedStr = colorize(`+${data.added}`, colors.added);
-    const removedStr = colorize(`-${data.removed}`, colors.removed);
-    return `${addedStr}${removedStr}`;
-  },
-  playful: (data, colors) => {
-    if (!colors) return `\u2795${data.added} \u2796${data.removed}`;
-    const addedStr = colorize(`\u2795${data.added}`, colors.added);
-    const removedStr = colorize(`\u2796${data.removed}`, colors.removed);
-    return `${addedStr} ${removedStr}`;
-  },
-  verbose: (data, colors) => {
     const parts = [];
-    if (data.added > 0) {
-      const text = `+${data.added} added`;
-      parts.push(colors ? colorize(text, colors.added) : text);
+    for (const tool of data.running.slice(-2)) {
+      const indicator = colors ? colorize("\u25D0", colors.tools.running) : "\u25D0";
+      parts.push(
+        `${indicator} ${formatTool(tool.name, tool.target, colors ?? getDefaultColors())}`
+      );
     }
-    if (data.removed > 0) {
-      const text = `-${data.removed} removed`;
-      parts.push(colors ? colorize(text, colors.removed) : text);
+    const sorted = Array.from(data.completed.entries()).sort((a, b) => b[1] - a[1]).slice(0, 4);
+    for (const [name, count] of sorted) {
+      const check = colors ? colorize("\u2713", colors.tools.completed) : "\u2713";
+      const countStr = colors ? colorize(`\xD7${count}`, colors.tools.count) : `\xD7${count}`;
+      parts.push(`${check} ${name} ${countStr}`);
+    }
+    if (parts.length === 0) {
+      return "";
+    }
+    return parts.join(" | ");
+  },
+  /**
+   * compact: [ToolName] format for all tools
+   */
+  compact: (data, colors) => {
+    const parts = [];
+    const c = colors ?? getDefaultColors();
+    for (const tool of data.running) {
+      parts.push(`[${colorize(tool.name, c.tools.name)}]`);
+    }
+    for (const [name] of Array.from(data.completed.entries()).slice(0, 3)) {
+      parts.push(`[${colorize(name, c.tools.completed)}]`);
+    }
+    if (parts.length === 0) {
+      return "";
+    }
+    return parts.join(" ");
+  },
+  /**
+   * minimal: Same as compact
+   */
+  minimal: (data, colors) => {
+    const compactStyle = activeToolsStyles.compact;
+    if (!compactStyle) return "";
+    return compactStyle(data, colors);
+  },
+  /**
+   * playful: Emojis (📖✏️✨🔄🔍📁) with tool names
+   */
+  playful: (data, colors) => {
+    const parts = [];
+    const emojis = {
+      Read: "\u{1F4D6}",
+      Write: "\u270F\uFE0F",
+      Edit: "\u2728",
+      Bash: "\u{1F504}",
+      Grep: "\u{1F50D}",
+      Glob: "\u{1F4C1}"
+    };
+    for (const tool of data.running.slice(-3)) {
+      const emoji = emojis[tool.name] ?? "\u{1F527}";
+      const nameStr = colors ? colorize(tool.name, colors.tools.name) : tool.name;
+      parts.push(`${emoji} ${nameStr}`);
+    }
+    if (parts.length === 0) {
+      return "";
     }
     return parts.join(", ");
   },
+  /**
+   * verbose: Full text labels "Running:" and "Completed:"
+   */
+  verbose: (data, colors) => {
+    const parts = [];
+    const c = colors ?? getDefaultColors();
+    for (const tool of data.running) {
+      const label = colorize("Running:", c.tools.running);
+      parts.push(`${label} ${formatTool(tool.name, tool.target, c)}`);
+    }
+    const sorted = Array.from(data.completed.entries()).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    for (const [name, count] of sorted) {
+      const label = colorize("Completed:", c.tools.completed);
+      const countStr = colorize(`(${count}x)`, c.tools.count);
+      parts.push(`${label} ${name} ${countStr}`);
+    }
+    if (parts.length === 0) {
+      return "";
+    }
+    return parts.join(" | ");
+  },
+  /**
+   * labeled: "Tools:" prefix with all tools
+   */
   labeled: (data, colors) => {
-    const addedStr = colors ? colorize(`+${data.added}`, colors.added) : `+${data.added}`;
-    const removedStr = colors ? colorize(`-${data.removed}`, colors.removed) : `-${data.removed}`;
-    const lines = `${addedStr}/${removedStr}`;
-    return withLabel("Lines", lines);
+    const c = colors ?? getDefaultColors();
+    const allTools = [
+      ...data.running.map((t) => {
+        const indicator = colorize("\u25D0", c.tools.running);
+        return `${indicator} ${formatTool(t.name, t.target, c)}`;
+      }),
+      ...Array.from(data.completed.entries()).slice(0, 3).map(([name, count]) => {
+        const indicator = colorize("\u2713", c.tools.completed);
+        const countStr = colorize(`\xD7${count}`, c.tools.count);
+        return `${indicator} ${name} ${countStr}`;
+      })
+    ];
+    if (allTools.length === 0) {
+      return "";
+    }
+    const prefix = colors ? colorize("Tools:", c.semantic.info) : "Tools:";
+    return `${prefix}: ${allTools.join(" | ")}`;
   },
+  /**
+   * indicator: ● bullet indicators
+   */
   indicator: (data, colors) => {
-    const addedStr = colors ? colorize(`+${data.added}`, colors.added) : `+${data.added}`;
-    const removedStr = colors ? colorize(`-${data.removed}`, colors.removed) : `-${data.removed}`;
-    const lines = `${addedStr}/${removedStr}`;
-    return withIndicator(lines);
+    const parts = [];
+    const c = colors ?? getDefaultColors();
+    for (const tool of data.running) {
+      const bullet = colorize("\u25CF", c.semantic.info);
+      parts.push(`${bullet} ${formatTool(tool.name, tool.target, c)}`);
+    }
+    for (const [name] of Array.from(data.completed.entries()).slice(0, 3)) {
+      const bullet = colorize("\u25CF", c.tools.completed);
+      parts.push(`${bullet} ${name}`);
+    }
+    if (parts.length === 0) {
+      return "";
+    }
+    return parts.join(" | ");
   }
 };
-
-// src/widgets/lines-widget.ts
-var LinesWidget = class extends StdinDataWidget {
-  id = "lines";
-  metadata = createWidgetMetadata(
-    "Lines",
-    "Displays lines added/removed in session",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  colors;
-  styleFn = linesStyles.balanced;
-  constructor(colors) {
-    super();
-    this.colors = colors ?? DEFAULT_THEME;
-  }
-  setStyle(style = "balanced") {
-    const fn = linesStyles[style];
-    if (fn) {
-      this.styleFn = fn;
+function getDefaultColors() {
+  return {
+    base: {
+      text: "\x1B[37m",
+      muted: "\x1B[90m",
+      accent: "\x1B[36m",
+      border: "\x1B[90m"
+    },
+    semantic: {
+      success: "\x1B[32m",
+      warning: "\x1B[33m",
+      error: "\x1B[31m",
+      info: "\x1B[36m"
+    },
+    git: {
+      branch: "\x1B[36m",
+      changes: "\x1B[33m"
+    },
+    context: {
+      low: "\x1B[32m",
+      medium: "\x1B[33m",
+      high: "\x1B[31m",
+      bar: "\x1B[37m"
+    },
+    lines: {
+      added: "\x1B[32m",
+      removed: "\x1B[31m"
+    },
+    cost: {
+      amount: "\x1B[37m",
+      currency: "\x1B[90m"
+    },
+    duration: {
+      value: "\x1B[37m",
+      unit: "\x1B[90m"
+    },
+    model: {
+      name: "\x1B[36m",
+      version: "\x1B[90m"
+    },
+    poker: {
+      participating: "\x1B[37m",
+      nonParticipating: "\x1B[90m",
+      result: "\x1B[36m"
+    },
+    cache: {
+      high: "\x1B[32m",
+      medium: "\x1B[33m",
+      low: "\x1B[31m",
+      read: "\x1B[34m",
+      write: "\x1B[35m"
+    },
+    tools: {
+      running: "\x1B[33m",
+      completed: "\x1B[32m",
+      error: "\x1B[31m",
+      name: "\x1B[34m",
+      target: "\x1B[90m",
+      count: "\x1B[35m"
     }
-  }
-  renderWithData(data, _context) {
-    const added = data.cost?.total_lines_added ?? 0;
-    const removed = data.cost?.total_lines_removed ?? 0;
-    const renderData = { added, removed };
-    return this.styleFn(renderData, this.colors.lines);
-  }
-};
-
-// src/widgets/duration/styles.ts
-var durationStyles = {
-  balanced: (data, colors) => {
-    const formatted = formatDuration(data.durationMs);
-    if (!colors) return formatted;
-    return formatDurationWithColors(data.durationMs, colors);
-  },
-  compact: (data, colors) => {
-    const totalSeconds = Math.floor(data.durationMs / 1e3);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor(totalSeconds % 3600 / 60);
-    if (!colors) {
-      if (hours > 0) {
-        return `${hours}h${minutes}m`;
-      }
-      return `${minutes}m`;
-    }
-    if (hours > 0) {
-      return colorize(`${hours}`, colors.value) + colorize("h", colors.unit) + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
-    }
-    return colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
-  },
-  playful: (data, colors) => {
-    const totalSeconds = Math.floor(data.durationMs / 1e3);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor(totalSeconds % 3600 / 60);
-    if (!colors) {
-      if (hours > 0) {
-        return `\u231B ${hours}h ${minutes}m`;
-      }
-      return `\u231B ${minutes}m`;
-    }
-    if (hours > 0) {
-      const colored = colorize(`${hours}`, colors.value) + colorize("h", colors.unit) + colorize(` ${minutes}`, colors.value) + colorize("m", colors.unit);
-      return `\u231B ${colored}`;
-    }
-    return `\u231B ` + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
-  },
-  technical: (data, colors) => {
-    const value = `${Math.floor(data.durationMs)}ms`;
-    if (!colors) return value;
-    return colorize(`${Math.floor(data.durationMs)}`, colors.value) + colorize("ms", colors.unit);
-  },
-  labeled: (data, colors) => {
-    const formatted = formatDuration(data.durationMs);
-    if (!colors) return withLabel("Time", formatted);
-    const colored = formatDurationWithColors(data.durationMs, colors);
-    return withLabel("Time", colored);
-  },
-  indicator: (data, colors) => {
-    const formatted = formatDuration(data.durationMs);
-    if (!colors) return withIndicator(formatted);
-    const colored = formatDurationWithColors(data.durationMs, colors);
-    return withIndicator(colored);
-  }
-};
-function formatDurationWithColors(ms, colors) {
-  if (ms <= 0) return colorize("0s", colors.value);
-  const totalSeconds = Math.floor(ms / 1e3);
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor(totalSeconds % 3600 / 60);
-  const seconds = totalSeconds % 60;
-  const parts = [];
-  if (hours > 0) {
-    parts.push(
-      colorize(`${hours}`, colors.value) + colorize("h", colors.unit),
-      colorize(`${minutes}`, colors.value) + colorize("m", colors.unit),
-      colorize(`${seconds}`, colors.value) + colorize("s", colors.unit)
-    );
-  } else if (minutes > 0) {
-    parts.push(
-      colorize(`${minutes}`, colors.value) + colorize("m", colors.unit),
-      colorize(`${seconds}`, colors.value) + colorize("s", colors.unit)
-    );
-  } else {
-    parts.push(colorize(`${seconds}`, colors.value) + colorize("s", colors.unit));
-  }
-  return parts.join(" ");
+  };
 }
 
-// src/widgets/duration-widget.ts
-var DurationWidget = class extends StdinDataWidget {
-  id = "duration";
-  metadata = createWidgetMetadata(
-    "Duration",
-    "Displays elapsed session time",
-    "1.0.0",
-    "claude-scope",
-    0
-    // First line
-  );
-  colors;
-  styleFn = durationStyles.balanced;
-  constructor(colors) {
+// src/widgets/active-tools/active-tools-widget.ts
+var ActiveToolsWidget = class extends StdinDataWidget {
+  constructor(theme, transcriptProvider) {
     super();
-    this.colors = colors ?? DEFAULT_THEME;
+    this.theme = theme;
+    this.transcriptProvider = transcriptProvider;
   }
-  setStyle(style = "balanced") {
-    const fn = durationStyles[style];
-    if (fn) {
-      this.styleFn = fn;
+  id = "active-tools";
+  metadata = {
+    name: "Active Tools",
+    description: "Active tools display from transcript",
+    version: "1.0.0",
+    author: "claude-scope",
+    line: 2
+    // Display on third line (0-indexed)
+  };
+  style = "balanced";
+  tools = [];
+  renderData;
+  /**
+   * Set display style
+   * @param style - Style to use for rendering
+   */
+  setStyle(style) {
+    this.style = style;
+  }
+  /**
+   * Aggregate completed tools by name
+   * @param tools - Array of tool entries
+   * @returns Map of tool name to count
+   */
+  aggregateCompleted(tools) {
+    const counts = /* @__PURE__ */ new Map();
+    for (const tool of tools) {
+      if (tool.status === "completed" || tool.status === "error") {
+        const current = counts.get(tool.name) ?? 0;
+        counts.set(tool.name, current + 1);
+      }
+    }
+    return counts;
+  }
+  /**
+   * Prepare render data from tools
+   * @returns Render data with running, completed, and error tools
+   */
+  prepareRenderData() {
+    const running = this.tools.filter((t) => t.status === "running");
+    const completed = this.aggregateCompleted(this.tools);
+    const errors = this.tools.filter((t) => t.status === "error");
+    return { running, completed, errors };
+  }
+  /**
+   * Update widget with new stdin data
+   * @param data - Stdin data from Claude Code
+   */
+  async update(data) {
+    await super.update(data);
+    if (data.transcript_path) {
+      this.tools = await this.transcriptProvider.parseTools(data.transcript_path);
+      this.renderData = this.prepareRenderData();
+    } else {
+      this.tools = [];
+      this.renderData = void 0;
     }
   }
-  renderWithData(data, _context) {
-    if (!data.cost || data.cost.total_duration_ms === void 0) return null;
-    const renderData = {
-      durationMs: data.cost.total_duration_ms
-    };
-    return this.styleFn(renderData, this.colors.duration);
+  /**
+   * Render widget output
+   * @param context - Render context
+   * @returns Rendered string or null if no tools
+   */
+  renderWithData(data, context) {
+    if (!this.renderData || this.tools.length === 0) {
+      return null;
+    }
+    const styleFn = activeToolsStyles[this.style] ?? activeToolsStyles.balanced;
+    if (!styleFn) {
+      return null;
+    }
+    return styleFn(this.renderData, this.theme);
+  }
+  /**
+   * Check if widget should render
+   * @returns true if there are tools to display
+   */
+  isEnabled() {
+    return super.isEnabled() && this.tools.length > 0;
   }
 };
+
+// src/core/widget-types.ts
+function createWidgetMetadata(name, description, version = "1.0.0", author = "claude-scope", line = 0) {
+  return {
+    name,
+    description,
+    version,
+    author,
+    line
+  };
+}
+
+// src/widgets/cache-metrics/styles.ts
+function formatK(n) {
+  if (n < 1e3) {
+    return n.toString();
+  }
+  const k = n / 1e3;
+  return k < 10 ? `${k.toFixed(1)}k` : `${Math.round(k)}k`;
+}
+function formatCurrency(usd) {
+  if (usd < 5e-3 && usd > 0) {
+    return "<$0.01";
+  }
+  return `$${usd.toFixed(2)}`;
+}
+function createProgressBar(percentage, width) {
+  const filled = Math.round(percentage / 100 * width);
+  const empty = width - filled;
+  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
+}
+function getCacheColor(hitRate, colors) {
+  if (hitRate > 70) {
+    return colors.cache.high;
+  } else if (hitRate >= 40) {
+    return colors.cache.medium;
+  } else {
+    return colors.cache.low;
+  }
+}
+var cacheMetricsStyles = {
+  /**
+   * balanced: 💾 70% cached (35.0k tokens) with color coding
+   */
+  balanced: (data, colors) => {
+    const { hitRate, cacheRead } = data;
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    const tokens = colors ? `${colors.cache.read}${formatK(cacheRead)} tokens` : `${formatK(cacheRead)} tokens`;
+    return `\u{1F4BE} ${percentage} cached (${tokens})`;
+  },
+  /**
+   * compact: Cache: 70%
+   */
+  compact: (data, colors) => {
+    const hitRate = data.hitRate.toFixed(0);
+    if (colors) {
+      return `${colors.cache.read}Cache: ${hitRate}%`;
+    }
+    return `Cache: ${hitRate}%`;
+  },
+  /**
+   * playful: 💾 [███████░] 70% with progress bar
+   */
+  playful: (data, colors) => {
+    const { hitRate } = data;
+    const bar = createProgressBar(hitRate, 7);
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const barAndPercent = color ? `${color}[${bar}] ${hitRate.toFixed(0)}%` : `[${bar}] ${hitRate.toFixed(0)}%`;
+    return `\u{1F4BE} ${barAndPercent}`;
+  },
+  /**
+   * verbose: Cache: 35.0k tokens (70%) | $0.03 saved
+   */
+  verbose: (data, colors) => {
+    const { cacheRead, hitRate, savings } = data;
+    const tokens = colors ? `${colors.cache.read}${formatK(cacheRead)} tokens` : `${formatK(cacheRead)} tokens`;
+    const percent = `${hitRate.toFixed(0)}%`;
+    const saved = colors ? `${colors.cache.write}${formatCurrency(savings)} saved` : `${formatCurrency(savings)} saved`;
+    return `Cache: ${tokens} (${percent}) | ${saved}`;
+  },
+  /**
+   * labeled: Cache Hit: 70% | $0.03 saved
+   */
+  labeled: (data, colors) => {
+    const { hitRate, savings } = data;
+    const percent = colors ? `${colors.cache.read}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    const saved = colors ? `${colors.cache.write}${formatCurrency(savings)} saved` : `${formatCurrency(savings)} saved`;
+    return `Cache Hit: ${percent} | ${saved}`;
+  },
+  /**
+   * indicator: ● 70% cached
+   */
+  indicator: (data, colors) => {
+    const { hitRate } = data;
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const percentage = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    return `\u25CF ${percentage} cached`;
+  },
+  /**
+   * breakdown: Multi-line with ├─ Read: and └─ Write: breakdown
+   */
+  breakdown: (data, colors) => {
+    const { cacheRead, cacheWrite, hitRate, savings } = data;
+    const color = colors ? getCacheColor(hitRate, colors) : "";
+    const percent = color ? `${color}${hitRate.toFixed(0)}%` : `${hitRate.toFixed(0)}%`;
+    const saved = colors ? `${colors.cache.write}${formatCurrency(savings)} saved` : `${formatCurrency(savings)} saved`;
+    const read = colors ? `${colors.cache.read}${formatK(cacheRead)}` : formatK(cacheRead);
+    const write = colors ? `${colors.cache.write}${formatK(cacheWrite)}` : formatK(cacheWrite);
+    return [`\u{1F4BE} ${percent} cached | ${saved}`, `\u251C\u2500 Read: ${read}`, `\u2514\u2500 Write: ${write}`].join("\n");
+  }
+};
+
+// src/widgets/cache-metrics/cache-metrics-widget.ts
+var CacheMetricsWidget = class extends StdinDataWidget {
+  id = "cache-metrics";
+  metadata = createWidgetMetadata(
+    "Cache Metrics",
+    "Cache hit rate and savings display",
+    "1.0.0",
+    "claude-scope",
+    2
+    // Third line
+  );
+  theme;
+  style = "balanced";
+  renderData;
+  constructor(theme) {
+    super();
+    this.theme = theme ?? DEFAULT_THEME;
+  }
+  /**
+   * Set display style
+   */
+  setStyle(style) {
+    this.style = style;
+  }
+  /**
+   * Calculate cache metrics from context usage data
+   * Returns null if no usage data is available
+   */
+  calculateMetrics(data) {
+    const usage = data.context_window?.current_usage;
+    if (!usage) {
+      return null;
+    }
+    const cacheRead = usage.cache_read_input_tokens ?? 0;
+    const cacheWrite = usage.cache_creation_input_tokens ?? 0;
+    const inputTokens = usage.input_tokens ?? 0;
+    const outputTokens = usage.output_tokens ?? 0;
+    const totalTokens = inputTokens + outputTokens;
+    const hitRate = inputTokens > 0 ? Math.round(cacheRead / inputTokens * 100) : 0;
+    const costPerToken = 3e-6;
+    const savings = cacheRead * 0.9 * costPerToken;
+    return {
+      cacheRead,
+      cacheWrite,
+      totalTokens,
+      hitRate,
+      savings
+    };
+  }
+  /**
+   * Update widget with new data and calculate metrics
+   */
+  async update(data) {
+    await super.update(data);
+    const metrics = this.calculateMetrics(data);
+    this.renderData = metrics ?? void 0;
+  }
+  /**
+   * Render the cache metrics display
+   */
+  renderWithData(_data, _context) {
+    if (!this.renderData) {
+      return null;
+    }
+    const styleFn = cacheMetricsStyles[this.style] ?? cacheMetricsStyles.balanced;
+    if (!styleFn) {
+      return null;
+    }
+    return styleFn(this.renderData, this.theme);
+  }
+  /**
+   * Widget is enabled when we have cache metrics data
+   */
+  isEnabled() {
+    return this.renderData !== void 0;
+  }
+};
+
+// src/core/style-types.ts
+var DEFAULT_WIDGET_STYLE = "balanced";
 
 // src/providers/config-provider.ts
 var fs = __toESM(require("fs/promises"), 1);
-var path = __toESM(require("path"), 1);
 var os = __toESM(require("os"), 1);
+var path = __toESM(require("path"), 1);
 var ConfigProvider = class {
   cachedCounts;
   lastScan = 0;
@@ -1849,9 +2190,6 @@ var configCountStyles = {
   }
 };
 
-// src/core/style-types.ts
-var DEFAULT_WIDGET_STYLE = "balanced";
-
 // src/widgets/config-count-widget.ts
 var ConfigCountWidget = class {
   id = "config-count";
@@ -1900,6 +2238,822 @@ var ConfigCountWidget = class {
     return this.styleFn(renderData);
   }
   async cleanup() {
+  }
+};
+
+// src/ui/utils/style-utils.ts
+function withLabel(prefix, value) {
+  if (prefix === "") return value;
+  return `${prefix}: ${value}`;
+}
+function withIndicator(value) {
+  return `\u25CF ${value}`;
+}
+function progressBar(percent, width = 10) {
+  const clamped = Math.max(0, Math.min(100, percent));
+  const filled = Math.round(clamped / 100 * width);
+  const empty = width - filled;
+  return "\u2588".repeat(filled) + "\u2591".repeat(empty);
+}
+
+// src/widgets/context/styles.ts
+function getContextColor(percent, colors) {
+  const clampedPercent = Math.max(0, Math.min(100, percent));
+  if (clampedPercent < 50) {
+    return colors.low;
+  } else if (clampedPercent < 80) {
+    return colors.medium;
+  } else {
+    return colors.high;
+  }
+}
+var contextStyles = {
+  balanced: (data, colors) => {
+    const bar = progressBar(data.percent, 10);
+    const output = `[${bar}] ${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  compact: (data, colors) => {
+    const output = `${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  playful: (data, colors) => {
+    const bar = progressBar(data.percent, 10);
+    const output = `\u{1F9E0} [${bar}] ${data.percent}%`;
+    if (!colors) return output;
+    return `\u{1F9E0} ` + colorize(`[${bar}] ${data.percent}%`, getContextColor(data.percent, colors));
+  },
+  verbose: (data, colors) => {
+    const usedFormatted = data.used.toLocaleString();
+    const maxFormatted = data.contextWindowSize.toLocaleString();
+    const output = `${usedFormatted} / ${maxFormatted} tokens (${data.percent}%)`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  symbolic: (data, colors) => {
+    const filled = Math.round(data.percent / 100 * 5);
+    const empty = 5 - filled;
+    const output = `${"\u25AE".repeat(filled)}${"\u25AF".repeat(empty)} ${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  "compact-verbose": (data, colors) => {
+    const usedK = data.used >= 1e3 ? `${Math.floor(data.used / 1e3)}K` : data.used.toString();
+    const maxK = data.contextWindowSize >= 1e3 ? `${Math.floor(data.contextWindowSize / 1e3)}K` : data.contextWindowSize.toString();
+    const output = `${data.percent}% (${usedK}/${maxK})`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  },
+  indicator: (data, colors) => {
+    const output = `\u25CF ${data.percent}%`;
+    if (!colors) return output;
+    return colorize(output, getContextColor(data.percent, colors));
+  }
+};
+
+// src/widgets/context-widget.ts
+var ContextWidget = class extends StdinDataWidget {
+  id = "context";
+  metadata = createWidgetMetadata(
+    "Context",
+    "Displays context window usage with progress bar",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  colors;
+  styleFn = contextStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = contextStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  renderWithData(data, _context) {
+    const { current_usage, context_window_size } = data.context_window;
+    if (!current_usage) return null;
+    const used = current_usage.input_tokens + current_usage.cache_creation_input_tokens + current_usage.cache_read_input_tokens + current_usage.output_tokens;
+    const percent = Math.round(used / context_window_size * 100);
+    const renderData = {
+      used,
+      contextWindowSize: context_window_size,
+      percent
+    };
+    return this.styleFn(renderData, this.colors.context);
+  }
+};
+
+// src/ui/utils/formatters.ts
+function formatDuration(ms) {
+  if (ms <= 0) return "0s";
+  const seconds = Math.floor(ms / TIME.MS_PER_SECOND);
+  const hours = Math.floor(seconds / TIME.SECONDS_PER_HOUR);
+  const minutes = Math.floor(seconds % TIME.SECONDS_PER_HOUR / TIME.SECONDS_PER_MINUTE);
+  const secs = seconds % TIME.SECONDS_PER_MINUTE;
+  const parts = [];
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+    parts.push(`${minutes}m`);
+    parts.push(`${secs}s`);
+  } else if (minutes > 0) {
+    parts.push(`${minutes}m`);
+    parts.push(`${secs}s`);
+  } else {
+    parts.push(`${secs}s`);
+  }
+  return parts.join(" ");
+}
+function formatCostUSD(usd) {
+  return `$${usd.toFixed(2)}`;
+}
+function colorize2(text, color) {
+  return `${color}${text}${ANSI_COLORS.RESET}`;
+}
+
+// src/widgets/cost/styles.ts
+var costStyles = {
+  balanced: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return formatted;
+    const amountStr = data.costUsd.toFixed(2);
+    return colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+  },
+  compact: (data, colors) => {
+    return costStyles.balanced(data, colors);
+  },
+  playful: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return `\u{1F4B0} ${formatted}`;
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return `\u{1F4B0} ${colored}`;
+  },
+  labeled: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return withLabel("Cost", formatted);
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return withLabel("Cost", colored);
+  },
+  indicator: (data, colors) => {
+    const formatted = formatCostUSD(data.costUsd);
+    if (!colors) return withIndicator(formatted);
+    const amountStr = data.costUsd.toFixed(2);
+    const colored = colorize("$", colors.currency) + colorize(amountStr, colors.amount);
+    return withIndicator(colored);
+  }
+};
+
+// src/widgets/cost-widget.ts
+var CostWidget = class extends StdinDataWidget {
+  id = "cost";
+  metadata = createWidgetMetadata(
+    "Cost",
+    "Displays session cost in USD",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  colors;
+  styleFn = costStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = costStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  renderWithData(data, _context) {
+    if (!data.cost || data.cost.total_cost_usd === void 0) return null;
+    const renderData = {
+      costUsd: data.cost.total_cost_usd
+    };
+    return this.styleFn(renderData, this.colors.cost);
+  }
+};
+
+// src/widgets/duration/styles.ts
+var durationStyles = {
+  balanced: (data, colors) => {
+    const formatted = formatDuration(data.durationMs);
+    if (!colors) return formatted;
+    return formatDurationWithColors(data.durationMs, colors);
+  },
+  compact: (data, colors) => {
+    const totalSeconds = Math.floor(data.durationMs / 1e3);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds % 3600 / 60);
+    if (!colors) {
+      if (hours > 0) {
+        return `${hours}h${minutes}m`;
+      }
+      return `${minutes}m`;
+    }
+    if (hours > 0) {
+      return colorize(`${hours}`, colors.value) + colorize("h", colors.unit) + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
+    }
+    return colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
+  },
+  playful: (data, colors) => {
+    const totalSeconds = Math.floor(data.durationMs / 1e3);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor(totalSeconds % 3600 / 60);
+    if (!colors) {
+      if (hours > 0) {
+        return `\u231B ${hours}h ${minutes}m`;
+      }
+      return `\u231B ${minutes}m`;
+    }
+    if (hours > 0) {
+      const colored = colorize(`${hours}`, colors.value) + colorize("h", colors.unit) + colorize(` ${minutes}`, colors.value) + colorize("m", colors.unit);
+      return `\u231B ${colored}`;
+    }
+    return `\u231B ` + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
+  },
+  technical: (data, colors) => {
+    const value = `${Math.floor(data.durationMs)}ms`;
+    if (!colors) return value;
+    return colorize(`${Math.floor(data.durationMs)}`, colors.value) + colorize("ms", colors.unit);
+  },
+  labeled: (data, colors) => {
+    const formatted = formatDuration(data.durationMs);
+    if (!colors) return withLabel("Time", formatted);
+    const colored = formatDurationWithColors(data.durationMs, colors);
+    return withLabel("Time", colored);
+  },
+  indicator: (data, colors) => {
+    const formatted = formatDuration(data.durationMs);
+    if (!colors) return withIndicator(formatted);
+    const colored = formatDurationWithColors(data.durationMs, colors);
+    return withIndicator(colored);
+  }
+};
+function formatDurationWithColors(ms, colors) {
+  if (ms <= 0) return colorize("0s", colors.value);
+  const totalSeconds = Math.floor(ms / 1e3);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor(totalSeconds % 3600 / 60);
+  const seconds = totalSeconds % 60;
+  const parts = [];
+  if (hours > 0) {
+    parts.push(
+      colorize(`${hours}`, colors.value) + colorize("h", colors.unit),
+      colorize(`${minutes}`, colors.value) + colorize("m", colors.unit),
+      colorize(`${seconds}`, colors.value) + colorize("s", colors.unit)
+    );
+  } else if (minutes > 0) {
+    parts.push(
+      colorize(`${minutes}`, colors.value) + colorize("m", colors.unit),
+      colorize(`${seconds}`, colors.value) + colorize("s", colors.unit)
+    );
+  } else {
+    parts.push(colorize(`${seconds}`, colors.value) + colorize("s", colors.unit));
+  }
+  return parts.join(" ");
+}
+
+// src/widgets/duration-widget.ts
+var DurationWidget = class extends StdinDataWidget {
+  id = "duration";
+  metadata = createWidgetMetadata(
+    "Duration",
+    "Displays elapsed session time",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  colors;
+  styleFn = durationStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = durationStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  renderWithData(data, _context) {
+    if (!data.cost || data.cost.total_duration_ms === void 0) return null;
+    const renderData = {
+      durationMs: data.cost.total_duration_ms
+    };
+    return this.styleFn(renderData, this.colors.duration);
+  }
+};
+
+// src/widgets/empty-line-widget.ts
+var EmptyLineWidget = class extends StdinDataWidget {
+  id = "empty-line";
+  metadata = createWidgetMetadata(
+    "Empty Line",
+    "Empty line separator",
+    "1.0.0",
+    "claude-scope",
+    5
+    // Sixth line (0-indexed)
+  );
+  /**
+   * All styles return the same value (Braille Pattern Blank).
+   * This method exists for API consistency with other widgets.
+   */
+  setStyle(_style) {
+  }
+  /**
+   * Return Braille Pattern Blank to create a visible empty separator line.
+   * U+2800 occupies cell width but appears blank, ensuring the line renders.
+   */
+  renderWithData(_data, _context) {
+    return "\u2800";
+  }
+};
+
+// src/providers/git-provider.ts
+var import_node_child_process = require("node:child_process");
+var import_node_util = require("node:util");
+var execFileAsync = (0, import_node_util.promisify)(import_node_child_process.execFile);
+var NativeGit = class {
+  cwd;
+  constructor(cwd) {
+    this.cwd = cwd;
+  }
+  async status() {
+    try {
+      const { stdout } = await execFileAsync("git", ["status", "--branch", "--short"], {
+        cwd: this.cwd
+      });
+      const match = stdout.match(/^##\s+(\S+)/m);
+      const current = match ? match[1] : null;
+      return { current };
+    } catch {
+      return { current: null };
+    }
+  }
+  async diffSummary(options) {
+    const args = ["diff", "--shortstat"];
+    if (options) {
+      args.push(...options);
+    }
+    try {
+      const { stdout } = await execFileAsync("git", args, {
+        cwd: this.cwd
+      });
+      const fileMatch = stdout.match(/(\d+)\s+file(s?)\s+changed/);
+      const insertionMatch = stdout.match(/(\d+)\s+insertion/);
+      const deletionMatch = stdout.match(/(\d+)\s+deletion/);
+      const fileCount = fileMatch ? parseInt(fileMatch[1], 10) : 0;
+      const insertions = insertionMatch ? parseInt(insertionMatch[1], 10) : 0;
+      const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
+      const files = insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
+      return { fileCount, files };
+    } catch {
+      return { fileCount: 0, files: [] };
+    }
+  }
+  async latestTag() {
+    try {
+      const { stdout } = await execFileAsync("git", ["describe", "--tags", "--abbrev=0"], {
+        cwd: this.cwd
+      });
+      return stdout.trim();
+    } catch {
+      return null;
+    }
+  }
+};
+function createGit(cwd) {
+  return new NativeGit(cwd);
+}
+
+// src/widgets/git-tag/styles.ts
+var gitTagStyles = {
+  balanced: (data, colors) => {
+    const tag = data.tag || "\u2014";
+    if (!colors) return tag;
+    return colorize(tag, colors.branch);
+  },
+  compact: (data, colors) => {
+    if (!data.tag) return "\u2014";
+    const tag = data.tag.replace(/^v/, "");
+    if (!colors) return tag;
+    return colorize(tag, colors.branch);
+  },
+  playful: (data, colors) => {
+    const tag = data.tag || "\u2014";
+    if (!colors) return `\u{1F3F7}\uFE0F ${tag}`;
+    return `\u{1F3F7}\uFE0F ${colorize(tag, colors.branch)}`;
+  },
+  verbose: (data, colors) => {
+    if (!data.tag) return "version: none";
+    const tag = `version ${data.tag}`;
+    if (!colors) return tag;
+    return `version ${colorize(data.tag, colors.branch)}`;
+  },
+  labeled: (data, colors) => {
+    const tag = data.tag || "none";
+    if (!colors) return withLabel("Tag", tag);
+    return withLabel("Tag", colorize(tag, colors.branch));
+  },
+  indicator: (data, colors) => {
+    const tag = data.tag || "\u2014";
+    if (!colors) return withIndicator(tag);
+    return withIndicator(colorize(tag, colors.branch));
+  }
+};
+
+// src/widgets/git/git-tag-widget.ts
+var GitTagWidget = class {
+  id = "git-tag";
+  metadata = createWidgetMetadata(
+    "Git Tag Widget",
+    "Displays the latest git tag",
+    "1.0.0",
+    "claude-scope",
+    1
+    // Second line
+  );
+  gitFactory;
+  git = null;
+  enabled = true;
+  cwd = null;
+  colors;
+  styleFn = gitTagStyles.balanced;
+  /**
+   * @param gitFactory - Optional factory function for creating IGit instances
+   *                     If not provided, uses default createGit (production)
+   *                     Tests can inject MockGit factory here
+   * @param colors - Optional theme colors
+   */
+  constructor(gitFactory, colors) {
+    this.gitFactory = gitFactory || createGit;
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = gitTagStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  async initialize(context) {
+    this.enabled = context.config?.enabled !== false;
+  }
+  async render(context) {
+    if (!this.enabled || !this.git || !this.cwd) {
+      return null;
+    }
+    try {
+      const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
+      const renderData = { tag: latestTag };
+      return this.styleFn(renderData, this.colors.git);
+    } catch {
+      return null;
+    }
+  }
+  async update(data) {
+    if (data.cwd !== this.cwd) {
+      this.cwd = data.cwd;
+      this.git = this.gitFactory(data.cwd);
+    }
+  }
+  isEnabled() {
+    return this.enabled;
+  }
+  async cleanup() {
+  }
+};
+
+// src/widgets/git/styles.ts
+var gitStyles = {
+  minimal: (data, colors) => {
+    if (!colors) return data.branch;
+    return colorize(data.branch, colors.branch);
+  },
+  balanced: (data, colors) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changes = colors ? colorize(`[${parts.join(" ")}]`, colors.changes) : `[${parts.join(" ")}]`;
+        return `${branch} ${changes}`;
+      }
+    }
+    return colors ? colorize(data.branch, colors.branch) : data.branch;
+  },
+  compact: (data, colors) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changesStr = parts.join("/");
+        return `${branch} ${changesStr}`;
+      }
+    }
+    return colors ? colorize(data.branch, colors.branch) : data.branch;
+  },
+  playful: (data, colors) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`\u2B06${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`\u2B07${data.changes.deletions}`);
+      if (parts.length > 0) {
+        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
+        return `\u{1F500} ${branch2} ${parts.join(" ")}`;
+      }
+    }
+    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+    return `\u{1F500} ${branch}`;
+  },
+  verbose: (data, colors) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions} insertions`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions} deletions`);
+      if (parts.length > 0) {
+        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changes = colors ? colorize(`[${parts.join(", ")}]`, colors.changes) : `[${parts.join(", ")}]`;
+        return `branch: ${branch2} ${changes}`;
+      }
+    }
+    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+    return `branch: ${branch} (HEAD)`;
+  },
+  labeled: (data, colors) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        const branch2 = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changes = `${data.changes.files} files: ${parts.join("/")}`;
+        return `Git: ${branch2} [${changes}]`;
+      }
+    }
+    const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+    return `Git: ${branch}`;
+  },
+  indicator: (data, colors) => {
+    if (data.changes && data.changes.files > 0) {
+      const parts = [];
+      if (data.changes.insertions > 0) parts.push(`+${data.changes.insertions}`);
+      if (data.changes.deletions > 0) parts.push(`-${data.changes.deletions}`);
+      if (parts.length > 0) {
+        const branch = colors ? colorize(data.branch, colors.branch) : data.branch;
+        const changes = colors ? colorize(`[${parts.join(" ")}]`, colors.changes) : `[${parts.join(" ")}]`;
+        return `\u25CF ${branch} ${changes}`;
+      }
+    }
+    return withIndicator(colors ? colorize(data.branch, colors.branch) : data.branch);
+  }
+};
+
+// src/widgets/git/git-widget.ts
+var GitWidget = class {
+  id = "git";
+  metadata = createWidgetMetadata(
+    "Git Widget",
+    "Displays current git branch",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  gitFactory;
+  git = null;
+  enabled = true;
+  cwd = null;
+  colors;
+  styleFn = gitStyles.balanced;
+  /**
+   * @param gitFactory - Optional factory function for creating IGit instances
+   *                     If not provided, uses default createGit (production)
+   *                     Tests can inject MockGit factory here
+   * @param colors - Optional theme colors
+   */
+  constructor(gitFactory, colors) {
+    this.gitFactory = gitFactory || createGit;
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = gitStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  async initialize(context) {
+    this.enabled = context.config?.enabled !== false;
+  }
+  async render(context) {
+    if (!this.enabled || !this.git || !this.cwd) {
+      return null;
+    }
+    try {
+      const status = await this.git.status();
+      const branch = status.current || null;
+      if (!branch) {
+        return null;
+      }
+      let changes;
+      try {
+        const diffSummary = await this.git.diffSummary();
+        if (diffSummary.fileCount > 0) {
+          let insertions = 0;
+          let deletions = 0;
+          for (const file of diffSummary.files) {
+            insertions += file.insertions || 0;
+            deletions += file.deletions || 0;
+          }
+          if (insertions > 0 || deletions > 0) {
+            changes = { files: diffSummary.fileCount, insertions, deletions };
+          }
+        }
+      } catch {
+      }
+      const renderData = { branch, changes };
+      return this.styleFn(renderData, this.colors.git);
+    } catch {
+      return null;
+    }
+  }
+  async update(data) {
+    if (data.cwd !== this.cwd) {
+      this.cwd = data.cwd;
+      this.git = this.gitFactory(data.cwd);
+    }
+  }
+  isEnabled() {
+    return this.enabled;
+  }
+  async cleanup() {
+  }
+};
+
+// src/widgets/lines/styles.ts
+var linesStyles = {
+  balanced: (data, colors) => {
+    if (!colors) return `+${data.added}/-${data.removed}`;
+    const addedStr = colorize(`+${data.added}`, colors.added);
+    const removedStr = colorize(`-${data.removed}`, colors.removed);
+    return `${addedStr}/${removedStr}`;
+  },
+  compact: (data, colors) => {
+    if (!colors) return `+${data.added}-${data.removed}`;
+    const addedStr = colorize(`+${data.added}`, colors.added);
+    const removedStr = colorize(`-${data.removed}`, colors.removed);
+    return `${addedStr}${removedStr}`;
+  },
+  playful: (data, colors) => {
+    if (!colors) return `\u2795${data.added} \u2796${data.removed}`;
+    const addedStr = colorize(`\u2795${data.added}`, colors.added);
+    const removedStr = colorize(`\u2796${data.removed}`, colors.removed);
+    return `${addedStr} ${removedStr}`;
+  },
+  verbose: (data, colors) => {
+    const parts = [];
+    if (data.added > 0) {
+      const text = `+${data.added} added`;
+      parts.push(colors ? colorize(text, colors.added) : text);
+    }
+    if (data.removed > 0) {
+      const text = `-${data.removed} removed`;
+      parts.push(colors ? colorize(text, colors.removed) : text);
+    }
+    return parts.join(", ");
+  },
+  labeled: (data, colors) => {
+    const addedStr = colors ? colorize(`+${data.added}`, colors.added) : `+${data.added}`;
+    const removedStr = colors ? colorize(`-${data.removed}`, colors.removed) : `-${data.removed}`;
+    const lines = `${addedStr}/${removedStr}`;
+    return withLabel("Lines", lines);
+  },
+  indicator: (data, colors) => {
+    const addedStr = colors ? colorize(`+${data.added}`, colors.added) : `+${data.added}`;
+    const removedStr = colors ? colorize(`-${data.removed}`, colors.removed) : `-${data.removed}`;
+    const lines = `${addedStr}/${removedStr}`;
+    return withIndicator(lines);
+  }
+};
+
+// src/widgets/lines-widget.ts
+var LinesWidget = class extends StdinDataWidget {
+  id = "lines";
+  metadata = createWidgetMetadata(
+    "Lines",
+    "Displays lines added/removed in session",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  colors;
+  styleFn = linesStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = linesStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  renderWithData(data, _context) {
+    const added = data.cost?.total_lines_added ?? 0;
+    const removed = data.cost?.total_lines_removed ?? 0;
+    const renderData = { added, removed };
+    return this.styleFn(renderData, this.colors.lines);
+  }
+};
+
+// src/widgets/model/styles.ts
+function getShortName(displayName) {
+  return displayName.replace(/^Claude\s+/, "");
+}
+var modelStyles = {
+  balanced: (data, colors) => {
+    if (!colors) return data.displayName;
+    return colorize(data.displayName, colors.name);
+  },
+  compact: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return shortName;
+    return colorize(shortName, colors.name);
+  },
+  playful: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return `\u{1F916} ${shortName}`;
+    return `\u{1F916} ${colorize(shortName, colors.name)}`;
+  },
+  technical: (data, colors) => {
+    if (!colors) return data.id;
+    const match = data.id.match(/^(.+?)-(\d[\d.]*)$/);
+    if (match) {
+      return colorize(match[1], colors.name) + colorize(`-${match[2]}`, colors.version);
+    }
+    return colorize(data.id, colors.name);
+  },
+  symbolic: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return `\u25C6 ${shortName}`;
+    return `\u25C6 ${colorize(shortName, colors.name)}`;
+  },
+  labeled: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return withLabel("Model", shortName);
+    return withLabel("Model", colorize(shortName, colors.name));
+  },
+  indicator: (data, colors) => {
+    const shortName = getShortName(data.displayName);
+    if (!colors) return withIndicator(shortName);
+    return withIndicator(colorize(shortName, colors.name));
+  }
+};
+
+// src/widgets/model-widget.ts
+var ModelWidget = class extends StdinDataWidget {
+  id = "model";
+  metadata = createWidgetMetadata(
+    "Model",
+    "Displays the current Claude model name",
+    "1.0.0",
+    "claude-scope",
+    0
+    // First line
+  );
+  colors;
+  styleFn = modelStyles.balanced;
+  constructor(colors) {
+    super();
+    this.colors = colors ?? DEFAULT_THEME;
+  }
+  setStyle(style = "balanced") {
+    const fn = modelStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
+  }
+  renderWithData(data, _context) {
+    const renderData = {
+      displayName: data.model.display_name,
+      id: data.model.id
+    };
+    return this.styleFn(renderData, this.colors.model);
   }
 };
 
@@ -2451,8 +3605,8 @@ var PokerWidget = class extends StdinDataWidget {
     "Displays random Texas Hold'em hands for entertainment",
     "1.0.0",
     "claude-scope",
-    2
-    // Third line (0-indexed)
+    4
+    // Fifth line (0-indexed)
   );
   holeCards = [];
   boardCards = [];
@@ -2545,207 +3699,6 @@ var PokerWidget = class extends StdinDataWidget {
   }
 };
 
-// src/widgets/empty-line-widget.ts
-var EmptyLineWidget = class extends StdinDataWidget {
-  id = "empty-line";
-  metadata = createWidgetMetadata(
-    "Empty Line",
-    "Empty line separator",
-    "1.0.0",
-    "claude-scope",
-    3
-    // Fourth line (0-indexed)
-  );
-  /**
-   * All styles return the same value (Braille Pattern Blank).
-   * This method exists for API consistency with other widgets.
-   */
-  setStyle(_style) {
-  }
-  /**
-   * Return Braille Pattern Blank to create a visible empty separator line.
-   * U+2800 occupies cell width but appears blank, ensuring the line renders.
-   */
-  renderWithData(_data, _context) {
-    return "\u2800";
-  }
-};
-
-// src/validation/result.ts
-function success(data) {
-  return { success: true, data };
-}
-function failure(path2, message, value) {
-  return { success: false, error: { path: path2, message, value } };
-}
-function formatError(error) {
-  const path2 = error.path.length > 0 ? error.path.join(".") : "root";
-  return `${path2}: ${error.message}`;
-}
-
-// src/validation/validators.ts
-function string() {
-  return {
-    validate(value) {
-      if (typeof value === "string") return success(value);
-      return failure([], "Expected string", value);
-    }
-  };
-}
-function number() {
-  return {
-    validate(value) {
-      if (typeof value === "number" && !Number.isNaN(value)) return success(value);
-      return failure([], "Expected number", value);
-    }
-  };
-}
-function literal(expected) {
-  return {
-    validate(value) {
-      if (value === expected) return success(expected);
-      return failure([], `Expected '${expected}'`, value);
-    }
-  };
-}
-
-// src/validation/combinators.ts
-function object(shape) {
-  return {
-    validate(value) {
-      if (typeof value !== "object" || value === null || Array.isArray(value)) {
-        return failure([], "Expected object", value);
-      }
-      const result = {};
-      for (const [key, validator] of Object.entries(shape)) {
-        const fieldValue = value[key];
-        const validationResult = validator.validate(fieldValue);
-        if (!validationResult.success) {
-          return {
-            success: false,
-            error: { ...validationResult.error, path: [key, ...validationResult.error.path] }
-          };
-        }
-        result[key] = validationResult.data;
-      }
-      return success(result);
-    }
-  };
-}
-function optional(validator) {
-  return {
-    validate(value) {
-      if (value === void 0) return success(void 0);
-      return validator.validate(value);
-    }
-  };
-}
-function nullable(validator) {
-  return {
-    validate(value) {
-      if (value === null) return success(null);
-      return validator.validate(value);
-    }
-  };
-}
-
-// src/schemas/stdin-schema.ts
-var ContextUsageSchema = object({
-  input_tokens: number(),
-  output_tokens: number(),
-  cache_creation_input_tokens: number(),
-  cache_read_input_tokens: number()
-});
-var CostInfoSchema = object({
-  total_cost_usd: optional(number()),
-  total_duration_ms: optional(number()),
-  total_api_duration_ms: optional(number()),
-  total_lines_added: optional(number()),
-  total_lines_removed: optional(number())
-});
-var ContextWindowSchema = object({
-  total_input_tokens: number(),
-  total_output_tokens: number(),
-  context_window_size: number(),
-  current_usage: nullable(ContextUsageSchema)
-});
-var ModelInfoSchema = object({
-  id: string(),
-  display_name: string()
-});
-var WorkspaceSchema = object({
-  current_dir: string(),
-  project_dir: string()
-});
-var OutputStyleSchema = object({
-  name: string()
-});
-var StdinDataSchema = object({
-  hook_event_name: optional(literal("Status")),
-  session_id: string(),
-  transcript_path: string(),
-  cwd: string(),
-  model: ModelInfoSchema,
-  workspace: WorkspaceSchema,
-  version: string(),
-  output_style: OutputStyleSchema,
-  cost: optional(CostInfoSchema),
-  context_window: ContextWindowSchema
-});
-
-// src/data/stdin-provider.ts
-var StdinParseError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "StdinParseError";
-  }
-};
-var StdinValidationError = class extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "StdinValidationError";
-  }
-};
-var StdinProvider = class {
-  /**
-   * Parse and validate JSON string from stdin
-   * @param input JSON string to parse
-   * @returns Validated StdinData object
-   * @throws StdinParseError if JSON is malformed
-   * @throws StdinValidationError if data doesn't match schema
-   */
-  async parse(input) {
-    if (!input || input.trim().length === 0) {
-      throw new StdinParseError("stdin data is empty");
-    }
-    let data;
-    try {
-      data = JSON.parse(input);
-    } catch (error) {
-      throw new StdinParseError(`Invalid JSON: ${error.message}`);
-    }
-    const result = StdinDataSchema.validate(data);
-    if (!result.success) {
-      throw new StdinValidationError(`Validation failed: ${formatError(result.error)}`);
-    }
-    return result.data;
-  }
-  /**
-   * Safe parse that returns result instead of throwing
-   * Useful for testing and optional validation
-   * @param input JSON string to parse
-   * @returns Result object with success flag
-   */
-  async safeParse(input) {
-    try {
-      const data = await this.parse(input);
-      return { success: true, data };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  }
-};
-
 // src/index.ts
 async function readStdin() {
   const chunks = [];
@@ -2764,6 +3717,7 @@ async function main() {
     const provider = new StdinProvider();
     const stdinData = await provider.parse(stdin);
     const registry = new WidgetRegistry();
+    const transcriptProvider = new TranscriptProvider();
     await registry.register(new ModelWidget());
     await registry.register(new ContextWidget());
     await registry.register(new CostWidget());
@@ -2772,6 +3726,12 @@ async function main() {
     await registry.register(new GitWidget());
     await registry.register(new GitTagWidget());
     await registry.register(new ConfigCountWidget());
+    if (isWidgetEnabled("cacheMetrics")) {
+      await registry.register(new CacheMetricsWidget(DEFAULT_THEME));
+    }
+    if (isWidgetEnabled("activeTools")) {
+      await registry.register(new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider));
+    }
     await registry.register(new PokerWidget());
     await registry.register(new EmptyLineWidget());
     const renderer = new Renderer({

@@ -16,6 +16,7 @@ export function isValidWidgetStyle(value) {
         "labeled",
         "indicator",
         "emoji",
+        "breakdown",
     ].includes(value);
 }
 //# sourceMappingURL=style-types.js.map
