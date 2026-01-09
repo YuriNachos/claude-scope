@@ -127,7 +127,7 @@ describe("ContextWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("\x1b[90m"); // Gray ANSI code (default)
+    expect(result).to.include("\x1b[38;2;244;71;71m"); // VSCode red
   });
 
   it("should handle 0% usage", async () => {
