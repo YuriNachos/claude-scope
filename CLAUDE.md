@@ -23,7 +23,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - Update throttling (5 seconds minimum between hand regeneration)
 - Empty line separator widget (4th line)
 
-**Planned features**: Active tools, running agents, todo progress, session analytics, configuration system.
+**Planned features**: Running agents, todo progress, session analytics, configuration system.
 
 ## Architecture
 
@@ -60,6 +60,14 @@ src/
 │   ├── config-count-widget.ts # Configuration counts widget
 │   ├── duration-widget.ts    # Session duration formatter
 │   └── model-widget.ts       # Model display widget
+│   ├── active-tools/         # Active tools from transcript
+│   │   ├── types.ts          # Active tools types
+│   │   ├── styles.ts         # Active tools styles
+│   │   └── active-tools-widget.ts
+│   └── cache-metrics/        # Cache metrics widget
+│       ├── types.ts          # Cache metrics types
+│       ├── styles.ts         # Cache metrics styles
+│       └── cache-metrics-widget.ts
 ├── ui/
 │   ├── theme/                # Theme system and color configuration
 │   │   ├── index.ts          # Theme exports
@@ -105,8 +113,11 @@ src/
 │   ├── duration-widget.ts    # ✓ Implemented
 │   ├── model-widget.ts       # ✓ Implemented
 │   ├── empty-line-widget.ts  # ✓ Implemented (blank separator)
+│   ├── active-tools/         # ✓ Implemented (transcript-based tool tracking)
+│   │   └── active-tools-widget.ts
+│   └── cache-metrics/        # ✓ Implemented (cache hit rate & savings)
+│       └── cache-metrics-widget.ts
 │   ├── session-widget.ts     # PLANNED
-│   ├── tools-widget.ts       # PLANNED
 │   ├── agents-widget.ts      # PLANNED
 │   ├── todos-widget.ts       # PLANNED
 │   └── analytics-widget.ts   # PLANNED
@@ -167,6 +178,8 @@ interface IThemeColors {
   duration: IDurationColors;// Session duration
   model: IModelColors;      // Model name display
   poker: IPokerColors;      // Poker game display
+  cache: ICacheColors;      // Cache metrics (hit rate, savings)
+  tools: IToolsColors;      // Active tools (running, completed)
 }
 ```
 
@@ -184,6 +197,25 @@ interface IContextColors {
 interface ILinesColors {
   added: string;    // Color for added lines (+N)
   removed: string;  // Color for removed lines (-N)
+}
+
+// CacheMetricsWidget colors
+interface ICacheColors {
+  high: string;     // Color for high cache hit rate (>70%)
+  medium: string;   // Color for medium cache hit rate (40-70%)
+  low: string;      // Color for low cache hit rate (<40%)
+  read: string;     // Color for cache read amount
+  write: string;    // Color for cache write amount
+}
+
+// ActiveToolsWidget colors
+interface IToolsColors {
+  running: string;  // Color for running tool indicator
+  completed: string;// Color for completed tool indicator
+  error: string;    // Color for error tool indicator
+  name: string;     // Color for tool name
+  target: string;   // Color for tool target/path
+  count: string;    // Color for tool count multiplier
 }
 ```
 
@@ -353,6 +385,30 @@ labeled:     Tag: v0.5.4
 indicator:   ● v0.5.4
 ```
 
+**CacheMetricsWidget** (shows cache hit rate):
+```
+balanced:    💾 70% cached (35.0k tokens)
+compact:     Cache: 70%
+playful:     💾 [███████░░░] 70%
+verbose:     Cache: 35.0k tokens (70%) | $0.09 saved
+labeled:     Cache Hit: 70% | $0.09 saved
+indicator:   ● 70% cached
+breakdown:   💾 70% [███████░░░] | $0.09 saved
+              ├─ Read: 35.0k tokens
+              └─ Write: 5.0k tokens
+```
+
+**ActiveToolsWidget** (shows active and completed tools):
+```
+balanced:    ◐ Read: /src/example.ts | ✓ Edit ×3 | ✓ Read ×2
+compact:     [Read] [Edit] [Edit] [Edit] [Read] [Read]
+minimal:     [Read] [Edit] [Edit] [Edit] [Read] [Read]
+playful:     📖 Read, ✏️ Edit, 📖 Read
+verbose:     Running: Read: /src/example.ts | Completed: Edit (3x) | Completed: Read (2x)
+labeled:     Tools: ◐ Read: /src/example.ts | ✓ Edit ×3 | ✓ Read ×2
+indicator:   ● Read: /src/example.ts | ● Edit ×3 | ● Read ×2
+```
+
 #### Style Implementation
 
 Styles are implemented as functional renderers in each widget's styles file:
@@ -404,7 +460,8 @@ export type WidgetStyle =
   | "labeled"
   | "indicator"
   | "emoji"
-  | "compact-verbose";
+  | "compact-verbose"
+  | "breakdown";  // CacheMetricsWidget multi-line style
 ```
 
 ### Widget Base Class
@@ -419,6 +476,40 @@ abstract class StdinDataWidget implements IWidget {
   // update(), isEnabled(), initialize() provided
 }
 ```
+
+### Active Widgets (Implemented)
+
+#### 11. **CacheMetricsWidget** (`src/widgets/cache-metrics/cache-metrics-widget.ts`)
+- **What it displays**: Cache hit rate and cost savings
+- **Status**: ✅ **IMPLEMENTED**
+- **Features**:
+  - Shows cache hit percentage with color coding (high >70%, medium 40-70%, low <40%)
+  - Displays cache read/write token amounts
+  - Calculates cost savings from caching (cache costs 10% of regular tokens)
+  - Supports multi-line breakdown style showing read/write breakdown
+  - Theme-integrated colors via `ICacheColors`
+
+#### 12. **ActiveToolsWidget** (`src/widgets/active-tools/active-tools-widget.ts`)
+- **What it displays**: Currently running and recently completed tools
+- **Status**: ✅ **IMPLEMENTED**
+- **Features**:
+  - Parses Claude Code's transcript file for tool lifecycle tracking
+  - Shows running tools with spinner indicator (◐)
+  - Aggregates completed tools by name with counts (×3)
+  - Displays tool targets (file paths, patterns, commands)
+  - Supports multiple display styles (balanced, compact, playful, etc.)
+  - Limits to last 20 tool entries
+  - Theme-integrated colors via `IToolsColors`
+
+### Line Distribution
+
+Widgets are assigned to specific lines for multi-line statusline display:
+
+- **Line 0** (first line): GitWidget, ContextWidget, CostWidget, DurationWidget, ModelWidget, LinesWidget
+- **Line 1** (second line): ConfigCountWidget, GitTagWidget
+- **Line 2** (third line): ActiveToolsWidget, CacheMetricsWidget
+- **Line 4** (fifth line): PokerWidget (entertainment)
+- **Line 5** (sixth line): EmptyLineWidget (separator)
 
 ### Stdin Data Format
 
