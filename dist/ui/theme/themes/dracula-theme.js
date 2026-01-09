@@ -1,0 +1,24 @@
+/**
+ * Dracula theme
+ * Purple/pink accent theme
+ * https://draculatheme.com/
+ */
+import { createThemeColors, rgb } from "../helpers.js";
+export const DRACULA_THEME = {
+    name: "dracula",
+    description: "Purple/pink accent theme",
+    colors: createThemeColors({
+        branch: rgb(189, 147, 249), // Purple
+        changes: rgb(139, 233, 253), // Cyan
+        contextLow: rgb(80, 250, 123), // Green
+        contextMedium: rgb(241, 250, 140), // Yellow
+        contextHigh: rgb(255, 85, 85), // Red
+        linesAdded: rgb(80, 250, 123), // Green
+        linesRemoved: rgb(255, 85, 85), // Red
+        cost: rgb(255, 184, 108), // Orange
+        model: rgb(98, 114, 164), // Comment gray
+        duration: rgb(68, 71, 90), // Selection gray
+        accent: rgb(189, 147, 249), // Purple
+    }),
+};
+//# sourceMappingURL=dracula-theme.js.map

@@ -285,59 +285,558 @@ function colorize(text, color) {
   return `${color}${text}${reset}`;
 }
 
+// src/ui/theme/helpers.ts
+function rgb(r, g, b) {
+  return `\x1B[38;2;${r};${g};${b}m`;
+}
+function createBaseColors(params) {
+  return {
+    text: params.modelColor,
+    muted: params.durationColor,
+    accent: params.accentColor,
+    border: params.durationColor
+  };
+}
+function createSemanticColors(params) {
+  return {
+    success: params.contextLow,
+    warning: params.contextMedium,
+    error: params.contextHigh,
+    info: params.branchColor
+  };
+}
+function createThemeColors(params) {
+  const base = createBaseColors({
+    modelColor: params.model,
+    durationColor: params.duration,
+    accentColor: params.accent
+  });
+  const semantic = createSemanticColors({
+    contextLow: params.contextLow,
+    contextMedium: params.contextMedium,
+    contextHigh: params.contextHigh,
+    branchColor: params.branch
+  });
+  return {
+    base,
+    semantic,
+    git: {
+      branch: params.branch,
+      changes: params.changes
+    },
+    context: {
+      low: params.contextLow,
+      medium: params.contextMedium,
+      high: params.contextHigh,
+      bar: params.contextLow
+    },
+    lines: {
+      added: params.linesAdded,
+      removed: params.linesRemoved
+    },
+    cost: {
+      amount: params.cost,
+      currency: params.cost
+    },
+    duration: {
+      value: params.duration,
+      unit: params.duration
+    },
+    model: {
+      name: params.model,
+      version: params.model
+    },
+    poker: {
+      participating: params.model,
+      nonParticipating: params.duration,
+      result: params.accent
+    }
+  };
+}
+
 // src/ui/theme/gray-theme.ts
 var GRAY_THEME = {
   name: "gray",
   description: "Neutral gray theme for minimal color distraction",
-  colors: {
-    base: {
-      text: gray,
-      muted: gray,
-      accent: gray,
-      border: gray
-    },
-    semantic: {
-      success: gray,
-      warning: gray,
-      error: gray,
-      info: gray
-    },
-    git: {
-      branch: gray,
-      changes: gray
-    },
-    context: {
-      low: gray,
-      medium: gray,
-      high: gray,
-      bar: gray
-    },
-    lines: {
-      added: gray,
-      removed: gray
-    },
-    cost: {
-      amount: gray,
-      currency: gray
-    },
-    duration: {
-      value: gray,
-      unit: gray
-    },
-    model: {
-      name: gray,
-      version: gray
-    },
-    poker: {
-      participating: lightGray,
-      nonParticipating: gray,
-      result: gray
-    }
-  }
+  colors: createThemeColors({
+    branch: gray,
+    changes: gray,
+    contextLow: gray,
+    contextMedium: gray,
+    contextHigh: gray,
+    linesAdded: gray,
+    linesRemoved: gray,
+    cost: gray,
+    model: gray,
+    duration: gray,
+    accent: gray
+  })
+};
+
+// src/ui/theme/themes/catppuccin-mocha-theme.ts
+var CATPPUCCIN_MOCHA_THEME = {
+  name: "catppuccin-mocha",
+  description: "Soothing pastel theme",
+  colors: createThemeColors({
+    branch: rgb(137, 180, 250),
+    // Blue
+    changes: rgb(166, 227, 161),
+    // Green
+    contextLow: rgb(166, 227, 161),
+    // Green
+    contextMedium: rgb(238, 212, 159),
+    // Yellow
+    contextHigh: rgb(243, 139, 168),
+    // Red
+    linesAdded: rgb(166, 227, 161),
+    // Green
+    linesRemoved: rgb(243, 139, 168),
+    // Red
+    cost: rgb(245, 224, 220),
+    // Rosewater
+    model: rgb(203, 166, 247),
+    // Mauve
+    duration: rgb(147, 153, 178),
+    // Text gray
+    accent: rgb(243, 139, 168)
+    // Pink
+  })
+};
+
+// src/ui/theme/themes/cyberpunk-neon-theme.ts
+var CYBERPUNK_NEON_THEME = {
+  name: "cyberpunk-neon",
+  description: "High-contrast neon cyberpunk aesthetic",
+  colors: createThemeColors({
+    branch: rgb(0, 191, 255),
+    // Cyan neon
+    changes: rgb(255, 0, 122),
+    // Magenta neon
+    contextLow: rgb(0, 255, 122),
+    // Green neon
+    contextMedium: rgb(255, 214, 0),
+    // Yellow neon
+    contextHigh: rgb(255, 0, 122),
+    // Magenta neon
+    linesAdded: rgb(0, 255, 122),
+    // Green neon
+    linesRemoved: rgb(255, 0, 122),
+    // Magenta neon
+    cost: rgb(255, 111, 97),
+    // Orange neon
+    model: rgb(140, 27, 255),
+    // Purple neon
+    duration: rgb(0, 191, 255),
+    // Cyan neon
+    accent: rgb(255, 0, 122)
+    // Magenta neon
+  })
+};
+
+// src/ui/theme/themes/dracula-theme.ts
+var DRACULA_THEME = {
+  name: "dracula",
+  description: "Purple/pink accent theme",
+  colors: createThemeColors({
+    branch: rgb(189, 147, 249),
+    // Purple
+    changes: rgb(139, 233, 253),
+    // Cyan
+    contextLow: rgb(80, 250, 123),
+    // Green
+    contextMedium: rgb(241, 250, 140),
+    // Yellow
+    contextHigh: rgb(255, 85, 85),
+    // Red
+    linesAdded: rgb(80, 250, 123),
+    // Green
+    linesRemoved: rgb(255, 85, 85),
+    // Red
+    cost: rgb(255, 184, 108),
+    // Orange
+    model: rgb(98, 114, 164),
+    // Comment gray
+    duration: rgb(68, 71, 90),
+    // Selection gray
+    accent: rgb(189, 147, 249)
+    // Purple
+  })
+};
+
+// src/ui/theme/themes/dusty-sage-theme.ts
+var DUSTY_SAGE_THEME = {
+  name: "dusty-sage",
+  description: "Earthy muted greens with peaceful forest fog aesthetic",
+  colors: createThemeColors({
+    branch: rgb(120, 140, 130),
+    // Dusty green
+    changes: rgb(135, 145, 140),
+    // Sage gray
+    contextLow: rgb(135, 145, 140),
+    // Subtle sage (low)
+    contextMedium: rgb(150, 160, 145),
+    // Medium sage
+    contextHigh: rgb(165, 175, 160),
+    // Light sage (high)
+    linesAdded: rgb(135, 145, 140),
+    linesRemoved: rgb(135, 145, 140),
+    cost: rgb(156, 163, 175),
+    model: rgb(148, 163, 184),
+    duration: rgb(120, 130, 140),
+    accent: rgb(120, 140, 130)
+  })
+};
+
+// src/ui/theme/themes/github-dark-dimmed-theme.ts
+var GITHUB_DARK_DIMMED_THEME = {
+  name: "github-dark-dimmed",
+  description: "GitHub's official dark theme (dimmed)",
+  colors: createThemeColors({
+    branch: rgb(88, 166, 255),
+    // GitHub blue
+    changes: rgb(156, 220, 254),
+    // Light blue
+    contextLow: rgb(35, 134, 54),
+    // GitHub green
+    contextMedium: rgb(210, 153, 34),
+    // GitHub orange
+    contextHigh: rgb(248, 81, 73),
+    // GitHub red
+    linesAdded: rgb(35, 134, 54),
+    // GitHub green
+    linesRemoved: rgb(248, 81, 73),
+    // GitHub red
+    cost: rgb(163, 113, 247),
+    // Purple
+    model: rgb(201, 209, 217),
+    // Gray
+    duration: rgb(110, 118, 129),
+    // Dark gray
+    accent: rgb(88, 166, 255)
+    // GitHub blue
+  })
+};
+
+// src/ui/theme/themes/monokai-theme.ts
+var MONOKAI_THEME = {
+  name: "monokai",
+  description: "Vibrant, high-contrast",
+  colors: createThemeColors({
+    branch: rgb(102, 217, 239),
+    // Cyan
+    changes: rgb(249, 26, 114),
+    // Pink
+    contextLow: rgb(166, 226, 46),
+    // Green
+    contextMedium: rgb(253, 151, 31),
+    // Orange
+    contextHigh: rgb(249, 26, 114),
+    // Pink
+    linesAdded: rgb(166, 226, 46),
+    // Green
+    linesRemoved: rgb(249, 26, 114),
+    // Pink
+    cost: rgb(254, 128, 25),
+    // Bright orange
+    model: rgb(174, 129, 255),
+    // Purple
+    duration: rgb(102, 217, 239),
+    // Cyan
+    accent: rgb(249, 26, 114)
+    // Pink
+  })
+};
+
+// src/ui/theme/themes/muted-gray-theme.ts
+var MUTED_GRAY_THEME = {
+  name: "muted-gray",
+  description: "Very subtle grays with almost invisible progress bar",
+  colors: createThemeColors({
+    branch: rgb(156, 163, 175),
+    // Slate gray
+    changes: rgb(148, 163, 184),
+    // Lighter slate
+    contextLow: rgb(148, 163, 184),
+    // Subtle gray (low)
+    contextMedium: rgb(160, 174, 192),
+    // Medium gray
+    contextHigh: rgb(175, 188, 201),
+    // Light gray (high)
+    linesAdded: rgb(148, 163, 184),
+    linesRemoved: rgb(148, 163, 184),
+    cost: rgb(156, 163, 175),
+    model: rgb(148, 163, 184),
+    duration: rgb(107, 114, 128),
+    accent: rgb(156, 163, 175)
+  })
+};
+
+// src/ui/theme/themes/nord-theme.ts
+var NORD_THEME = {
+  name: "nord",
+  description: "Arctic, north-bluish color palette",
+  colors: createThemeColors({
+    branch: rgb(136, 192, 208),
+    // Nordic cyan
+    changes: rgb(143, 188, 187),
+    // Nordic blue-gray
+    contextLow: rgb(163, 190, 140),
+    // Nordic green
+    contextMedium: rgb(235, 203, 139),
+    // Nordic yellow
+    contextHigh: rgb(191, 97, 106),
+    // Nordic red
+    linesAdded: rgb(163, 190, 140),
+    // Nordic green
+    linesRemoved: rgb(191, 97, 106),
+    // Nordic red
+    cost: rgb(216, 222, 233),
+    // Nordic white
+    model: rgb(129, 161, 193),
+    // Nordic blue
+    duration: rgb(94, 129, 172),
+    // Nordic dark blue
+    accent: rgb(136, 192, 208)
+    // Nordic cyan
+  })
+};
+
+// src/ui/theme/themes/one-dark-pro-theme.ts
+var ONE_DARK_PRO_THEME = {
+  name: "one-dark-pro",
+  description: "Atom's iconic theme",
+  colors: createThemeColors({
+    branch: rgb(97, 175, 239),
+    // Blue
+    changes: rgb(152, 195, 121),
+    // Green
+    contextLow: rgb(152, 195, 121),
+    // Green
+    contextMedium: rgb(229, 192, 123),
+    // Yellow
+    contextHigh: rgb(224, 108, 117),
+    // Red
+    linesAdded: rgb(152, 195, 121),
+    // Green
+    linesRemoved: rgb(224, 108, 117),
+    // Red
+    cost: rgb(209, 154, 102),
+    // Orange
+    model: rgb(171, 178, 191),
+    // Gray
+    duration: rgb(125, 148, 173),
+    // Dark gray
+    accent: rgb(97, 175, 239)
+    // Blue
+  })
+};
+
+// src/ui/theme/themes/professional-blue-theme.ts
+var PROFESSIONAL_BLUE_THEME = {
+  name: "professional-blue",
+  description: "Clean, business-oriented blue color scheme",
+  colors: createThemeColors({
+    branch: rgb(37, 99, 235),
+    // Royal blue
+    changes: rgb(148, 163, 184),
+    // Slate gray
+    contextLow: rgb(96, 165, 250),
+    // Light blue
+    contextMedium: rgb(251, 191, 36),
+    // Amber
+    contextHigh: rgb(248, 113, 113),
+    // Red
+    linesAdded: rgb(74, 222, 128),
+    // Green
+    linesRemoved: rgb(248, 113, 113),
+    // Red
+    cost: rgb(251, 146, 60),
+    // Orange
+    model: rgb(167, 139, 250),
+    // Purple
+    duration: rgb(203, 213, 225),
+    // Light gray
+    accent: rgb(37, 99, 235)
+    // Royal blue
+  })
+};
+
+// src/ui/theme/themes/rose-pine-theme.ts
+var ROSE_PINE_THEME = {
+  name: "rose-pine",
+  description: "Rose/violet themed",
+  colors: createThemeColors({
+    branch: rgb(156, 207, 216),
+    // Pine cyan
+    changes: rgb(235, 188, 186),
+    // Rose
+    contextLow: rgb(156, 207, 216),
+    // Pine cyan
+    contextMedium: rgb(233, 201, 176),
+    // Pine beige
+    contextHigh: rgb(235, 111, 146),
+    // Pine red
+    linesAdded: rgb(156, 207, 216),
+    // Pine cyan
+    linesRemoved: rgb(235, 111, 146),
+    // Pine red
+    cost: rgb(226, 185, 218),
+    // Pine pink
+    model: rgb(224, 208, 245),
+    // Pine violet
+    duration: rgb(148, 137, 176),
+    // Pine mute
+    accent: rgb(235, 111, 146)
+    // Pine red
+  })
+};
+
+// src/ui/theme/themes/semantic-classic-theme.ts
+var SEMANTIC_CLASSIC_THEME = {
+  name: "semantic-classic",
+  description: "Industry-standard semantic colors for maximum clarity",
+  colors: createThemeColors({
+    branch: rgb(59, 130, 246),
+    // Blue
+    changes: rgb(107, 114, 128),
+    // Gray
+    contextLow: rgb(34, 197, 94),
+    // Green
+    contextMedium: rgb(234, 179, 8),
+    // Yellow
+    contextHigh: rgb(239, 68, 68),
+    // Red
+    linesAdded: rgb(34, 197, 94),
+    // Green
+    linesRemoved: rgb(239, 68, 68),
+    // Red
+    cost: rgb(249, 115, 22),
+    // Orange
+    model: rgb(99, 102, 241),
+    // Indigo
+    duration: rgb(107, 114, 128),
+    // Gray
+    accent: rgb(59, 130, 246)
+    // Blue
+  })
+};
+
+// src/ui/theme/themes/slate-blue-theme.ts
+var SLATE_BLUE_THEME = {
+  name: "slate-blue",
+  description: "Calm blue-grays with gentle ocean tones",
+  colors: createThemeColors({
+    branch: rgb(100, 116, 139),
+    // Cool slate
+    changes: rgb(148, 163, 184),
+    // Neutral slate
+    contextLow: rgb(148, 163, 184),
+    // Subtle slate-blue (low)
+    contextMedium: rgb(160, 174, 192),
+    // Medium slate
+    contextHigh: rgb(175, 188, 201),
+    // Light slate (high)
+    linesAdded: rgb(148, 163, 184),
+    linesRemoved: rgb(148, 163, 184),
+    cost: rgb(156, 163, 175),
+    model: rgb(148, 163, 184),
+    duration: rgb(100, 116, 139),
+    accent: rgb(100, 116, 139)
+  })
+};
+
+// src/ui/theme/themes/solarized-dark-theme.ts
+var SOLARIZED_DARK_THEME = {
+  name: "solarized-dark",
+  description: "Precise CIELAB lightness",
+  colors: createThemeColors({
+    branch: rgb(38, 139, 210),
+    // Blue
+    changes: rgb(133, 153, 0),
+    // Olive
+    contextLow: rgb(133, 153, 0),
+    // Olive
+    contextMedium: rgb(181, 137, 0),
+    // Yellow
+    contextHigh: rgb(220, 50, 47),
+    // Red
+    linesAdded: rgb(133, 153, 0),
+    // Olive
+    linesRemoved: rgb(220, 50, 47),
+    // Red
+    cost: rgb(203, 75, 22),
+    // Orange
+    model: rgb(131, 148, 150),
+    // Base0
+    duration: rgb(88, 110, 117),
+    // Base01
+    accent: rgb(38, 139, 210)
+    // Blue
+  })
+};
+
+// src/ui/theme/themes/tokyo-night-theme.ts
+var TOKYO_NIGHT_THEME = {
+  name: "tokyo-night",
+  description: "Clean, dark Tokyo-inspired",
+  colors: createThemeColors({
+    branch: rgb(122, 132, 173),
+    // Blue
+    changes: rgb(122, 162, 247),
+    // Dark blue
+    contextLow: rgb(146, 180, 203),
+    // Cyan
+    contextMedium: rgb(232, 166, 162),
+    // Pink-red
+    contextHigh: rgb(249, 86, 119),
+    // Red
+    linesAdded: rgb(146, 180, 203),
+    // Cyan
+    linesRemoved: rgb(249, 86, 119),
+    // Red
+    cost: rgb(158, 206, 209),
+    // Teal
+    model: rgb(169, 177, 214),
+    // White-ish
+    duration: rgb(113, 119, 161),
+    // Dark blue-gray
+    accent: rgb(122, 132, 173)
+    // Blue
+  })
+};
+
+// src/ui/theme/themes/vscode-dark-plus-theme.ts
+var VSCODE_DARK_PLUS_THEME = {
+  name: "vscode-dark-plus",
+  description: "Visual Studio Code's default dark theme (claude-scope default)",
+  colors: createThemeColors({
+    branch: rgb(0, 122, 204),
+    // VSCode blue
+    changes: rgb(78, 201, 176),
+    // Teal
+    contextLow: rgb(78, 201, 176),
+    // Teal
+    contextMedium: rgb(220, 220, 170),
+    // Yellow
+    contextHigh: rgb(244, 71, 71),
+    // Red
+    linesAdded: rgb(78, 201, 176),
+    // Teal
+    linesRemoved: rgb(244, 71, 71),
+    // Red
+    cost: rgb(206, 145, 120),
+    // Orange
+    model: rgb(171, 178, 191),
+    // Gray
+    duration: rgb(125, 148, 173),
+    // Dark gray
+    accent: rgb(0, 122, 204)
+    // VSCode blue
+  })
 };
 
 // src/ui/theme/index.ts
-var DEFAULT_THEME = GRAY_THEME.colors;
+var DEFAULT_THEME = VSCODE_DARK_PLUS_THEME.colors;
 
 // src/ui/utils/style-utils.ts
 function withLabel(prefix, value) {
