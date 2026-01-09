@@ -2,7 +2,6 @@
  * Unit tests for CacheMetricsWidget
  */
 
-import assert from "node:assert";
 import { beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
 import { CacheManager } from "../../../src/storage/cache-manager.js";

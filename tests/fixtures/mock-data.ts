@@ -2,27 +2,27 @@
  * Mock data fixtures for testing
  */
 
-import type { StdinData } from '../../src/types.js';
+import type { StdinData } from "../../src/types.js";
 
 /**
  * Create mock StdinData with optional overrides
  */
 export function createMockStdinData(overrides: Partial<StdinData> = {}): StdinData {
   return {
-    hook_event_name: 'Status',
-    session_id: 'test-session',
-    transcript_path: '/test/transcript.json',
-    cwd: '/test/project',
-    model: { id: 'test-model', display_name: 'Test Model' },
-    workspace: { current_dir: '/test/project', project_dir: '/test/project' },
-    version: '1.0.0',
-    output_style: { name: 'default' },
+    hook_event_name: "Status",
+    session_id: "test-session",
+    transcript_path: "/test/transcript.json",
+    cwd: "/test/project",
+    model: { id: "test-model", display_name: "Test Model" },
+    workspace: { current_dir: "/test/project", project_dir: "/test/project" },
+    version: "1.0.0",
+    output_style: { name: "default" },
     cost: {
       total_cost_usd: 0.01,
       total_duration_ms: 60000,
       total_api_duration_ms: 5000,
       total_lines_added: 10,
-      total_lines_removed: 5
+      total_lines_removed: 5,
     },
     context_window: {
       total_input_tokens: 1000,
@@ -32,9 +32,9 @@ export function createMockStdinData(overrides: Partial<StdinData> = {}): StdinDa
         input_tokens: 500,
         output_tokens: 250,
         cache_creation_input_tokens: 100,
-        cache_read_input_tokens: 50
-      }
+        cache_read_input_tokens: 50,
+      },
     },
-    ...overrides
+    ...overrides,
   };
 }

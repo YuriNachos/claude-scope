@@ -60,7 +60,7 @@ export class Renderer {
       if (!lineMap.has(line)) {
         lineMap.set(line, []);
       }
-      lineMap.get(line)!.push(widget);
+      lineMap.get(line)?.push(widget);
     }
 
     // Render each line

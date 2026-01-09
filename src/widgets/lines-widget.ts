@@ -5,7 +5,7 @@
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
 
-import type { StyleMap, StyleRendererFn, WidgetStyle } from "../core/style-types.js";
+import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";

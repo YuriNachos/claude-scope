@@ -20,7 +20,7 @@ export const costStyles: StyleMap<CostRenderData, ICostColors> = {
   },
 
   compact: (data: CostRenderData, colors?: ICostColors) => {
-    return costStyles.balanced!(data, colors);
+    return costStyles.balanced?.(data, colors);
   },
 
   playful: (data: CostRenderData, colors?: ICostColors) => {

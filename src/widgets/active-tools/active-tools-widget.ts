@@ -98,7 +98,7 @@ export class ActiveToolsWidget extends StdinDataWidget {
    * @param context - Render context
    * @returns Rendered string or null if no tools
    */
-  protected renderWithData(data: StdinData, context: RenderContext): string | null {
+  protected renderWithData(_data: StdinData, _context: RenderContext): string | null {
     if (!this.renderData || this.tools.length === 0) {
       return null;
     }

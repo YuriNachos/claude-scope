@@ -1,5 +1,5 @@
-import { createReadStream, existsSync } from "fs";
-import { createInterface } from "readline";
+import { createReadStream, existsSync } from "node:fs";
+import { createInterface } from "node:readline";
 import type { ToolEntry } from "./transcript-types.js";
 
 /**
@@ -137,6 +137,6 @@ export class TranscriptProvider implements ITranscriptProvider {
    */
   private truncateCommand(cmd: string): string {
     if (cmd.length <= 30) return cmd;
-    return cmd.slice(0, 30) + "...";
+    return `${cmd.slice(0, 30)}...`;
   }
 }

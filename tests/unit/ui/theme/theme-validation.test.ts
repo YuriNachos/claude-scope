@@ -6,7 +6,6 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
 import { AVAILABLE_THEMES } from "../../../../src/ui/theme/index.js";
-import type { ITheme } from "../../../../src/ui/theme/types.js";
 
 describe("Theme Validation", () => {
   // ANSI color patterns:

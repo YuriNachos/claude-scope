@@ -1,6 +1,5 @@
 import type { InferValidator, Validator } from "./core.js";
 import { failure, success } from "./result.js";
-import { string } from "./validators.js";
 
 export function object<T extends Record<string, Validator<any>>>(
   shape: T

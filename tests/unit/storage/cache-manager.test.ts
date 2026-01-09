@@ -97,8 +97,8 @@ describe("CacheManager", () => {
       const result = manager.getCachedUsage(sessionId);
 
       assert.notStrictEqual(result, null);
-      assert.ok(result!.timestamp >= beforeTimestamp);
-      assert.ok(result!.timestamp <= afterTimestamp);
+      assert.ok(result?.timestamp >= beforeTimestamp);
+      assert.ok(result?.timestamp <= afterTimestamp);
     });
 
     it("should overwrite existing cache for same session", () => {

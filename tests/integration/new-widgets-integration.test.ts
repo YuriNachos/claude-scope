@@ -2,14 +2,13 @@
  * Integration tests for new widgets (CacheMetricsWidget and ActiveToolsWidget)
  */
 
+import { unlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, it } from "node:test";
 import { expect } from "chai";
-import { unlinkSync, writeFileSync } from "fs";
-import { tmpdir } from "os";
-import { join } from "path";
 import { Renderer } from "../../src/core/renderer.js";
 import { TranscriptProvider } from "../../src/providers/transcript-provider.js";
-import type { StdinData } from "../../src/types.js";
 import { DEFAULT_THEME } from "../../src/ui/theme/index.js";
 import { ActiveToolsWidget } from "../../src/widgets/active-tools/index.js";
 import { CacheMetricsWidget } from "../../src/widgets/cache-metrics/index.js";
@@ -19,7 +18,7 @@ describe("New Widgets Integration", () => {
   describe("CacheMetricsWidget", () => {
     it("should work with widget renderer", async () => {
       const widget = new CacheMetricsWidget(DEFAULT_THEME);
-      const renderer = new Renderer();
+      const _renderer = new Renderer();
 
       const data = createMockStdinData({
         context_window: {
@@ -54,7 +53,7 @@ describe("New Widgets Integration", () => {
       const transcriptPath = join(tmpdir(), `test-${Date.now()}.jsonl`);
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               {
@@ -65,7 +64,7 @@ describe("New Widgets Integration", () => {
               },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
       const provider = new TranscriptProvider();
@@ -100,7 +99,7 @@ describe("New Widgets Integration", () => {
       const transcriptPath = join(tmpdir(), `test-${Date.now()}.jsonl`);
       writeFileSync(
         transcriptPath,
-        [
+        `${[
           JSON.stringify({
             message: {
               content: [
@@ -147,7 +146,7 @@ describe("New Widgets Integration", () => {
               ],
             },
           }),
-        ].join("\n") + "\n"
+        ].join("\n")}\n`
       );
 
       const provider = new TranscriptProvider();
@@ -189,7 +188,7 @@ describe("New Widgets Integration", () => {
       const transcriptPath = join(tmpdir(), `test-${Date.now()}.jsonl`);
       writeFileSync(
         transcriptPath,
-        JSON.stringify({
+        `${JSON.stringify({
           message: {
             content: [
               {
@@ -200,10 +199,10 @@ describe("New Widgets Integration", () => {
               },
             ],
           },
-        }) + "\n"
+        })}\n`
       );
 
-      const registry = {
+      const _registry = {
         getAllEnabledWidgets: () => [],
         register: async () => {},
       };

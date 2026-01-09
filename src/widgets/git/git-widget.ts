@@ -63,7 +63,7 @@ export class GitWidget implements IWidget {
     this.enabled = context.config?.enabled !== false;
   }
 
-  async render(context: RenderContext): Promise<string | null> {
+  async render(_context: RenderContext): Promise<string | null> {
     if (!this.enabled || !this.git || !this.cwd) {
       return null;
     }

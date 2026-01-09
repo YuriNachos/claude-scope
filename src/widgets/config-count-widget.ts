@@ -61,7 +61,7 @@ export class ConfigCountWidget implements IWidget {
     return claudeMdCount > 0 || rulesCount > 0 || mcpCount > 0 || hooksCount > 0;
   }
 
-  async render(context: RenderContext): Promise<string | null> {
+  async render(_context: RenderContext): Promise<string | null> {
     if (!this.configs) {
       return null;
     }

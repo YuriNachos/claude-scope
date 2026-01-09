@@ -1,9 +1,9 @@
-import { describe, it } from "node:test";
 import assert from "node:assert";
+import { describe, it } from "node:test";
 import {
-  type StyleRenderer,
   BaseStyleRenderer,
   type RenderData,
+  type StyleRenderer,
 } from "../../../src/core/style-renderer.js";
 
 describe("style-renderer", () => {

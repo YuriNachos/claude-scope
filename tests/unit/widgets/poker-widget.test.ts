@@ -3,7 +3,7 @@
  */
 
 import assert from "node:assert";
-import { beforeEach, describe, it } from "node:test";
+import { describe, it } from "node:test";
 import { PokerWidget } from "../../../src/widgets/poker-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
 import { stripAnsi } from "../../helpers/snapshot.js";
@@ -64,7 +64,7 @@ describe("PokerWidget", () => {
 
   it.skip("should show hand result with emoji (CI skip - Node 20 emoji rendering issue)", async () => {
     const widget = new PokerWidget();
-    const updateResult = await widget.update(createMockStdinData({}));
+    const _updateResult = await widget.update(createMockStdinData({}));
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 

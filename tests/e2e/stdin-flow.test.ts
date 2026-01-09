@@ -45,7 +45,7 @@ describe("E2E: CLI stdin → stdout flow", () => {
       },
     });
 
-    const { stdout, stderr } = await execAsync(`echo '${input}' | node dist/index.js`, {
+    const { stdout } = await execAsync(`echo '${input}' | node dist/index.js`, {
       cwd: process.cwd(),
     });
 

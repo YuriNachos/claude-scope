@@ -6,11 +6,11 @@
  */
 
 import type {
-  IGit,
-  GitStatusResult,
-  GitDiffSummary,
   GitDiffFile,
-} from '../../src/providers/git-provider.js';
+  GitDiffSummary,
+  GitStatusResult,
+  IGit,
+} from "../../src/providers/git-provider.js";
 
 /**
  * Mock git implementation for unit tests
@@ -18,7 +18,7 @@ import type {
  * Allows full control over git state without external dependencies.
  */
 export class MockGit implements IGit {
-  private _currentBranch: string | null = 'main';
+  private _currentBranch: string | null = "main";
   private _diffFiles: GitDiffFile[] = [];
   private _latestTag: string | null = null;
 
@@ -50,7 +50,7 @@ export class MockGit implements IGit {
    * Clear all mock data (reset to defaults)
    */
   reset(): void {
-    this._currentBranch = 'main';
+    this._currentBranch = "main";
     this._diffFiles = [];
     this._latestTag = null;
   }

@@ -5,7 +5,7 @@
 import type { StyleMap } from "../../core/style-types.js";
 import type { IGitColors } from "../../ui/theme/types.js";
 import { colorize } from "../../ui/utils/colors.js";
-import { withIndicator, withLabel } from "../../ui/utils/style-utils.js";
+import { withIndicator } from "../../ui/utils/style-utils.js";
 import type { GitRenderData } from "./types.js";
 
 export const gitStyles: StyleMap<GitRenderData, IGitColors> = {

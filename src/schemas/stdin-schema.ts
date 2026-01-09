@@ -4,15 +4,7 @@
  */
 
 import type { InferValidator } from "../validation/core.js";
-import {
-  literal,
-  nullable,
-  number,
-  object,
-  optional,
-  partial,
-  string,
-} from "../validation/index.js";
+import { literal, nullable, number, object, optional, string } from "../validation/index.js";
 
 export const ContextUsageSchema = object({
   input_tokens: number(),

@@ -2,7 +2,7 @@
  * Unit tests for ModelWidget
  */
 
-import { beforeEach, describe, it } from "node:test";
+import { describe, it } from "node:test";
 import { expect } from "chai";
 import { ModelWidget } from "../../../src/widgets/model-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";

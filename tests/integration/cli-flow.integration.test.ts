@@ -12,7 +12,6 @@ import { ConfigCountWidget } from "../../src/widgets/config-count-widget.js";
 import { ContextWidget } from "../../src/widgets/context-widget.js";
 import { CostWidget } from "../../src/widgets/cost-widget.js";
 import { DurationWidget } from "../../src/widgets/duration-widget.js";
-import { GitWidget } from "../../src/widgets/git/git-widget.js";
 import { ModelWidget } from "../../src/widgets/model-widget.js";
 import { stripAnsi } from "../helpers/snapshot.js";
 

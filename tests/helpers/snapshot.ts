@@ -2,11 +2,11 @@
  * Simple snapshot testing helper for Node.js test runner
  */
 
-import { writeFile, readFile, mkdir } from 'fs/promises';
-import { existsSync } from 'fs';
-import { join, dirname } from 'path';
+import { existsSync } from "node:fs";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
 
-const SNAPSHOTS_DIR = 'tests/snapshots';
+const SNAPSHOTS_DIR = "tests/snapshots";
 
 export interface SnapshotOptions {
   /**
@@ -23,12 +23,12 @@ export async function matchSnapshot(
   actual: unknown,
   options: SnapshotOptions = {}
 ): Promise<void> {
-  const { update = process.env.SNAPSHOT_UPDATE === 'true' } = options;
+  const { update = process.env.SNAPSHOT_UPDATE === "true" } = options;
 
   // Sanitize test name for filename
   const filename = testName
-    .replace(/[^a-z0-9]/gi, '_')
-    .replace(/_+/g, '_')
+    .replace(/[^a-z0-9]/gi, "_")
+    .replace(/_+/g, "_")
     .toLowerCase();
   const filepath = join(SNAPSHOTS_DIR, `${filename}.json`);
 
@@ -39,13 +39,13 @@ export async function matchSnapshot(
     }
 
     // Write snapshot
-    await writeFile(filepath, JSON.stringify(actual, null, 2) + '\n');
+    await writeFile(filepath, `${JSON.stringify(actual, null, 2)}\n`);
     console.log(`✓ Snapshot created: ${filename}.json`);
     return;
   }
 
   // Compare with existing snapshot
-  const snapshotContent = await readFile(filepath, 'utf-8');
+  const snapshotContent = await readFile(filepath, "utf-8");
   const expected = JSON.parse(snapshotContent);
 
   const actualStr = JSON.stringify(actual, null, 2);
@@ -54,9 +54,9 @@ export async function matchSnapshot(
   if (actualStr !== expectedStr) {
     throw new Error(
       `Snapshot mismatch for ${testName}\n` +
-      `Expected:\n${expectedStr}\n\n` +
-      `Received:\n${actualStr}\n\n` +
-      `Run with SNAPSHOT_UPDATE=true to update`
+        `Expected:\n${expectedStr}\n\n` +
+        `Received:\n${actualStr}\n\n` +
+        `Run with SNAPSHOT_UPDATE=true to update`
     );
   }
 }
@@ -65,5 +65,5 @@ export async function matchSnapshot(
  * Remove ANSI color codes from string for consistent snapshots
  */
 export function stripAnsi(str: string): string {
-  return str.replace(/\x1b\[[0-9;]*m/g, '');
+  return str.replace(/\x1b\[[0-9;]*m/g, "");
 }

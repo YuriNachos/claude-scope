@@ -95,7 +95,7 @@ function getStraightIndices(cards: Card[], highCard: number): number[] {
       cardIndicesByRank.set(value, []);
       uniqueValues.add(value);
     }
-    cardIndicesByRank.get(value)!.push(i);
+    cardIndicesByRank.get(value)?.push(i);
   }
 
   const sortedValues = Array.from(uniqueValues).sort((a, b) => b - a);
@@ -121,14 +121,14 @@ function getStraightIndices(cards: Card[], highCard: number): number[] {
       if (current === highCard) {
         // Found the straight, get one card index for each rank
         const indices: number[] = [];
-        indices.push(cardIndicesByRank.get(current)![0]);
-        indices.push(cardIndicesByRank.get(next1)![0]);
-        indices.push(cardIndicesByRank.get(next2)![0]);
-        indices.push(cardIndicesByRank.get(next3)![0]);
+        indices.push(cardIndicesByRank.get(current)?.[0]);
+        indices.push(cardIndicesByRank.get(next1)?.[0]);
+        indices.push(cardIndicesByRank.get(next2)?.[0]);
+        indices.push(cardIndicesByRank.get(next3)?.[0]);
         // Handle wheel straight (A-2-3-4-5) where next4 might be 1 (Ace low)
         // In this case, use rank 14 (Ace high) cards
         const rank4 = next4 === 1 ? 14 : next4;
-        indices.push(cardIndicesByRank.get(rank4)![0]);
+        indices.push(cardIndicesByRank.get(rank4)?.[0]);
         return indices;
       }
     }
@@ -150,7 +150,7 @@ function getStraightFlushHighCard(cards: Card[], suit: string): number | null {
  * Get indices for a straight flush with the given high card and suit
  */
 function getStraightFlushIndices(cards: Card[], highCard: number, suit: string): number[] {
-  const suitCards = cards.filter((c) => c.suit === suit);
+  const _suitCards = cards.filter((c) => c.suit === suit);
   const suitCardIndices: Card[] = [];
 
   // Map filtered cards back to original indices

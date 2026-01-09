@@ -43,7 +43,7 @@ export const contextStyles: StyleMap<ContextRenderData, IContextColors> = {
     const bar = progressBar(data.percent, 10);
     const output = `🧠 [${bar}] ${data.percent}%`;
     if (!colors) return output;
-    return `🧠 ` + colorize(`[${bar}] ${data.percent}%`, getContextColor(data.percent, colors));
+    return `🧠 ${colorize(`[${bar}] ${data.percent}%`, getContextColor(data.percent, colors))}`;
   },
 
   verbose: (data: ContextRenderData, colors?: IContextColors) => {

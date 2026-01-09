@@ -1,11 +1,6 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
-import type {
-  IContextColors,
-  ILinesColors,
-  ITheme,
-  IThemeColors,
-} from "../../../../src/ui/theme/types.js";
+import type { IContextColors, ILinesColors, ITheme } from "../../../../src/ui/theme/types.js";
 
 describe("IContextColors", () => {
   it("should accept valid color configuration", () => {

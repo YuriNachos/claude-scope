@@ -10,7 +10,6 @@ import { Renderer } from "./core/renderer.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
 import { TranscriptProvider } from "./providers/transcript-provider.js";
-import type { StdinData } from "./types.js";
 import { DEFAULT_THEME } from "./ui/theme/index.js";
 import { ActiveToolsWidget } from "./widgets/active-tools/index.js";
 import { CacheMetricsWidget } from "./widgets/cache-metrics/index.js";
@@ -87,7 +86,7 @@ export async function main(): Promise<string> {
     // Create renderer with error handling configuration
     const renderer = new Renderer({
       separator: " │ ",
-      onError: (error, widget) => {
+      onError: (_error, _widget) => {
         // Silently ignore widget errors - they return null
       },
       showErrors: false,
@@ -106,7 +105,7 @@ export async function main(): Promise<string> {
 
     // Join with newline
     return lines.join("\n");
-  } catch (error) {
+  } catch (_error) {
     // Try to show at least git info on error
     const fallback = await tryGitFallback();
     return fallback;

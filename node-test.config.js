@@ -1,5 +1,5 @@
 export default {
-  pattern: '**/*.test.ts',
-  include: ['tests/**/*.test.ts'],
-  exclude: ['**/node_modules/**']
+  pattern: "**/*.test.ts",
+  include: ["tests/**/*.test.ts"],
+  exclude: ["**/node_modules/**"],
 };

@@ -61,7 +61,7 @@ export const durationStyles: StyleMap<DurationRenderData, IDurationColors> = {
         colorize("m", colors.unit);
       return `⌛ ${colored}`;
     }
-    return `⌛ ` + colorize(`${minutes}`, colors.value) + colorize("m", colors.unit);
+    return `⌛ ${colorize(`${minutes}`, colors.value)}${colorize("m", colors.unit)}`;
   },
 
   technical: (data: DurationRenderData, colors?: IDurationColors) => {
