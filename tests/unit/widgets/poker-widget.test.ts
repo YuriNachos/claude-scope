@@ -64,14 +64,14 @@ describe("PokerWidget", () => {
 
   it("should show hand result with emoji", async () => {
     const widget = new PokerWidget();
-    await widget.update(createMockStdinData({}));
+    const updateResult = await widget.update(createMockStdinData({}));
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
     // Should contain emoji from hand display
     const emojis = ["🏆", "🔥", "💎", "🏠", "💧", "📈", "🎯", "✌️", "👍", "🃏"];
     const hasEmoji = emojis.some((emoji) => result?.includes(emoji));
-    assert.ok(hasEmoji);
+    assert.ok(hasEmoji, `Expected result to contain one of ${emojis.join(", ")}, got: ${result}`);
   });
 
   it("should generate new hand on each update (after throttle period)", async () => {
