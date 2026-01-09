@@ -94,8 +94,8 @@ export const AVAILABLE_THEMES = [
 ] as const;
 
 /**
- * Default theme colors (VSCode Dark+)
- * @deprecated Use AVAILABLE_THEMES and select theme by name instead
+ * Default theme colors for all widgets
+ * Uses VSCode Dark+ as the default theme
  */
 export const DEFAULT_THEME = VSCODE_DARK_PLUS_THEME.colors;
 
