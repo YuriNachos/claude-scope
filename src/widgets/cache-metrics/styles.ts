@@ -4,20 +4,8 @@
 
 import type { StyleMap } from "../../core/style-types.js";
 import type { IThemeColors } from "../../ui/theme/types.js";
+import { formatK } from "../../ui/utils/formatters.js";
 import type { CacheMetricsRenderData, CacheMetricsStyle } from "./types.js";
-
-/**
- * Format number with K suffix for thousands
- * Examples: 500 -> "500", 1500 -> "1.5k", 1000000 -> "1000k"
- */
-function formatK(n: number): string {
-  if (n < 1000) {
-    return n.toString();
-  }
-  const k = n / 1000;
-  // Show up to 1 decimal place for values under 10k
-  return k < 10 ? `${k.toFixed(1)}k` : `${Math.round(k)}k`;
-}
 
 /**
  * Format as USD currency

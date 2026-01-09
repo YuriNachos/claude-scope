@@ -5,10 +5,11 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
 import {
-  formatDuration,
   formatCostUSD,
-  progressBar,
+  formatDuration,
+  formatK,
   getContextColor,
+  progressBar,
 } from "../../../src/ui/utils/formatters.js";
 
 describe("formatDuration", () => {
@@ -246,6 +247,51 @@ describe("getContextColor", () => {
     it("should return ANSI escape codes", () => {
       const color = getContextColor(50);
       expect(color).to.match(/^\x1b\[\d+m$/);
+    });
+  });
+});
+
+describe("formatK", () => {
+  describe("numbers below 1000", () => {
+    it("should format zero as string", () => {
+      expect(formatK(0)).to.equal("0");
+    });
+
+    it("should format small numbers without suffix", () => {
+      expect(formatK(999)).to.equal("999");
+      expect(formatK(500)).to.equal("500");
+      expect(formatK(1)).to.equal("1");
+    });
+  });
+
+  describe("numbers between 1k and 10k", () => {
+    it("should format with 1 decimal place for thousands", () => {
+      expect(formatK(1000)).to.equal("1.0k");
+      expect(formatK(1500)).to.equal("1.5k");
+      expect(formatK(1900)).to.equal("1.9k");
+    });
+
+    it("should handle rounding correctly", () => {
+      expect(formatK(1234)).to.equal("1.2k"); // Rounded to 1.2k
+      expect(formatK(1499)).to.equal("1.5k"); // Rounded to 1.5k
+      expect(formatK(1500)).to.equal("1.5k");
+    });
+  });
+
+  describe("numbers 10k and above", () => {
+    it("should format with rounding for large thousands", () => {
+      expect(formatK(10000)).to.equal("10k");
+      expect(formatK(10500)).to.equal("11k"); // Rounded from 10.5k
+      expect(formatK(100000)).to.equal("100k");
+      expect(formatK(140000)).to.equal("140k");
+    });
+  });
+
+  describe("negative numbers", () => {
+    it("should handle negative values", () => {
+      expect(formatK(-1000)).to.equal("-1.0k");
+      expect(formatK(-1500)).to.equal("-1.5k");
+      expect(formatK(-500)).to.equal("-500");
     });
   });
 });

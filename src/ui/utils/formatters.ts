@@ -98,3 +98,30 @@ export function getContextColor(percent: number): string {
 export function colorize(text: string, color: string): string {
   return `${color}${text}${ANSI_COLORS.RESET}`;
 }
+
+/**
+ * Format number with K suffix for thousands
+ *
+ * Examples:
+ * - 500 -> "500"
+ * - 1500 -> "1.5k"
+ * - 10000 -> "10k"
+ * - 10500 -> "11k" (rounded)
+ * - 100000 -> "100k"
+ * - -1500 -> "-1.5k"
+ *
+ * Shows 1 decimal place for values < 10k, rounds to whole numbers for >= 10k.
+ * Handles negative numbers correctly.
+ *
+ * @param n - Number to format
+ * @returns Formatted string with K suffix (e.g., "1.5k", "10k")
+ */
+export function formatK(n: number): string {
+  const absN = Math.abs(n);
+  if (absN < 1000) {
+    return n.toString();
+  }
+  const k = n / 1000;
+  // Show up to 1 decimal place for values under 10k
+  return Math.abs(k) < 10 ? `${k.toFixed(1)}k` : `${Math.round(k)}k`;
+}
