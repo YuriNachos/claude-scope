@@ -356,6 +356,96 @@ describe("ActiveToolsWidget", () => {
       expect(editIndex).to.be.greaterThan(bashIndex);
       expect(readIndex).to.be.greaterThan(editIndex);
     });
+
+    it("should limit balanced style to top-3 completed tools by usage", async () => {
+      writeFileSync(
+        transcriptPath,
+        `${[
+          // 5 Edits (most used - should show)
+          ...Array.from({ length: 5 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  {
+                    type: "tool_use",
+                    id: `edit-${i}`,
+                    name: "Edit",
+                    input: { file_path: `/e${i}.ts` },
+                  },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `edit-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          // 3 Bash (second most - should show)
+          ...Array.from({ length: 3 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  { type: "tool_use", id: `bash-${i}`, name: "Bash", input: { command: "echo" } },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `bash-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          // 2 Write (third most - should show)
+          ...Array.from({ length: 2 }, (_, i) => [
+            JSON.stringify({
+              message: {
+                content: [
+                  {
+                    type: "tool_use",
+                    id: `write-${i}`,
+                    name: "Write",
+                    input: { file_path: `/w${i}.ts` },
+                  },
+                ],
+              },
+            }),
+            JSON.stringify({
+              message: {
+                content: [{ type: "tool_result", tool_use_id: `write-${i}`, is_error: false }],
+              },
+            }),
+          ]).flat(),
+          // 1 Read (fourth most - should NOT show in balanced)
+          JSON.stringify({
+            message: {
+              content: [
+                { type: "tool_use", id: "read-1", name: "Read", input: { file_path: "/f1.ts" } },
+              ],
+            },
+          }),
+          JSON.stringify({
+            message: {
+              content: [{ type: "tool_result", tool_use_id: "read-1", is_error: false }],
+            },
+          }),
+        ].join("\n")}\n`
+      );
+
+      const data = createMockStdinData({ transcript_path: transcriptPath });
+      await widget.update(data);
+      const result = await widget.render({ width: 80, timestamp: 0 });
+
+      const plainText = stripAnsiCodes(result || "");
+
+      // Should show Edits (5), Bash (3), Writes (2) - top 3
+      expect(plainText).to.include("Edits");
+      expect(plainText).to.include("Bash");
+      expect(plainText).to.include("Writes");
+
+      // Should NOT show Read (1) - not in top 3
+      expect(plainText).to.not.include("Reads");
+    });
   });
 
   describe("new format: mixed running and completed", () => {
