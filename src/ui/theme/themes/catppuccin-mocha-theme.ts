@@ -4,8 +4,7 @@
  * https://catppuccin.com/
  */
 
-import { rgb } from "../../utils/colors.js";
-import { createThemeColors } from "../helpers.js";
+import { createThemeColors, rgb } from "../helpers.js";
 import type { ITheme } from "../types.js";
 
 export const CATPPUCCIN_MOCHA_THEME: ITheme = {

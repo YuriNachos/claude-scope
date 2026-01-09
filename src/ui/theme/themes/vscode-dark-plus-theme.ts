@@ -5,8 +5,7 @@
  * https://code.visualstudio.com/docs/getstarted/theme-color-reference
  */
 
-import { rgb } from "../../utils/colors.js";
-import { createThemeColors } from "../helpers.js";
+import { createThemeColors, rgb } from "../helpers.js";
 import type { ITheme } from "../types.js";
 
 export const VSCODE_DARK_PLUS_THEME: ITheme = {

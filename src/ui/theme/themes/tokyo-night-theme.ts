@@ -4,8 +4,7 @@
  * https://github.com/folke/tokyonight.nvim
  */
 
-import { rgb } from "../../utils/colors.js";
-import { createThemeColors } from "../helpers.js";
+import { createThemeColors, rgb } from "../helpers.js";
 import type { ITheme } from "../types.js";
 
 export const TOKYO_NIGHT_THEME: ITheme = {

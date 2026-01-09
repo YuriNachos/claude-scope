@@ -4,8 +4,7 @@
  * For minimal distraction with cool colors
  */
 
-import { rgb } from "../../utils/colors.js";
-import { createThemeColors } from "../helpers.js";
+import { createThemeColors, rgb } from "../helpers.js";
 import type { ITheme } from "../types.js";
 
 export const SLATE_BLUE_THEME: ITheme = {
