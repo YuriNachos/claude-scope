@@ -5,13 +5,13 @@
  * Data source: ConfigProvider scans filesystem.
  */
 
-import type { IWidget, RenderContext, StdinData } from "../core/types.js";
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
+import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
+import type { IWidget, RenderContext, StdinData } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { ConfigProvider, type ConfigCounts } from "../providers/config-provider.js";
+import { type ConfigCounts, ConfigProvider } from "../providers/config-provider.js";
 import { configCountStyles } from "./config-count/styles.js";
 import type { ConfigCountRenderData } from "./config-count/types.js";
-import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 
 /**
  * Widget displaying configuration counts
@@ -71,7 +71,7 @@ export class ConfigCountWidget implements IWidget {
       claudeMdCount,
       rulesCount,
       mcpCount,
-      hooksCount
+      hooksCount,
     };
 
     return this.styleFn(renderData);

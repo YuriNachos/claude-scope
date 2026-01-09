@@ -3,16 +3,16 @@
  * Custom validation system (no external dependencies)
  */
 
+import type { InferValidator } from "../validation/core.js";
 import {
-  string,
-  number,
   literal,
+  nullable,
+  number,
   object,
   optional,
-  nullable,
   partial,
+  string,
 } from "../validation/index.js";
-import type { InferValidator } from "../validation/core.js";
 
 export const ContextUsageSchema = object({
   input_tokens: number(),

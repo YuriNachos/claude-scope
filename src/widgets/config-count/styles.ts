@@ -2,8 +2,8 @@
  * Functional style renderers for ConfigCountWidget
  */
 
-import type { ConfigCountRenderData } from "./types.js";
 import type { StyleMap } from "../../core/style-types.js";
+import type { ConfigCountRenderData } from "./types.js";
 
 export const configCountStyles: StyleMap<ConfigCountRenderData> = {
   balanced: (data: ConfigCountRenderData) => {

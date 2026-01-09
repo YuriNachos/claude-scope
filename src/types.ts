@@ -7,13 +7,13 @@
 
 // Import types from Zod schema (single source of truth for stdin data)
 import type {
-  StdinData,
-  ModelInfo,
-  Workspace,
-  OutputStyle,
-  CostInfo,
-  ContextWindow,
   ContextUsage,
+  ContextWindow,
+  CostInfo,
+  ModelInfo,
+  OutputStyle,
+  StdinData,
+  Workspace,
 } from "./schemas/stdin-schema.js";
 
 // Re-export for convenience

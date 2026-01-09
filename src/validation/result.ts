@@ -1,4 +1,4 @@
-import type { ValidationResult, ValidationError } from "./core.js";
+import type { ValidationError, ValidationResult } from "./core.js";
 
 export function success<T>(data: T): ValidationResult<T> {
   return { success: true, data };

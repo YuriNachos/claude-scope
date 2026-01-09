@@ -7,7 +7,7 @@
  * The base class handles data storage, update logic, and enables checking.
  */
 
-import type { IWidget, IWidgetMetadata, WidgetContext, RenderContext } from "../../core/types.js";
+import type { IWidget, IWidgetMetadata, RenderContext, WidgetContext } from "../../core/types.js";
 import type { StdinData } from "../../types.js";
 
 /**

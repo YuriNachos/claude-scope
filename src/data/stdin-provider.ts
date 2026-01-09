@@ -3,8 +3,8 @@
  * Parses and validates Claude Code session data
  */
 
-import type { StdinData } from "../types.js";
 import { StdinDataSchema } from "../schemas/stdin-schema.js";
+import type { StdinData } from "../types.js";
 import { formatError } from "../validation/result.js";
 
 /**
