@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.6.9
+**Current version**: v0.6.10
 
 **Implemented features**:
 - Git branch and changes display
@@ -225,14 +225,14 @@ interface IToolsColors {
 
 | Theme | Description | Style |
 |-------|-------------|-------|
-| vscode-dark-plus | VSCode default dark theme | **DEFAULT** |
+| vscode-dark-plus | VSCode default dark theme | Standard |
 | catppuccin-mocha | Soothing pastel theme | Pastel |
 | cyberpunk-neon | High-contrast neon aesthetic | Vibrant |
 | dusty-sage | Earthy muted greens | Muted |
 | dracula | Purple/pink accents | Popular |
 | github-dark-dimmed | GitHub official dark | Standard |
 | gray | Neutral gray | Minimal |
-| monokai | Vibrant high-contrast | Classic |
+| monokai | Vibrant high-contrast | **DEFAULT** |
 | muted-gray | Very subtle grays | Muted |
 | nord | Arctic north-bluish | Cool |
 | one-dark-pro | Atom's iconic theme | IDE |
@@ -251,7 +251,7 @@ import { getThemeByName, DEFAULT_THEME, AVAILABLE_THEMES } from './ui/theme/inde
 // Get specific theme
 const nordTheme = getThemeByName('nord');
 
-// Use default (VSCode Dark+)
+// Use default (Monokai)
 const defaultTheme = DEFAULT_THEME;
 
 // List all themes
@@ -267,7 +267,7 @@ All widgets have been migrated to use the unified `IThemeColors` interface. Prev
 const widget = new ContextWidget({ low: '...', medium: '...', high: '...' });
 
 // After (unified theme):
-const widget = new ContextWidget(DEFAULT_THEME); // uses theme.context (VSCode Dark+)
+const widget = new ContextWidget(DEFAULT_THEME); // uses theme.context (Monokai)
 ```
 
 This architecture allows for:
@@ -385,17 +385,15 @@ labeled:     Tag: v0.5.4
 indicator:   ● v0.5.4
 ```
 
-**CacheMetricsWidget** (shows cache hit rate):
+**CacheMetricsWidget** (shows cache tokens):
 ```
-balanced:    💾 70% cached (35.0k tokens)
-compact:     Cache: 70%
-playful:     💾 [███████░░░] 70%
-verbose:     Cache: 35.0k tokens (70%) | $0.09 saved
-labeled:     Cache Hit: 70% | $0.09 saved
-indicator:   ● 70% cached
-breakdown:   💾 70% [███████░░░] | $0.09 saved
-              ├─ Read: 35.0k tokens
-              └─ Write: 5.0k tokens
+balanced:    💾 35.0k cache
+compact:     Cache: 35.0k
+playful:     💾 35.0k cache
+verbose:     Cache: 35.0k | $0.03 saved
+labeled:     Cache: 35.0k | $0.03 saved
+indicator:   ● 35.0k cache
+breakdown:   💾 35.0k cache | Hit: 35.0k, Write: 5.0k | $0.03 saved
 ```
 
 **ActiveToolsWidget** (shows active and completed tools):
@@ -557,12 +555,12 @@ abstract class StdinDataWidget implements IWidget {
 ### Active Widgets (Implemented)
 
 #### 11. **CacheMetricsWidget** (`src/widgets/cache-metrics/cache-metrics-widget.ts`)
-- **What it displays**: Cache hit rate and cost savings
+- **What it displays**: Cache read tokens and cost savings
 - **Status**: ✅ **IMPLEMENTED**
 - **Features**:
-  - Shows cache hit percentage with color coding (high >70%, medium 40-70%, low <40%)
-  - Displays cache read/write token amounts
+  - Shows cache read token amounts (e.g., "35.0k cache")
   - Calculates cost savings from caching (cache costs 10% of regular tokens)
+  - Color coding based on cache hit rate (high >70%, medium 40-70%, low <40%)
   - Supports multi-line breakdown style showing read/write breakdown
   - Theme-integrated colors via `ICacheColors`
 
