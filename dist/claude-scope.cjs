@@ -1788,14 +1788,42 @@ function createWidgetMetadata(name, description, version = "1.0.0", author = "cl
   };
 }
 
-// src/widgets/cache-metrics/styles.ts
+// src/ui/utils/formatters.ts
+function formatDuration(ms) {
+  if (ms <= 0) return "0s";
+  const seconds = Math.floor(ms / TIME.MS_PER_SECOND);
+  const hours = Math.floor(seconds / TIME.SECONDS_PER_HOUR);
+  const minutes = Math.floor(seconds % TIME.SECONDS_PER_HOUR / TIME.SECONDS_PER_MINUTE);
+  const secs = seconds % TIME.SECONDS_PER_MINUTE;
+  const parts = [];
+  if (hours > 0) {
+    parts.push(`${hours}h`);
+    parts.push(`${minutes}m`);
+    parts.push(`${secs}s`);
+  } else if (minutes > 0) {
+    parts.push(`${minutes}m`);
+    parts.push(`${secs}s`);
+  } else {
+    parts.push(`${secs}s`);
+  }
+  return parts.join(" ");
+}
+function formatCostUSD(usd) {
+  return `$${usd.toFixed(2)}`;
+}
+function colorize2(text, color) {
+  return `${color}${text}${ANSI_COLORS.RESET}`;
+}
 function formatK(n) {
-  if (n < 1e3) {
+  const absN = Math.abs(n);
+  if (absN < 1e3) {
     return n.toString();
   }
   const k = n / 1e3;
-  return k < 10 ? `${k.toFixed(1)}k` : `${Math.round(k)}k`;
+  return Math.abs(k) < 10 ? `${k.toFixed(1)}k` : `${Math.round(k)}k`;
 }
+
+// src/widgets/cache-metrics/styles.ts
 function formatCurrency(usd) {
   if (usd < 5e-3 && usd > 0) {
     return "<$0.01";
@@ -1926,8 +1954,9 @@ var CacheMetricsWidget = class extends StdinDataWidget {
     const cacheWrite = usage.cache_creation_input_tokens ?? 0;
     const inputTokens = usage.input_tokens ?? 0;
     const outputTokens = usage.output_tokens ?? 0;
-    const totalTokens = inputTokens + outputTokens;
-    const hitRate = inputTokens > 0 ? Math.round(cacheRead / inputTokens * 100) : 0;
+    const totalInputTokens = cacheRead + cacheWrite + inputTokens;
+    const totalTokens = totalInputTokens + outputTokens;
+    const hitRate = totalInputTokens > 0 ? Math.min(100, Math.round(cacheRead / totalInputTokens * 100)) : 0;
     const costPerToken = 3e-6;
     const savings = cacheRead * 0.9 * costPerToken;
     return {
@@ -2349,33 +2378,6 @@ var ContextWidget = class extends StdinDataWidget {
     return this.styleFn(renderData, this.colors.context);
   }
 };
-
-// src/ui/utils/formatters.ts
-function formatDuration(ms) {
-  if (ms <= 0) return "0s";
-  const seconds = Math.floor(ms / TIME.MS_PER_SECOND);
-  const hours = Math.floor(seconds / TIME.SECONDS_PER_HOUR);
-  const minutes = Math.floor(seconds % TIME.SECONDS_PER_HOUR / TIME.SECONDS_PER_MINUTE);
-  const secs = seconds % TIME.SECONDS_PER_MINUTE;
-  const parts = [];
-  if (hours > 0) {
-    parts.push(`${hours}h`);
-    parts.push(`${minutes}m`);
-    parts.push(`${secs}s`);
-  } else if (minutes > 0) {
-    parts.push(`${minutes}m`);
-    parts.push(`${secs}s`);
-  } else {
-    parts.push(`${secs}s`);
-  }
-  return parts.join(" ");
-}
-function formatCostUSD(usd) {
-  return `$${usd.toFixed(2)}`;
-}
-function colorize2(text, color) {
-  return `${color}${text}${ANSI_COLORS.RESET}`;
-}
 
 // src/widgets/cost/styles.ts
 var costStyles = {
@@ -3268,7 +3270,8 @@ function getStraightIndices(cards, highCard) {
         indices.push(cardIndicesByRank.get(next1)[0]);
         indices.push(cardIndicesByRank.get(next2)[0]);
         indices.push(cardIndicesByRank.get(next3)[0]);
-        indices.push(cardIndicesByRank.get(next4)[0]);
+        const rank4 = next4 === 1 ? 14 : next4;
+        indices.push(cardIndicesByRank.get(rank4)[0]);
         return indices;
       }
     }
@@ -3632,7 +3635,7 @@ var PokerWidget = class extends StdinDataWidget {
   async update(data) {
     await super.update(data);
     const now = Date.now();
-    if (now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
+    if (this.lastUpdateTimestamp > 0 && now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
       return;
     }
     const deck = new Deck();

@@ -50,4 +50,22 @@ export declare function getContextColor(percent: number): string;
  * @returns Colorized text with reset code
  */
 export declare function colorize(text: string, color: string): string;
+/**
+ * Format number with K suffix for thousands
+ *
+ * Examples:
+ * - 500 -> "500"
+ * - 1500 -> "1.5k"
+ * - 10000 -> "10k"
+ * - 10500 -> "11k" (rounded)
+ * - 100000 -> "100k"
+ * - -1500 -> "-1.5k"
+ *
+ * Shows 1 decimal place for values < 10k, rounds to whole numbers for >= 10k.
+ * Handles negative numbers correctly.
+ *
+ * @param n - Number to format
+ * @returns Formatted string with K suffix (e.g., "1.5k", "10k")
+ */
+export declare function formatK(n: number): string;
 //# sourceMappingURL=formatters.d.ts.map

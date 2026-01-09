@@ -1,18 +1,7 @@
 /**
  * Cache metrics widget styles
  */
-/**
- * Format number with K suffix for thousands
- * Examples: 500 -> "500", 1500 -> "1.5k", 1000000 -> "1000k"
- */
-function formatK(n) {
-    if (n < 1000) {
-        return n.toString();
-    }
-    const k = n / 1000;
-    // Show up to 1 decimal place for values under 10k
-    return k < 10 ? `${k.toFixed(1)}k` : `${Math.round(k)}k`;
-}
+import { formatK } from "../../ui/utils/formatters.js";
 /**
  * Format as USD currency
  * Shows <$0.01 for very small amounts, otherwise standard format
