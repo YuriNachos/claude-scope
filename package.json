@@ -1,6 +1,6 @@
 {
   "name": "claude-scope",
-  "version": "0.6.14",
+  "version": "0.6.15",
   "description": "Claude Code plugin for session status and analytics",
   "license": "MIT",
   "type": "module",
