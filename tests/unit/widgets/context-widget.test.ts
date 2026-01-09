@@ -294,7 +294,7 @@ describe("ContextWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("\x1b[90m"); // Gray (default)
+      expect(result).to.include("\x1b[38;2;78;201;176m"); // VSCode teal (default)
     });
   });
 
