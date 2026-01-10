@@ -5,6 +5,7 @@
  * Entry point
  */
 
+import { parseCommand, routeCommand } from "./cli/index.js";
 import { isWidgetEnabled } from "./config/widget-flags.js";
 import { Renderer } from "./core/renderer.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
@@ -42,6 +43,14 @@ async function readStdin(): Promise<string> {
  */
 export async function main(): Promise<string> {
   try {
+    // Check if we're in command mode
+    const command = parseCommand();
+
+    if (command === "quick-config") {
+      await routeCommand(command);
+      return ""; // Commands handle their own output
+    }
+
     // Read JSON from stdin
     const stdin = await readStdin();
 
