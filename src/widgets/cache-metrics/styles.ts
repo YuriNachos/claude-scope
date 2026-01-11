@@ -36,13 +36,13 @@ function getCacheColor(hitRate: number, colors: IThemeColors): string {
  */
 export const cacheMetricsStyles: StyleMap<CacheMetricsRenderData, IThemeColors> = {
   /**
-   * balanced: 💾 35.0k cache with color coding
+   * balanced: 35.0k cache with color coding
    */
   balanced: (data: CacheMetricsRenderData, colors?: IThemeColors) => {
     const { cacheRead, hitRate } = data;
     const color = colors ? getCacheColor(hitRate, colors) : "";
     const amount = color ? `${color}${formatK(cacheRead)} cache` : `${formatK(cacheRead)} cache`;
-    return `💾 ${amount}`;
+    return amount;
   },
 
   /**
