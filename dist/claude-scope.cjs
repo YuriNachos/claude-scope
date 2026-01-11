@@ -2973,17 +2973,25 @@ var init_styles6 = __esm({
         const totalSeconds = Math.floor(data.durationMs / 1e3);
         const hours = Math.floor(totalSeconds / 3600);
         const minutes = Math.floor(totalSeconds % 3600 / 60);
+        const seconds = totalSeconds % 60;
         if (!colors2) {
           if (hours > 0) {
-            return `\u231B ${hours}h ${minutes}m`;
+            return `\u231B ${hours}h ${minutes}m ${seconds}s`;
           }
-          return `\u231B ${minutes}m`;
+          if (minutes > 0) {
+            return `\u231B ${minutes}m ${seconds}s`;
+          }
+          return `\u231B ${seconds}s`;
         }
         if (hours > 0) {
-          const colored = colorize(`${hours}`, colors2.value) + colorize("h", colors2.unit) + colorize(` ${minutes}`, colors2.value) + colorize("m", colors2.unit);
+          const colored = colorize(`${hours}`, colors2.value) + colorize("h", colors2.unit) + colorize(` ${minutes}`, colors2.value) + colorize("m", colors2.unit) + colorize(` ${seconds}`, colors2.value) + colorize("s", colors2.unit);
           return `\u231B ${colored}`;
         }
-        return `\u231B ${colorize(`${minutes}`, colors2.value)}${colorize("m", colors2.unit)}`;
+        if (minutes > 0) {
+          const colored = colorize(`${minutes}`, colors2.value) + colorize("m", colors2.unit) + colorize(` ${seconds}`, colors2.value) + colorize("s", colors2.unit);
+          return `\u231B ${colored}`;
+        }
+        return `\u231B ${colorize(`${seconds}`, colors2.value)}${colorize("s", colors2.unit)}`;
       },
       technical: (data, colors2) => {
         const value = `${Math.floor(data.durationMs)}ms`;

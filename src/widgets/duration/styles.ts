@@ -45,12 +45,16 @@ export const durationStyles: StyleMap<DurationRenderData, IDurationColors> = {
     const totalSeconds = Math.floor(data.durationMs / 1000);
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
 
     if (!colors) {
       if (hours > 0) {
-        return `⌛ ${hours}h ${minutes}m`;
+        return `⌛ ${hours}h ${minutes}m ${seconds}s`;
       }
-      return `⌛ ${minutes}m`;
+      if (minutes > 0) {
+        return `⌛ ${minutes}m ${seconds}s`;
+      }
+      return `⌛ ${seconds}s`;
     }
 
     if (hours > 0) {
@@ -58,10 +62,20 @@ export const durationStyles: StyleMap<DurationRenderData, IDurationColors> = {
         colorize(`${hours}`, colors.value) +
         colorize("h", colors.unit) +
         colorize(` ${minutes}`, colors.value) +
-        colorize("m", colors.unit);
+        colorize("m", colors.unit) +
+        colorize(` ${seconds}`, colors.value) +
+        colorize("s", colors.unit);
       return `⌛ ${colored}`;
     }
-    return `⌛ ${colorize(`${minutes}`, colors.value)}${colorize("m", colors.unit)}`;
+    if (minutes > 0) {
+      const colored =
+        colorize(`${minutes}`, colors.value) +
+        colorize("m", colors.unit) +
+        colorize(` ${seconds}`, colors.value) +
+        colorize("s", colors.unit);
+      return `⌛ ${colored}`;
+    }
+    return `⌛ ${colorize(`${seconds}`, colors.value)}${colorize("s", colors.unit)}`;
   },
 
   technical: (data: DurationRenderData, colors?: IDurationColors) => {

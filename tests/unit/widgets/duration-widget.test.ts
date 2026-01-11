@@ -136,7 +136,7 @@ describe("DurationWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(stripAnsi(result || "")).to.equal("⌛ 1h 1m");
+        expect(stripAnsi(result || "")).to.equal("⌛ 1h 1m 5s");
       });
     });
 
