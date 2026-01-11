@@ -54,16 +54,37 @@ export async function generatePreviews<T>(
   // Stage 2 always has exactly 3 style choices (balanced, playful, compact)
   const isStyleSelection = choices.length >= 3 && choices.every((c) => isQuickConfigStyle(c.value));
 
+  // Detect if this is a theme selection stage (choices have theme names as values)
+  const availableThemes = [
+    "monokai",
+    "nord",
+    "dracula",
+    "catppuccin-mocha",
+    "tokyo-night",
+    "vscode-dark-plus",
+    "github-dark-dimmed",
+    "dusty-sage",
+  ];
+  const isThemeSelection = choices.some((c) => isThemeName(c.value, availableThemes));
+
   for (const choice of choices) {
     try {
-      // For style selection stage, each choice uses its own value as the style
-      // For other stages, use the provided style parameter
-      const previewStyle = isStyleSelection ? (choice.value as QuickConfigStyle) : style;
+      // Determine preview style: use choice value for style selection, otherwise use provided style
+      let previewStyle = style;
+      if (isStyleSelection) {
+        previewStyle = choice.value as QuickConfigStyle;
+      }
+
+      // Determine preview theme: use choice value for theme selection, otherwise use provided theme
+      let previewTheme = themeName;
+      if (isThemeSelection && isThemeName(choice.value, availableThemes)) {
+        previewTheme = choice.value as string;
+      }
 
       const preview = await renderPreviewFromConfig(
-        choice.getConfig(previewStyle, themeName),
+        choice.getConfig(previewStyle, previewTheme),
         previewStyle,
-        themeName
+        previewTheme
       );
       previews.push(preview);
     } catch (error) {
@@ -80,6 +101,14 @@ export async function generatePreviews<T>(
  */
 function isQuickConfigStyle(value: unknown): boolean {
   return typeof value === "string" && ["balanced", "playful", "compact"].includes(value);
+}
+
+/**
+ * Helper: Check if a value is a valid theme name
+ * Used to detect theme choices in generatePreviews
+ */
+function isThemeName(value: unknown, availableThemes: string[]): boolean {
+  return typeof value === "string" && availableThemes.includes(value);
 }
 
 /**
