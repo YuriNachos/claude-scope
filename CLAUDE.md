@@ -710,54 +710,45 @@ interface IGit {
 
 #### Quick Config Command
 
-The `quick-config` command provides an interactive three-stage configuration flow:
+The `quick-config` command provides an interactive three-stage configuration flow with **live previews**:
 
 ```bash
 claude-scope quick-config
 ```
 
+**Live Preview Feature:**
+
+As you navigate options with arrow keys (↑↓), the preview panel updates instantly to show:
+- **Stage 1**: Actual widget arrangement for each layout (Balanced/Compact/Rich)
+- **Stage 2**: How your selected layout looks with each style (Balanced/Playful/Compact)
+- **Stage 3**: Final configuration with real theme colors
+
 **Stage 1/3: Choose Widget Layout**
 
-Select how widgets are arranged across statusline lines. Each option shows a live preview with demo data.
-
-| Layout | Lines | Widgets |
-|--------|-------|---------|
+| Layout | Lines | Preview Shows |
+|--------|-------|---------------|
 | **Balanced** | 2 | Line 0: model, context, cost, duration, lines<br>Line 1: git, cache-metrics, config-count, active-tools |
 | **Compact** | 1 | Line 0: model, context, cost, git, duration |
 | **Rich** | 3 | Line 0: model, context, cost, duration<br>Line 1: git, git-tag, lines, active-tools<br>Line 2: cache-metrics, config-count |
 
 **Stage 2/3: Choose Display Style**
 
-Select how widgets are rendered (labels, emojis, etc.). Preview shows your selected layout with each style.
-
-| Style | Description |
-|-------|-------------|
-| **Balanced** | Clean, balanced display with labels |
+| Style | Preview Shows |
+|-------|---------------|
+| **Balanced** | Clean display with labels |
 | **Playful** | Fun display with emojis |
-| **Compact** | Minimal, condensed display |
+| **Compact** | Minimal condensed display |
 
 **Stage 3/3: Choose Color Theme**
 
-Select color theme for your statusline. Preview shows your final configuration with live colors.
-
 17 built-in themes available: monokai, nord, dracula, catppuccin-mocha, tokyo-night, vscode-dark-plus, github-dark-dimmed, dusty-sage, gray, muted-gray, slate-blue, professional-blue, rose-pine, semantic-classic, solarized-dark, one-dark-pro, cyberpunk-neon.
 
-**Navigation:** ↑↓ arrows to move • Enter to select • Esc to exit
+**Navigation:**
+- **↑↓ arrows**: Navigate options (with vim/emacs bindings: j/k, Ctrl+n/Ctrl+p)
+- **Enter**: Select current option
+- **Esc**: Cancel and exit
 
 **Configuration is saved to:** `~/.claude-scope/config.json`
-
-**Config Structure:**
-```json
-{
-  "version": "1.0.0",
-  "lines": {
-    "0": [
-      {"id": "model", "style": "balanced", "colors": {...}},
-      {"id": "context", "style": "balanced", "colors": {...}}
-    ]
-  }
-}
-```
 
 #### Configuration File Format (PLANNED)
 
