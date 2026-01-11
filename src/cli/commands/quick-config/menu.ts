@@ -15,15 +15,6 @@ import { renderPreviewFromConfig } from "./layout-preview.js";
 import { type PreviewChoice, selectWithPreview } from "./select-with-preview.js";
 
 /**
- * Style choice interface
- */
-interface StyleChoice {
-  name: string;
-  description: string;
-  value: QuickConfigStyle;
-}
-
-/**
  * Theme choice interface
  */
 interface ThemeChoice {
@@ -102,34 +93,45 @@ async function selectLayout(): Promise<QuickConfigLayout> {
  * Stage 2: Select style with layout-aware preview
  */
 async function selectStyle(layout: QuickConfigLayout): Promise<QuickConfigStyle> {
-  console.log("\n┌─────────────────────────────────────────────────────────────────┐");
-  console.log("│  Stage 2/3: Choose Display Style                                 │");
-  console.log("├─────────────────────────────────────────────────────────────────┤");
-  console.log("│  Select how widgets are rendered (labels, emojis, etc.).        │");
-  console.log("│  Preview shows your selected layout with each style.            │");
-  console.log("└─────────────────────────────────────────────────────────────────┘\n");
-
-  const styleChoices: StyleChoice[] = [
+  const styleChoices: PreviewChoice<QuickConfigStyle>[] = [
     {
       name: "Balanced",
       description: "Clean, balanced display with labels",
       value: "balanced",
+      getConfig: (s, t) => getLayoutGenerator(layout)(s, t),
     },
     {
       name: "Playful",
       description: "Fun display with emojis",
       value: "playful",
+      getConfig: (s, t) => getLayoutGenerator(layout)(s, t),
     },
     {
       name: "Compact",
       description: "Minimal, condensed display",
       value: "compact",
+      getConfig: (s, t) => getLayoutGenerator(layout)(s, t),
     },
   ];
 
-  const style = await select<QuickConfigStyle>({
+  console.log("\n┌─────────────────────────────────────────────────────────────────┐");
+  console.log("│  Stage 2/3: Choose Display Style                                 │");
+  console.log("├─────────────────────────────────────────────────────────────────┤");
+  console.log("│  Select how widgets are rendered (labels, emojis, etc.).        │");
+  console.log("│  Preview shows your selected layout with each style.           │");
+  console.log("└─────────────────────────────────────────────────────────────────┘\n");
+
+  // Generate previews BEFORE showing the prompt
+  const { generatePreviews } = await import("./select-with-preview.js");
+  const previews = await generatePreviews(styleChoices, "balanced", "monokai");
+
+  const style = await selectWithPreview<QuickConfigStyle>({
     message: "Choose a display style:",
     choices: styleChoices,
+    pageSize: 3,
+    style: "balanced",
+    themeName: "monokai",
+    previews,
   });
 
   return style;
