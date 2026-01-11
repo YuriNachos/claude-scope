@@ -36,13 +36,14 @@ describe("Layout Generators", () => {
       assert.ok(ids.includes("lines"));
     });
 
-    it("should include git, cache-metrics, active-tools on line 1", () => {
+    it("should include git, cache-metrics, config-count, active-tools on line 1", () => {
       const config = generateBalancedLayout(defaultStyle, defaultTheme);
       const line1 = config.lines["1"];
 
       const ids = line1.map((w) => w.id);
       assert.ok(ids.includes("git"));
       assert.ok(ids.includes("cache-metrics"));
+      assert.ok(ids.includes("config-count"));
       assert.ok(ids.includes("active-tools"));
     });
 
@@ -56,9 +57,9 @@ describe("Layout Generators", () => {
       assert.strictEqual(config.lines["0"].length, 5);
     });
 
-    it("should have 3 widgets on line 1", () => {
+    it("should have 4 widgets on line 1", () => {
       const config = generateBalancedLayout(defaultStyle, defaultTheme);
-      assert.strictEqual(config.lines["1"].length, 3);
+      assert.strictEqual(config.lines["1"].length, 4);
     });
   });
 

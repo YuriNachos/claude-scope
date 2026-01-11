@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.6.17
+**Current version**: v0.8.0
 
 **Implemented features**:
 - Git branch and changes display
@@ -705,33 +705,46 @@ interface IGit {
 
 ### Configuration System
 
-**Implemented:** Interactive `quick-config` command for style and theme selection.
+**Implemented:** Interactive three-stage `quick-config` command for layout, style, and theme selection.
 **Planned:** Full configuration file format (see below).
 
 #### Quick Config Command
 
-The `quick-config` command provides an interactive three-stage configuration:
+The `quick-config` command provides an interactive three-stage configuration flow:
 
 ```bash
 claude-scope quick-config
 ```
 
-**Stage 1: Choose Layout Preset**
-- **Balanced** (2 lines): AI metrics + Git, Cache, Tools, MCP, Hooks
-- **Compact** (1 line): Model, Context, Cost, Git, Duration
-- **Rich** (3 lines): Full details with Git Tag, Config Count
+**Stage 1/3: Choose Widget Layout**
 
-**Stage 2: Choose Display Style**
-- **Balanced**: Clean, balanced display with labels
-- **Playful**: Fun display with emojis
-- **Compact**: Minimal, condensed display
+Select how widgets are arranged across statusline lines. Each option shows a live preview with demo data.
 
-**Stage 3: Choose Color Theme**
-- 17 built-in themes available (Monokai, Nord, Dracula, Catppuccin, etc.)
+| Layout | Lines | Widgets |
+|--------|-------|---------|
+| **Balanced** | 2 | Line 0: model, context, cost, duration, lines<br>Line 1: git, cache-metrics, config-count, active-tools |
+| **Compact** | 1 | Line 0: model, context, cost, git, duration |
+| **Rich** | 3 | Line 0: model, context, cost, duration<br>Line 1: git, git-tag, lines, active-tools<br>Line 2: cache-metrics, config-count |
 
-Each stage shows live previews with demo data. Use ↑↓ arrows to navigate, Enter to select, Esc to exit.
+**Stage 2/3: Choose Display Style**
 
-Configuration is saved to `~/.claude-scope/config.json`.
+Select how widgets are rendered (labels, emojis, etc.). Preview shows your selected layout with each style.
+
+| Style | Description |
+|-------|-------------|
+| **Balanced** | Clean, balanced display with labels |
+| **Playful** | Fun display with emojis |
+| **Compact** | Minimal, condensed display |
+
+**Stage 3/3: Choose Color Theme**
+
+Select color theme for your statusline. Preview shows your final configuration with live colors.
+
+17 built-in themes available: monokai, nord, dracula, catppuccin-mocha, tokyo-night, vscode-dark-plus, github-dark-dimmed, dusty-sage, gray, muted-gray, slate-blue, professional-blue, rose-pine, semantic-classic, solarized-dark, one-dark-pro, cyberpunk-neon.
+
+**Navigation:** ↑↓ arrows to move • Enter to select • Esc to exit
+
+**Configuration is saved to:** `~/.claude-scope/config.json`
 
 **Config Structure:**
 ```json

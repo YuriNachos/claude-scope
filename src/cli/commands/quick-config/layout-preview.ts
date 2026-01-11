@@ -4,6 +4,7 @@
  */
 
 import { Renderer } from "../../../core/renderer.js";
+import type { IWidget } from "../../../core/types.js";
 import { WidgetRegistry } from "../../../core/widget-registry.js";
 import { TranscriptProvider } from "../../../providers/transcript-provider.js";
 import { getThemeByName } from "../../../ui/theme/index.js";
@@ -32,8 +33,8 @@ async function registerWidgetsFromConfig(
   const themeColors = getThemeByName("monokai").colors; // Use monokai for preview consistency
   const transcriptProvider = new TranscriptProvider();
 
-  // Widget factory map
-  const widgetFactory: Record<string, (style: QuickConfigStyle) => any> = {
+  // Widget factory map with proper IWidget typing
+  const widgetFactory: Record<string, (style: QuickConfigStyle) => IWidget> = {
     model: (s) => {
       const w = new ModelWidget(themeColors);
       w.setStyle(s);

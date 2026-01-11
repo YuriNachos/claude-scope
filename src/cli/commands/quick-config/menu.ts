@@ -140,6 +140,7 @@ async function selectTheme(layout: QuickConfigLayout, style: QuickConfigStyle): 
   console.log("│  Preview shows your final configuration with live colors.        │");
   console.log("└─────────────────────────────────────────────────────────────────┘\n");
 
+  // Show first 8 themes for better terminal UX (avoid overwhelming list)
   const themeChoices: ThemeChoice[] = AVAILABLE_THEMES.slice(0, 8).map((theme) => ({
     name: theme.name,
     description: theme.description,
