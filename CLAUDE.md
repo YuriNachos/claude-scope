@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.6.15
+**Current version**: v0.6.17
 
 **Implemented features**:
 - Git branch and changes display
@@ -35,6 +35,21 @@ This project uses a **modular widget architecture** with a central registry, fol
 **Current Implementation** (v0.3.0):
 ```
 src/
+├── cli/
+│   ├── index.ts              # CLI entry point with command router
+│   └── commands/
+│       └── quick-config/     # Interactive configuration command
+│           ├── index.ts      # Command handler entry point
+│           ├── menu.ts       # Interactive menu (style → theme)
+│           ├── preview.ts    # Live preview renderer
+│           ├── config-schema.ts    # Type definitions
+│           ├── config-loader.ts    # Load from ~/.claude-scope/
+│           ├── config-writer.ts    # Save to ~/.claude-scope/
+│           ├── config-loader.test.ts
+│           ├── config-writer.test.ts
+│           ├── menu.test.ts
+│           ├── preview.test.ts
+│           └── config-schema.test.ts
 ├── core/
 │   ├── types.ts              # Core types (IWidget, IWidgetMetadata, etc.)
 │   ├── widget-registry.ts    # Central registry for widget management
@@ -685,6 +700,9 @@ interface IGit {
 
 ### Configuration System
 
+**Implemented:** Interactive `quick-config` command for style and theme selection.
+**Planned:** Full configuration file format (see below).
+
 #### Quick Config Command
 
 The `quick-config` command provides interactive configuration:
@@ -717,6 +735,8 @@ claude-scope quick-config
 
 Widget behavior will be configured via JSON (`~/.claude-scope/config.json`):
 
+**Note:** The quick-config system uses its own config loader/writer (`src/cli/commands/quick-config/config-*.ts`) for interactive configuration, while the main CLI uses `src/config/config-loader.ts` to load and apply widget styles at runtime.
+
 ```json
 {
   "updateIntervalMs": 300,
@@ -731,6 +751,18 @@ Widget behavior will be configured via JSON (`~/.claude-scope/config.json`):
   }
 }
 ```
+
+**Available Widget IDs:**
+- `model` - Model display widget
+- `context` - Context usage widget
+- `cost` - Cost estimation widget
+- `lines` - Lines added/removed widget
+- `duration` - Session duration widget
+- `git` - Git branch and changes widget
+- `git-tag` - Git tag widget
+- `config-count` - Configuration count widget
+- `cache-metrics` - Cache metrics widget (feature-flagged)
+- `active-tools` - Active tools widget (feature-flagged)
 
 ### Presets (PLANNED)
 
@@ -758,7 +790,8 @@ tests/
 │   └── stdin-flow.test.ts
 ├── integration/                 # Cross-widget integration tests
 │   ├── cli-flow.integration.test.ts
-│   └── five-widgets.integration.test.ts
+│   ├── five-widgets.integration.test.ts
+│   └── quick-config.integration.test.ts  # Config save/load tests
 ├── unit/                        # Unit tests by module
 │   ├── cli.test.ts
 │   ├── types.test.ts
@@ -770,6 +803,14 @@ tests/
 │   ├── utils/
 │   │   ├── colors.test.ts
 │   │   └── formatters.test.ts
+│   ├── cli/
+│   │   └── commands/
+│   │       └── quick-config/
+│   │           ├── config-schema.test.ts
+│   │           ├── config-loader.test.ts
+│   │           ├── config-writer.test.ts
+│   │           ├── menu.test.ts
+│   │           └── preview.test.ts
 │   └── widgets/
 │       ├── git-widget.test.ts
 │       ├── context-widget.test.ts
