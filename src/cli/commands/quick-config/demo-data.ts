@@ -3,6 +3,7 @@
  * Realistic StdinData for rendering widget previews
  */
 
+import { DEMO_DATA } from "../../../constants.js";
 import type { StdinData } from "../../../types.js";
 
 /**
@@ -27,21 +28,21 @@ export function createDemoData(): StdinData {
       name: "default",
     },
     cost: {
-      total_cost_usd: 0.42,
-      total_duration_ms: 3665000,
-      total_api_duration_ms: 3000000,
-      total_lines_added: 142,
-      total_lines_removed: 27,
+      total_cost_usd: DEMO_DATA.COST_USD,
+      total_duration_ms: DEMO_DATA.DURATION_MS,
+      total_api_duration_ms: DEMO_DATA.API_DURATION_MS,
+      total_lines_added: DEMO_DATA.LINES_ADDED,
+      total_lines_removed: DEMO_DATA.LINES_REMOVED,
     },
     context_window: {
-      total_input_tokens: 185000,
-      total_output_tokens: 50000,
-      context_window_size: 200000,
+      total_input_tokens: DEMO_DATA.TOTAL_INPUT_TOKENS,
+      total_output_tokens: DEMO_DATA.TOTAL_OUTPUT_TOKENS,
+      context_window_size: DEMO_DATA.CONTEXT_WINDOW_SIZE,
       current_usage: {
-        input_tokens: 150000,
-        output_tokens: 50000,
-        cache_creation_input_tokens: 5000,
-        cache_read_input_tokens: 35000,
+        input_tokens: DEMO_DATA.CURRENT_INPUT_TOKENS,
+        output_tokens: DEMO_DATA.CURRENT_OUTPUT_TOKENS,
+        cache_creation_input_tokens: DEMO_DATA.CACHE_CREATION_TOKENS,
+        cache_read_input_tokens: DEMO_DATA.CACHE_READ_TOKENS,
       },
     },
   };
