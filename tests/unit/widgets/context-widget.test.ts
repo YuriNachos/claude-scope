@@ -557,5 +557,70 @@ describe("ContextWidget", () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
       expect(result).to.be.null;
     });
+
+    it("should not overwrite cache with zero values", async () => {
+      const widget = new ContextWidget();
+
+      // First update with valid data - this should be cached
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-context-zero-jump",
+          context_window: {
+            total_input_tokens: 1000,
+            total_output_tokens: 500,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 75000,
+              output_tokens: 10000,
+              cache_creation_input_tokens: 5000,
+              cache_read_input_tokens: 0,
+            },
+          },
+        })
+      );
+
+      const result1 = await widget.render({ width: 80, timestamp: 0 });
+      assert.ok(result1);
+      const clean1 = stripAnsi(result1 || "");
+      expect(clean1).to.include("45%"); // (75000 + 10000 + 5000) / 200000 = 45%
+
+      // Second update with zero values - should NOT overwrite cache
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-context-zero-jump",
+          context_window: {
+            total_input_tokens: 0,
+            total_output_tokens: 0,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 0,
+              output_tokens: 0,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+            },
+          },
+        })
+      );
+
+      // Third update with null current_usage (tool execution scenario)
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-context-zero-jump",
+          context_window: {
+            total_input_tokens: 0,
+            total_output_tokens: 0,
+            context_window_size: 200000,
+            current_usage: null,
+          },
+        })
+      );
+
+      const result3 = await widget.render({ width: 80, timestamp: 0 });
+      // Should still show 45% from the first update, NOT 0%
+      assert.ok(result3);
+      const clean3 = stripAnsi(result3 || "");
+      expect(clean3).to.include("45%");
+      expect(clean3).to.not.include("0%");
+    });
   });
 });
