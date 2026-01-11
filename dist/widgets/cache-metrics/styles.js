@@ -31,13 +31,13 @@ function getCacheColor(hitRate, colors) {
  */
 export const cacheMetricsStyles = {
     /**
-     * balanced: 💾 35.0k cache with color coding
+     * balanced: 35.0k cache with color coding
      */
     balanced: (data, colors) => {
         const { cacheRead, hitRate } = data;
         const color = colors ? getCacheColor(hitRate, colors) : "";
         const amount = color ? `${color}${formatK(cacheRead)} cache` : `${formatK(cacheRead)} cache`;
-        return `💾 ${amount}`;
+        return amount;
     },
     /**
      * compact: Cache: 35.0k

@@ -1355,6 +1355,28 @@ var init_widget_registry = __esm({
   }
 });
 
+// src/providers/mock-config-provider.ts
+var MockConfigProvider;
+var init_mock_config_provider = __esm({
+  "src/providers/mock-config-provider.ts"() {
+    "use strict";
+    MockConfigProvider = class {
+      /**
+       * Return demo config counts
+       * @returns Demo counts for CLAUDE.md, rules, MCPs, hooks
+       */
+      async getConfigs() {
+        return {
+          claudeMdCount: 1,
+          rulesCount: 3,
+          mcpCount: 2,
+          hooksCount: 4
+        };
+      }
+    };
+  }
+});
+
 // src/providers/mock-git.ts
 var MockGit;
 var init_mock_git = __esm({
@@ -2090,13 +2112,13 @@ var init_styles2 = __esm({
     init_formatters();
     cacheMetricsStyles = {
       /**
-       * balanced: 💾 35.0k cache with color coding
+       * balanced: 35.0k cache with color coding
        */
       balanced: (data, colors2) => {
         const { cacheRead, hitRate } = data;
         const color = colors2 ? getCacheColor(hitRate, colors2) : "";
         const amount = color ? `${color}${formatK(cacheRead)} cache` : `${formatK(cacheRead)} cache`;
-        return `\u{1F4BE} ${amount}`;
+        return amount;
       },
       /**
        * compact: Cache: 35.0k
@@ -2474,75 +2496,104 @@ var configCountStyles;
 var init_styles3 = __esm({
   "src/widgets/config-count/styles.ts"() {
     "use strict";
+    init_colors();
     configCountStyles = {
-      balanced: (data) => {
+      balanced: (data, colors2) => {
         const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
         const parts = [];
+        const info = colors2?.semantic.info ?? "";
+        const muted = colors2?.base.muted ?? "";
         if (claudeMdCount > 0) {
-          parts.push(`CLAUDE.md:${claudeMdCount}`);
+          const label = info ? colorize("CLAUDE.md", info) : "CLAUDE.md";
+          parts.push(`${label}:${claudeMdCount}`);
         }
         if (rulesCount > 0) {
-          parts.push(`rules:${rulesCount}`);
+          const label = info ? colorize("rules", info) : "rules";
+          parts.push(`${label}:${rulesCount}`);
         }
         if (mcpCount > 0) {
-          parts.push(`MCPs:${mcpCount}`);
+          const label = info ? colorize("MCPs", info) : "MCPs";
+          parts.push(`${label}:${mcpCount}`);
         }
         if (hooksCount > 0) {
-          parts.push(`hooks:${hooksCount}`);
+          const label = info ? colorize("hooks", info) : "hooks";
+          parts.push(`${label}:${hooksCount}`);
         }
-        return parts.join(" \u2502 ");
+        const sep = muted ? colorize(" \u2502 ", muted) : " \u2502 ";
+        return parts.join(sep);
       },
-      compact: (data) => {
+      compact: (data, colors2) => {
         const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
         const parts = [];
+        const info = colors2?.semantic.info ?? "";
+        const muted = colors2?.base.muted ?? "";
         if (claudeMdCount > 0) {
-          parts.push(`${claudeMdCount} docs`);
+          const text = info ? colorize(`${claudeMdCount} docs`, info) : `${claudeMdCount} docs`;
+          parts.push(text);
         }
         if (rulesCount > 0) {
-          parts.push(`${rulesCount} rules`);
+          const text = info ? colorize(`${rulesCount} rules`, info) : `${rulesCount} rules`;
+          parts.push(text);
         }
         if (mcpCount > 0) {
-          parts.push(`${mcpCount} MCPs`);
+          const text = info ? colorize(`${mcpCount} MCPs`, info) : `${mcpCount} MCPs`;
+          parts.push(text);
         }
         if (hooksCount > 0) {
           const hookLabel = hooksCount === 1 ? "hook" : "hooks";
-          parts.push(`${hooksCount} ${hookLabel}`);
+          const text = info ? colorize(`${hooksCount} ${hookLabel}`, info) : `${hooksCount} ${hookLabel}`;
+          parts.push(text);
         }
-        return parts.join(" \u2502 ");
+        const sep = muted ? colorize(" \u2502 ", muted) : " \u2502 ";
+        return parts.join(sep);
       },
-      playful: (data) => {
+      playful: (data, colors2) => {
         const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
         const parts = [];
+        const info = colors2?.semantic.info ?? "";
+        const muted = colors2?.base.muted ?? "";
         if (claudeMdCount > 0) {
-          parts.push(`\u{1F4C4} CLAUDE.md:${claudeMdCount}`);
+          const text = info ? colorize(`CLAUDE.md:${claudeMdCount}`, info) : `CLAUDE.md:${claudeMdCount}`;
+          parts.push(`\u{1F4C4} ${text}`);
         }
         if (rulesCount > 0) {
-          parts.push(`\u{1F4DC} rules:${rulesCount}`);
+          const text = info ? colorize(`rules:${rulesCount}`, info) : `rules:${rulesCount}`;
+          parts.push(`\u{1F4DC} ${text}`);
         }
         if (mcpCount > 0) {
-          parts.push(`\u{1F50C} MCPs:${mcpCount}`);
+          const text = info ? colorize(`MCPs:${mcpCount}`, info) : `MCPs:${mcpCount}`;
+          parts.push(`\u{1F50C} ${text}`);
         }
         if (hooksCount > 0) {
-          parts.push(`\u{1FA9D} hooks:${hooksCount}`);
+          const text = info ? colorize(`hooks:${hooksCount}`, info) : `hooks:${hooksCount}`;
+          parts.push(`\u{1FA9D} ${text}`);
         }
-        return parts.join(" \u2502 ");
+        const sep = muted ? colorize(" \u2502 ", muted) : " \u2502 ";
+        return parts.join(sep);
       },
-      verbose: (data) => {
+      verbose: (data, colors2) => {
         const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
         const parts = [];
+        const info = colors2?.semantic.info ?? "";
+        const muted = colors2?.base.muted ?? "";
         if (claudeMdCount > 0) {
-          parts.push(`${claudeMdCount} CLAUDE.md`);
+          const text = info ? colorize(`${claudeMdCount} CLAUDE.md`, info) : `${claudeMdCount} CLAUDE.md`;
+          parts.push(text);
         }
         if (rulesCount > 0) {
-          parts.push(`${rulesCount} rules`);
+          const text = info ? colorize(`${rulesCount} rules`, info) : `${rulesCount} rules`;
+          parts.push(text);
         }
         if (mcpCount > 0) {
-          parts.push(`${mcpCount} MCP servers`);
+          const text = info ? colorize(`${mcpCount} MCP servers`, info) : `${mcpCount} MCP servers`;
+          parts.push(text);
         }
         if (hooksCount > 0) {
-          parts.push(`${hooksCount} hook`);
+          const text = info ? colorize(`${hooksCount} hooks`, info) : `${hooksCount} hooks`;
+          parts.push(text);
         }
-        return parts.join(" \u2502 ");
+        const sep = muted ? colorize(" \u2502 ", muted) : " \u2502 ";
+        return parts.join(sep);
       }
     };
   }
@@ -2556,6 +2607,7 @@ var init_config_count_widget = __esm({
     init_style_types();
     init_widget_types();
     init_config_provider();
+    init_theme();
     init_styles3();
     ConfigCountWidget = class {
       id = "config-count";
@@ -2567,10 +2619,15 @@ var init_config_count_widget = __esm({
         1
         // Second line
       );
-      configProvider = new ConfigProvider();
+      configProvider;
       configs;
       cwd;
+      themeColors;
       styleFn = configCountStyles.balanced;
+      constructor(configProvider, themeColors) {
+        this.configProvider = configProvider ?? new ConfigProvider();
+        this.themeColors = themeColors ?? DEFAULT_THEME;
+      }
       setStyle(style = DEFAULT_WIDGET_STYLE) {
         const fn = configCountStyles[style];
         if (fn) {
@@ -2599,9 +2656,10 @@ var init_config_count_widget = __esm({
           claudeMdCount,
           rulesCount,
           mcpCount,
-          hooksCount
+          hooksCount,
+          colors: this.themeColors
         };
-        return this.styleFn(renderData);
+        return this.styleFn(renderData, this.themeColors);
       }
       async cleanup() {
       }
@@ -3631,7 +3689,8 @@ async function registerWidgetsFromConfig(registry, config, style, themeName) {
       return w;
     },
     "config-count": (s) => {
-      const w = new ConfigCountWidget();
+      const mockConfig = new MockConfigProvider();
+      const w = new ConfigCountWidget(mockConfig, themeColors);
       w.setStyle(s);
       return w;
     },
@@ -3682,6 +3741,7 @@ var init_layout_preview = __esm({
     "use strict";
     init_renderer();
     init_widget_registry();
+    init_mock_config_provider();
     init_mock_git();
     init_mock_transcript_provider();
     init_theme();

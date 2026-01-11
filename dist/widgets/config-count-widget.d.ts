@@ -6,6 +6,8 @@
  */
 import type { WidgetStyle } from "../core/style-types.js";
 import type { IWidget, RenderContext, StdinData } from "../core/types.js";
+import { type IConfigProvider } from "../providers/config-provider.js";
+import type { IThemeColors } from "../ui/theme/types.js";
 /**
  * Widget displaying configuration counts
  *
@@ -19,7 +21,9 @@ export declare class ConfigCountWidget implements IWidget {
     private configProvider;
     private configs?;
     private cwd?;
+    private themeColors;
     private styleFn;
+    constructor(configProvider?: IConfigProvider, themeColors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
     initialize(): Promise<void>;
     update(data: StdinData): Promise<void>;

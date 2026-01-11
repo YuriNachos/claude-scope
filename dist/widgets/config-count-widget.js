@@ -6,7 +6,8 @@
  */
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { ConfigProvider } from "../providers/config-provider.js";
+import { ConfigProvider, } from "../providers/config-provider.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { configCountStyles } from "./config-count/styles.js";
 /**
  * Widget displaying configuration counts
@@ -19,10 +20,15 @@ export class ConfigCountWidget {
     id = "config-count";
     metadata = createWidgetMetadata("Config Count", "Displays Claude Code configuration counts", "1.0.0", "claude-scope", 1 // Second line
     );
-    configProvider = new ConfigProvider();
+    configProvider;
     configs;
     cwd;
+    themeColors;
     styleFn = configCountStyles.balanced;
+    constructor(configProvider, themeColors) {
+        this.configProvider = configProvider ?? new ConfigProvider();
+        this.themeColors = themeColors ?? DEFAULT_THEME;
+    }
     setStyle(style = DEFAULT_WIDGET_STYLE) {
         const fn = configCountStyles[style];
         if (fn) {
@@ -54,8 +60,9 @@ export class ConfigCountWidget {
             rulesCount,
             mcpCount,
             hooksCount,
+            colors: this.themeColors,
         };
-        return this.styleFn(renderData);
+        return this.styleFn(renderData, this.themeColors);
     }
     async cleanup() {
         // No cleanup needed
