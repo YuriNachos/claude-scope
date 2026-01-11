@@ -51,15 +51,25 @@ export class ContextWidget extends StdinDataWidget {
     const { current_usage } = data.context_window;
 
     // If we have valid current_usage, cache it
-    // Only cache if there are meaningful values (input_tokens > 0)
-    // This prevents zero values from overwriting valid cache data
-    if (current_usage && current_usage.input_tokens > 0) {
-      this.cacheManager.setCachedUsage(data.session_id, {
-        input_tokens: current_usage.input_tokens,
-        output_tokens: current_usage.output_tokens,
-        cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
-        cache_read_input_tokens: current_usage.cache_read_input_tokens,
-      });
+    // Only cache if ANY token value > 0. This prevents zero values from
+    // overwriting valid cache data. ContextWidget tracks ALL token types
+    // (input, output, cache_read, cache_creation), so a valid state could
+    // have zero input_tokens but non-zero output_tokens or cache_read_tokens.
+    if (current_usage) {
+      const hasAnyTokens =
+        (current_usage.input_tokens ?? 0) > 0 ||
+        (current_usage.output_tokens ?? 0) > 0 ||
+        (current_usage.cache_creation_input_tokens ?? 0) > 0 ||
+        (current_usage.cache_read_input_tokens ?? 0) > 0;
+
+      if (hasAnyTokens) {
+        this.cacheManager.setCachedUsage(data.session_id, {
+          input_tokens: current_usage.input_tokens,
+          output_tokens: current_usage.output_tokens,
+          cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
+          cache_read_input_tokens: current_usage.cache_read_input_tokens,
+        });
+      }
     }
   }
 
