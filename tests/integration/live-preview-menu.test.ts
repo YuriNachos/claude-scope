@@ -164,20 +164,20 @@ describe("Live Preview Menu Integration", () => {
     assert.ok(config.lines["1"], "Should have line 1");
     assert.ok(config.lines["2"], "Should have line 2");
 
-    // Line 0: model, context, cost, duration (4 widgets)
-    assert.strictEqual(config.lines["0"].length, 4);
+    // Line 0: model, context, cost, lines, duration (5 widgets)
+    assert.strictEqual(config.lines["0"].length, 5);
     const line0Ids = config.lines["0"].map((w) => w.id);
     assert.ok(line0Ids.includes("model"));
     assert.ok(line0Ids.includes("context"));
     assert.ok(line0Ids.includes("cost"));
+    assert.ok(line0Ids.includes("lines"));
     assert.ok(line0Ids.includes("duration"));
 
-    // Line 1: git, git-tag, lines, active-tools (4 widgets)
-    assert.strictEqual(config.lines["1"].length, 4);
+    // Line 1: git, git-tag, active-tools (3 widgets)
+    assert.strictEqual(config.lines["1"].length, 3);
     const line1Ids = config.lines["1"].map((w) => w.id);
     assert.ok(line1Ids.includes("git"));
     assert.ok(line1Ids.includes("git-tag"));
-    assert.ok(line1Ids.includes("lines"));
     assert.ok(line1Ids.includes("active-tools"));
 
     // Line 2: cache-metrics, config-count (2 widgets)

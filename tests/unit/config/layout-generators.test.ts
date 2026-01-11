@@ -127,7 +127,7 @@ describe("Layout Generators", () => {
       assert.ok(config.lines["2"]);
     });
 
-    it("should include model, context, cost, duration on line 0", () => {
+    it("should include model, context, cost, lines, duration on line 0", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
       const line0 = config.lines["0"];
 
@@ -135,17 +135,17 @@ describe("Layout Generators", () => {
       assert.ok(ids.includes("model"));
       assert.ok(ids.includes("context"));
       assert.ok(ids.includes("cost"));
+      assert.ok(ids.includes("lines"));
       assert.ok(ids.includes("duration"));
     });
 
-    it("should include git, git-tag, lines, active-tools on line 1", () => {
+    it("should include git, git-tag, active-tools on line 1", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
       const line1 = config.lines["1"];
 
       const ids = line1.map((w) => w.id);
       assert.ok(ids.includes("git"));
       assert.ok(ids.includes("git-tag"));
-      assert.ok(ids.includes("lines"));
       assert.ok(ids.includes("active-tools"));
     });
 
@@ -163,14 +163,14 @@ describe("Layout Generators", () => {
       assert.strictEqual(config.version, "1.0.0");
     });
 
-    it("should have 4 widgets on line 0", () => {
+    it("should have 5 widgets on line 0", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
-      assert.strictEqual(config.lines["0"].length, 4);
+      assert.strictEqual(config.lines["0"].length, 5);
     });
 
-    it("should have 4 widgets on line 1", () => {
+    it("should have 3 widgets on line 1", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
-      assert.strictEqual(config.lines["1"].length, 4);
+      assert.strictEqual(config.lines["1"].length, 3);
     });
 
     it("should have 2 widgets on line 2", () => {
