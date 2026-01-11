@@ -84,6 +84,31 @@ Each widget supports multiple display styles for customization:
 
 **Note:** This is an early release with basic functionality. Additional features (repository status, session analytics, etc.) are planned for future releases.
 
+## Quick Config
+
+Interactive configuration for widget style and theme:
+
+```bash
+claude-scope quick-config
+```
+
+This will launch an interactive menu where you can:
+1. Choose display style: balanced, playful, or compact
+2. Choose from 17 available themes
+3. See live preview as you make selections
+
+Configuration is saved to `~/.claude-scope/config.json`.
+
+### Styles
+
+- **Balanced**: Clean display with labels (default)
+- **Playful**: Fun display with emojis
+- **Compact**: Minimal, condensed display
+
+### Themes
+
+17 built-in themes available: monokai, nord, dracula, dusty-sage, catppuccin-mocha, cyberpunk-neon, github-dark-dimmed, gray, muted-gray, one-dark-pro, professional-blue, rose-pine, semantic-classic, slate-blue, solarized-dark, tokyo-night, vscode-dark-plus.
+
 ## Releasing
 
 To create a new release:
