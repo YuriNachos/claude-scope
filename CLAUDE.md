@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Claude Code CLI tool that displays status information in the terminal. Users working in Claude Code will see real-time information about their current session.
 
-**Current version**: v0.8.0
+**Current version**: v0.8.4
 
 **Implemented features**:
 - Git branch and changes display
@@ -16,13 +16,15 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - Session duration tracking
 - Cost estimation display
 - Lines added/removed display
-- Configuration counts (CLAUDE.md, rules, MCPs, hooks)
+- Configuration counts (CLAUDE.md, rules, MCPs, hooks) with theme color support
 - Poker widget with participation-based formatting
 - Parentheses for participating cards with bold
 - All cards show suit color (red for ♥♦, gray for ♠♣)
 - Update throttling (5 seconds minimum between hand regeneration)
 - Empty line separator widget (4th line)
 - Quick config command with three-stage interactive setup (layout → style → theme)
+- Mock providers (MockGit, MockTranscriptProvider, MockConfigProvider) for preview/demo mode
+- CacheMetricsWidget balanced style (no emoji, just "35.0k cache")
 
 **Planned features**: Running agents, todo progress, session analytics.
 
