@@ -685,9 +685,9 @@ describe("ContextWidget", () => {
       );
 
       const result3 = await widget.render({ width: 80, timestamp: 0 });
-      // BUG: Should return null but shows 45% because old data was cached
-      // under "session-beta" in step 2
-      expect(result3).to.be.null; // This will fail - showing the bug
+      // FIXED: Now correctly returns null because session change detection
+      // prevents old session data from being cached under the new session_id
+      expect(result3).to.be.null;
     });
   });
 });
