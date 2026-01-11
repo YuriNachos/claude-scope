@@ -6,6 +6,7 @@
  */
 
 import { parseCommand, routeCommand } from "./cli/index.js";
+import { type LoadedConfig, loadWidgetConfig } from "./config/config-loader.js";
 import { isWidgetEnabled } from "./config/widget-flags.js";
 import { Renderer } from "./core/renderer.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
@@ -36,6 +37,23 @@ async function readStdin(): Promise<string> {
   }
 
   return Buffer.concat(chunks).toString("utf8");
+}
+
+/**
+ * Apply widget configuration from loaded config to a widget instance
+ * @param widget - Widget instance to configure
+ * @param widgetId - Widget identifier (e.g., "model", "git", "context")
+ * @param config - Loaded configuration object
+ */
+function applyWidgetConfig(widget: any, widgetId: string, config: LoadedConfig): void {
+  // Find widget config by scanning lines
+  for (const line of Object.values(config.lines)) {
+    const widgetConfig = line.find((w) => w.id === widgetId);
+    if (widgetConfig && widget.setStyle) {
+      widget.setStyle(widgetConfig.style);
+      break;
+    }
+  }
 }
 
 /**
@@ -70,25 +88,76 @@ export async function main(): Promise<string> {
     // Create transcript provider for ActiveToolsWidget
     const transcriptProvider = new TranscriptProvider();
 
-    // Register all widgets (no constructor args needed)
-    await registry.register(new ModelWidget());
-    await registry.register(new ContextWidget());
-    await registry.register(new CostWidget());
-    await registry.register(new LinesWidget());
-    await registry.register(new DurationWidget());
-    await registry.register(new GitWidget());
-    await registry.register(new GitTagWidget());
-    await registry.register(new ConfigCountWidget());
+    // Load widget configuration
+    const widgetConfig = await loadWidgetConfig();
+
+    // Register all widgets with configuration applied
+    const modelWidget = new ModelWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(modelWidget, "model", widgetConfig);
+    }
+    await registry.register(modelWidget);
+
+    const contextWidget = new ContextWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(contextWidget, "context", widgetConfig);
+    }
+    await registry.register(contextWidget);
+
+    const costWidget = new CostWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(costWidget, "cost", widgetConfig);
+    }
+    await registry.register(costWidget);
+
+    const linesWidget = new LinesWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(linesWidget, "lines", widgetConfig);
+    }
+    await registry.register(linesWidget);
+
+    const durationWidget = new DurationWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(durationWidget, "duration", widgetConfig);
+    }
+    await registry.register(durationWidget);
+
+    const gitWidget = new GitWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(gitWidget, "git", widgetConfig);
+    }
+    await registry.register(gitWidget);
+
+    const gitTagWidget = new GitTagWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(gitTagWidget, "git-tag", widgetConfig);
+    }
+    await registry.register(gitTagWidget);
+
+    const configCountWidget = new ConfigCountWidget();
+    if (widgetConfig) {
+      applyWidgetConfig(configCountWidget, "config-count", widgetConfig);
+    }
+    await registry.register(configCountWidget);
 
     // Register feature-flagged widgets
     if (isWidgetEnabled("cacheMetrics")) {
-      await registry.register(new CacheMetricsWidget(DEFAULT_THEME));
+      const cacheMetricsWidget = new CacheMetricsWidget(DEFAULT_THEME);
+      if (widgetConfig) {
+        applyWidgetConfig(cacheMetricsWidget, "cache-metrics", widgetConfig);
+      }
+      await registry.register(cacheMetricsWidget);
     }
 
     if (isWidgetEnabled("activeTools")) {
-      await registry.register(new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider));
+      const activeToolsWidget = new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider);
+      if (widgetConfig) {
+        applyWidgetConfig(activeToolsWidget, "active-tools", widgetConfig);
+      }
+      await registry.register(activeToolsWidget);
     }
 
+    // Poker widget is NOT in the config (excluded from quick-config)
     await registry.register(new PokerWidget());
     await registry.register(new EmptyLineWidget());
 
