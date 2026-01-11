@@ -3,8 +3,11 @@
  * Claude Scope - Claude Code statusline plugin
  * Entry point
  */
+import { parseCommand, routeCommand } from "./cli/index.js";
+import { loadWidgetConfig } from "./config/config-loader.js";
 import { isWidgetEnabled } from "./config/widget-flags.js";
 import { Renderer } from "./core/renderer.js";
+import { isValidWidgetStyle } from "./core/style-types.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
 import { TranscriptProvider } from "./providers/transcript-provider.js";
@@ -32,10 +35,51 @@ async function readStdin() {
     return Buffer.concat(chunks).toString("utf8");
 }
 /**
+ * Apply widget configuration from loaded config to a widget instance
+ * @param widget - Widget instance to configure
+ * @param widgetId - Widget identifier (e.g., "model", "git", "context")
+ * @param config - Loaded configuration object
+ */
+function applyWidgetConfig(widget, widgetId, config) {
+    // Find widget config by scanning lines
+    for (const line of Object.values(config.lines)) {
+        const widgetConfig = line.find((w) => w.id === widgetId);
+        if (widgetConfig &&
+            typeof widget.setStyle === "function" &&
+            isValidWidgetStyle(widgetConfig.style)) {
+            widget.setStyle(widgetConfig.style);
+            break;
+        }
+    }
+}
+/**
+ * Register a widget with the registry, applying configuration if available
+ * @param registry - Widget registry instance
+ * @param widget - Widget instance to register (must be IWidget)
+ * @param widgetId - Widget identifier for config lookup
+ * @param config - Loaded configuration object (null if no config)
+ *
+ * @description This helper function applies style configuration to a widget
+ * before registering it with the widget registry. The widget must implement IWidget
+ * and optionally support setStyle() for configuration.
+ */
+async function registerWidgetWithConfig(registry, widget, widgetId, config) {
+    if (config) {
+        applyWidgetConfig(widget, widgetId, config);
+    }
+    await registry.register(widget);
+}
+/**
  * Main entry point
  */
 export async function main() {
     try {
+        // Check if we're in command mode
+        const command = parseCommand();
+        if (command === "quick-config") {
+            await routeCommand(command);
+            return ""; // Commands handle their own output
+        }
         // Read JSON from stdin
         const stdin = await readStdin();
         // If stdin is empty, still try to show git info
@@ -50,22 +94,25 @@ export async function main() {
         const registry = new WidgetRegistry();
         // Create transcript provider for ActiveToolsWidget
         const transcriptProvider = new TranscriptProvider();
-        // Register all widgets (no constructor args needed)
-        await registry.register(new ModelWidget());
-        await registry.register(new ContextWidget());
-        await registry.register(new CostWidget());
-        await registry.register(new LinesWidget());
-        await registry.register(new DurationWidget());
-        await registry.register(new GitWidget());
-        await registry.register(new GitTagWidget());
-        await registry.register(new ConfigCountWidget());
+        // Load widget configuration
+        const widgetConfig = await loadWidgetConfig();
+        // Register all widgets with configuration applied
+        await registerWidgetWithConfig(registry, new ModelWidget(), "model", widgetConfig);
+        await registerWidgetWithConfig(registry, new ContextWidget(), "context", widgetConfig);
+        await registerWidgetWithConfig(registry, new CostWidget(), "cost", widgetConfig);
+        await registerWidgetWithConfig(registry, new LinesWidget(), "lines", widgetConfig);
+        await registerWidgetWithConfig(registry, new DurationWidget(), "duration", widgetConfig);
+        await registerWidgetWithConfig(registry, new GitWidget(), "git", widgetConfig);
+        await registerWidgetWithConfig(registry, new GitTagWidget(), "git-tag", widgetConfig);
+        await registerWidgetWithConfig(registry, new ConfigCountWidget(), "config-count", widgetConfig);
         // Register feature-flagged widgets
         if (isWidgetEnabled("cacheMetrics")) {
-            await registry.register(new CacheMetricsWidget(DEFAULT_THEME));
+            await registerWidgetWithConfig(registry, new CacheMetricsWidget(DEFAULT_THEME), "cache-metrics", widgetConfig);
         }
         if (isWidgetEnabled("activeTools")) {
-            await registry.register(new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider));
+            await registerWidgetWithConfig(registry, new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider), "active-tools", widgetConfig);
         }
+        // Poker widget is NOT in the config (excluded from quick-config)
         await registry.register(new PokerWidget());
         await registry.register(new EmptyLineWidget());
         // Create renderer with error handling configuration
