@@ -63,9 +63,9 @@ export async function loadWidgetConfig(): Promise<LoadedConfig | null> {
     return {
       lines: config.lines,
     };
-  } catch {
-    // Corrupt JSON, permission error, etc.
-    // Return null silently - main CLI will use defaults
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.warn(`Config error loading ${configPath}: ${errorMsg}`);
     return null;
   }
 }

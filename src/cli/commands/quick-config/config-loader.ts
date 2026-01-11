@@ -46,8 +46,8 @@ export async function loadConfig(): Promise<ScopeConfig | null> {
 
     return config;
   } catch (error) {
-    // Corrupt JSON, permission error, etc.
-    console.warn(`Config error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.warn(`Config error loading ${configPath}: ${errorMsg}`);
     return null;
   }
 }

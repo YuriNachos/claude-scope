@@ -15,10 +15,15 @@ export async function saveConfig(config: ScopeConfig): Promise<void> {
   const configDir = getUserConfigDir();
   const configPath = getUserConfigPath();
 
-  // Ensure directory exists
-  await mkdir(configDir, { recursive: true });
+  try {
+    // Ensure directory exists
+    await mkdir(configDir, { recursive: true });
 
-  // Write with formatted JSON
-  const json = JSON.stringify(config, null, 2);
-  await writeFile(configPath, json, "utf-8");
+    // Write with formatted JSON
+    const json = JSON.stringify(config, null, 2);
+    await writeFile(configPath, json, "utf-8");
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Failed to save config to ${configPath}: ${errorMsg}`);
+  }
 }
