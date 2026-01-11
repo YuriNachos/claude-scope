@@ -1,6 +1,5 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import type { ScopeConfig } from "../../../../../src/cli/commands/quick-config/config-schema.js";
 import {
   generatePreviews,
   type PreviewChoice,

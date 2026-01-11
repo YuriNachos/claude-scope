@@ -8,7 +8,7 @@ import {
   generateRichLayout,
 } from "../../../config/default-config.js";
 import { AVAILABLE_THEMES } from "../../../ui/theme/index.js";
-import type { QuickConfigLayout, QuickConfigStyle, ScopeConfig } from "./config-schema.js";
+import type { QuickConfigLayout, QuickConfigStyle } from "./config-schema.js";
 import { saveConfig } from "./config-writer.js";
 import { renderPreviewFromConfig } from "./layout-preview.js";
 import { type PreviewChoice, selectWithPreview } from "./select-with-preview.js";

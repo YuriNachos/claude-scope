@@ -8,7 +8,6 @@ import {
   generateBalancedLayout,
   generateCompactLayout,
   generateRichLayout,
-  type ScopeConfig,
 } from "../../../src/config/default-config.js";
 
 describe("Layout Generators", () => {

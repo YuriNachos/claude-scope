@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { mkdir, readFile, rm } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 import { after, before, describe, it } from "node:test";
 import type { ScopeConfig } from "../../../../../src/cli/commands/quick-config/config-schema.js";
 import { saveConfig } from "../../../../../src/cli/commands/quick-config/config-writer.js";
