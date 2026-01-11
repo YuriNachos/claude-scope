@@ -1,11 +1,11 @@
 /**
  * Three-Stage Interactive Menu: Layout -> Style -> Theme
  */
-import { select } from "@inquirer/prompts";
 import { generateBalancedLayout, generateCompactLayout, generateRichLayout, } from "../../../config/default-config.js";
 import { AVAILABLE_THEMES } from "../../../ui/theme/index.js";
 import { saveConfig } from "./config-writer.js";
 import { renderPreviewFromConfig } from "./layout-preview.js";
+import { selectWithPreview } from "./select-with-preview.js";
 /**
  * Get layout generator function by layout type
  */
@@ -28,28 +28,40 @@ async function selectLayout() {
             name: "Balanced",
             description: "2 lines: AI metrics + Git, Cache, Tools, MCP, Hooks",
             value: "balanced",
+            getConfig: (s, t) => generateBalancedLayout(s, t),
         },
         {
             name: "Compact",
             description: "1 line: Model, Context, Cost, Git, Duration",
             value: "compact",
+            getConfig: (s, t) => generateCompactLayout(s, t),
         },
         {
             name: "Rich",
             description: "3 lines: Full details with Git Tag, Config Count",
             value: "rich",
+            getConfig: (s, t) => generateRichLayout(s, t),
         },
     ];
     console.log("\n┌─────────────────────────────────────────────────────────────────┐");
     console.log("│  Stage 1/3: Choose Widget Layout                                  │");
     console.log("├─────────────────────────────────────────────────────────────────┤");
     console.log("│  Select how widgets are arranged across statusline lines.        │");
-    console.log("│  Each option shows a live preview with demo data.               │");
+    console.log("│  Preview updates as you navigate options.                       │");
     console.log("└─────────────────────────────────────────────────────────────────┘\n");
-    const layout = await select({
+    // Use default style (balanced) and default theme (monokai) for initial preview
+    const defaultStyle = "balanced";
+    const defaultTheme = "monokai";
+    // Generate previews BEFORE showing the prompt
+    const { generatePreviews } = await import("./select-with-preview.js");
+    const previews = await generatePreviews(layoutChoices, defaultStyle, defaultTheme);
+    const layout = await selectWithPreview({
         message: "Choose a layout preset:",
         choices: layoutChoices,
         pageSize: 3,
+        style: defaultStyle,
+        themeName: defaultTheme,
+        previews,
     });
     return layout;
 }
@@ -57,32 +69,42 @@ async function selectLayout() {
  * Stage 2: Select style with layout-aware preview
  */
 async function selectStyle(layout) {
-    console.log("\n┌─────────────────────────────────────────────────────────────────┐");
-    console.log("│  Stage 2/3: Choose Display Style                                 │");
-    console.log("├─────────────────────────────────────────────────────────────────┤");
-    console.log("│  Select how widgets are rendered (labels, emojis, etc.).        │");
-    console.log("│  Preview shows your selected layout with each style.            │");
-    console.log("└─────────────────────────────────────────────────────────────────┘\n");
     const styleChoices = [
         {
             name: "Balanced",
             description: "Clean, balanced display with labels",
             value: "balanced",
+            getConfig: (s, t) => getLayoutGenerator(layout)(s, t),
         },
         {
             name: "Playful",
             description: "Fun display with emojis",
             value: "playful",
+            getConfig: (s, t) => getLayoutGenerator(layout)(s, t),
         },
         {
             name: "Compact",
             description: "Minimal, condensed display",
             value: "compact",
+            getConfig: (s, t) => getLayoutGenerator(layout)(s, t),
         },
     ];
-    const style = await select({
+    console.log("\n┌─────────────────────────────────────────────────────────────────┐");
+    console.log("│  Stage 2/3: Choose Display Style                                 │");
+    console.log("├─────────────────────────────────────────────────────────────────┤");
+    console.log("│  Select how widgets are rendered (labels, emojis, etc.).        │");
+    console.log("│  Preview shows your selected layout with each style.           │");
+    console.log("└─────────────────────────────────────────────────────────────────┘\n");
+    // Generate previews BEFORE showing the prompt
+    const { generatePreviews } = await import("./select-with-preview.js");
+    const previews = await generatePreviews(styleChoices, "balanced", "monokai");
+    const style = await selectWithPreview({
         message: "Choose a display style:",
         choices: styleChoices,
+        pageSize: 3,
+        style: "balanced",
+        themeName: "monokai",
+        previews,
     });
     return style;
 }
@@ -90,22 +112,29 @@ async function selectStyle(layout) {
  * Stage 3: Select theme with layout + style aware preview
  */
 async function selectTheme(layout, style) {
-    console.log("\n┌─────────────────────────────────────────────────────────────────┐");
-    console.log("│  Stage 3/3: Choose Color Theme                                   │");
-    console.log("├─────────────────────────────────────────────────────────────────┤");
-    console.log("│  Select color theme for your statusline.                        │");
-    console.log("│  Preview shows your final configuration with live colors.        │");
-    console.log("└─────────────────────────────────────────────────────────────────┘\n");
     // Show first 8 themes for better terminal UX (avoid overwhelming list)
     const themeChoices = AVAILABLE_THEMES.slice(0, 8).map((theme) => ({
         name: theme.name,
         description: theme.description,
         value: theme.name,
+        getConfig: () => getLayoutGenerator(layout)(style, theme.name),
     }));
-    const theme = await select({
+    console.log("\n┌─────────────────────────────────────────────────────────────────┐");
+    console.log("│  Stage 3/3: Choose Color Theme                                   │");
+    console.log("├─────────────────────────────────────────────────────────────────┤");
+    console.log("│  Select color theme for your statusline.                        │");
+    console.log("│  Preview shows final config with live theme colors.             │");
+    console.log("└─────────────────────────────────────────────────────────────────┘\n");
+    // Generate previews BEFORE showing the prompt
+    const { generatePreviews } = await import("./select-with-preview.js");
+    const previews = await generatePreviews(themeChoices, style, "monokai");
+    const theme = await selectWithPreview({
         message: "Choose a theme:",
         choices: themeChoices,
         pageSize: 8,
+        style,
+        themeName: "monokai", // Will be overridden by getConfig
+        previews,
     });
     return theme;
 }

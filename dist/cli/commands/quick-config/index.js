@@ -7,6 +7,7 @@ export { saveConfig } from "./config-writer.js";
 export { renderPreviewFromConfig } from "./layout-preview.js";
 export { runQuickConfigMenu } from "./menu.js";
 export { renderPreview } from "./preview.js";
+export { selectWithPreview, } from "./select-with-preview.js";
 /**
  * Handle quick-config command
  */
