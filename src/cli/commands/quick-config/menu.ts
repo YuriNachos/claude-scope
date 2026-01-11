@@ -76,7 +76,7 @@ async function selectStyle(): Promise<QuickConfigStyle> {
 /**
  * Stage 2: Select theme
  */
-async function selectTheme(_style: QuickConfigStyle): Promise<string> {
+async function selectTheme(): Promise<string> {
   const themeChoices: ThemeChoice[] = AVAILABLE_THEMES.map((theme) => ({
     name: theme.name,
     description: theme.description,
@@ -103,7 +103,7 @@ export async function runQuickConfigMenu(): Promise<void> {
     const selectedStyle = await selectStyle();
 
     // Stage 2: Select theme
-    const selectedTheme = await selectTheme(selectedStyle);
+    const selectedTheme = await selectTheme();
 
     // Generate and save config
     console.log("\nGenerating configuration...");
