@@ -114,10 +114,20 @@ export async function runQuickConfigMenu(): Promise<void> {
     console.log(`  Style: ${selectedStyle}`);
     console.log(`  Theme: ${selectedTheme}`);
   } catch (error) {
+    // Handle user cancellation gracefully
     if (error instanceof Error && error.name === "ExitPromptError") {
-      console.log("\nConfiguration cancelled. No changes saved.");
-    } else {
-      throw error;
+      console.log("\n✓ Configuration cancelled. No changes saved.");
+      process.exit(0);
     }
+
+    // Handle permission denied errors
+    if (error instanceof Error && (error as any).code === "EACCES") {
+      console.error("\n✗ Permission denied. Cannot write to ~/.claude-scope/config.json");
+      process.exit(1);
+    }
+
+    // Handle all other errors
+    console.error("\n✗ Error:", error instanceof Error ? error.message : "Unknown error");
+    process.exit(1);
   }
 }
