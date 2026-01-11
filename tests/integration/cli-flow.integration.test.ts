@@ -8,6 +8,8 @@ import { expect } from "chai";
 import { Renderer } from "../../src/core/renderer.js";
 import { WidgetRegistry } from "../../src/core/widget-registry.js";
 import type { RenderContext, StdinData } from "../../src/types.js";
+import { DEFAULT_THEME } from "../../src/ui/theme/index.js";
+import { CacheMetricsWidget } from "../../src/widgets/cache-metrics/cache-metrics-widget.js";
 import { ConfigCountWidget } from "../../src/widgets/config-count-widget.js";
 import { ContextWidget } from "../../src/widgets/context-widget.js";
 import { CostWidget } from "../../src/widgets/cost-widget.js";
@@ -358,6 +360,77 @@ describe("CLI Flow Integration", () => {
       outputs.forEach((output) => {
         expect(stripAnsi(output)).to.include("Opus 4.5");
       });
+    });
+  });
+
+  describe("Session change flow", () => {
+    it("should handle session changes correctly", async () => {
+      const registry = new WidgetRegistry();
+
+      const contextWidget = new ContextWidget();
+      const cacheWidget = new CacheMetricsWidget(DEFAULT_THEME);
+
+      await registry.register(contextWidget);
+      await registry.register(cacheWidget);
+
+      const renderer = new Renderer({
+        separator: " │ ",
+        onError: () => {},
+        showErrors: false,
+      });
+
+      // First session with data
+      const data1 = createStdinData({
+        session_id: "session-1",
+        context_window: {
+          total_input_tokens: 1000,
+          total_output_tokens: 500,
+          context_window_size: 200000,
+          current_usage: {
+            input_tokens: 50000,
+            output_tokens: 5000,
+            cache_creation_input_tokens: 0,
+            cache_read_input_tokens: 30000,
+          },
+        },
+      });
+
+      for (const widget of registry.getAll()) {
+        await widget.update(data1);
+      }
+
+      const output1 = await renderer.render(registry.getEnabledWidgets(), {
+        width: 80,
+        timestamp: 0,
+      });
+
+      // Should show context and cache
+      expect(output1.join("\n")).to.include("43%"); // (50000+5000+30000)/200000 = 42.5% -> rounds to 43%
+      expect(output1.join("\n")).to.include("30k");
+
+      // Second session with null current_usage
+      const data2 = createStdinData({
+        session_id: "session-2", // Different session!
+        context_window: {
+          total_input_tokens: 0,
+          total_output_tokens: 0,
+          context_window_size: 200000,
+          current_usage: null,
+        },
+      });
+
+      for (const widget of registry.getAll()) {
+        await widget.update(data2);
+      }
+
+      const output2 = await renderer.render(registry.getEnabledWidgets(), {
+        width: 80,
+        timestamp: 0,
+      });
+
+      // Should NOT show old context or cache data
+      expect(output2.join("\n")).to.not.include("43%");
+      expect(output2.join("\n")).to.not.include("30k");
     });
   });
 });
