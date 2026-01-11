@@ -15,6 +15,7 @@ export declare class CacheMetricsWidget extends StdinDataWidget {
     private style;
     private renderData?;
     private cacheManager;
+    private lastSessionId?;
     constructor(theme?: IThemeColors);
     /**
      * Set display style

@@ -56,7 +56,7 @@ async function selectStyle() {
 /**
  * Stage 2: Select theme
  */
-async function selectTheme(_style) {
+async function selectTheme() {
     const themeChoices = AVAILABLE_THEMES.map((theme) => ({
         name: theme.name,
         description: theme.description,
@@ -78,7 +78,7 @@ export async function runQuickConfigMenu() {
         // Stage 1: Select style
         const selectedStyle = await selectStyle();
         // Stage 2: Select theme
-        const selectedTheme = await selectTheme(selectedStyle);
+        const selectedTheme = await selectTheme();
         // Generate and save config
         console.log("\nGenerating configuration...");
         const config = generateConfigWithStyleAndTheme(selectedStyle, selectedTheme);

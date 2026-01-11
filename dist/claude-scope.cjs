@@ -12108,7 +12108,8 @@ async function loadConfig() {
     }
     return config;
   } catch (error) {
-    console.warn(`Config error: ${error instanceof Error ? error.message : "Unknown error"}`);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.warn(`Config error loading ${configPath}: ${errorMsg}`);
     return null;
   }
 }
@@ -12118,9 +12119,14 @@ var import_promises2 = require("node:fs/promises");
 async function saveConfig(config) {
   const configDir = getUserConfigDir();
   const configPath = getUserConfigPath();
-  await (0, import_promises2.mkdir)(configDir, { recursive: true });
-  const json = JSON.stringify(config, null, 2);
-  await (0, import_promises2.writeFile)(configPath, json, "utf-8");
+  try {
+    await (0, import_promises2.mkdir)(configDir, { recursive: true });
+    const json = JSON.stringify(config, null, 2);
+    await (0, import_promises2.writeFile)(configPath, json, "utf-8");
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    throw new Error(`Failed to save config to ${configPath}: ${errorMsg}`);
+  }
 }
 
 // node_modules/@inquirer/core/dist/esm/lib/key.js
@@ -14564,7 +14570,7 @@ async function selectStyle() {
   });
   return style;
 }
-async function selectTheme2(_style) {
+async function selectTheme2() {
   const themeChoices = AVAILABLE_THEMES.map((theme2) => ({
     name: theme2.name,
     description: theme2.description,
@@ -14580,7 +14586,7 @@ async function runQuickConfigMenu() {
   try {
     const _startMode = await showCurrentOrFresh();
     const selectedStyle = await selectStyle();
-    const selectedTheme = await selectTheme2(selectedStyle);
+    const selectedTheme = await selectTheme2();
     console.log("\nGenerating configuration...");
     const config = generateConfigWithStyleAndTheme(selectedStyle, selectedTheme);
     await saveConfig(config);
@@ -15528,6 +15534,7 @@ var CacheMetricsWidget = class extends StdinDataWidget {
   style = "balanced";
   renderData;
   cacheManager;
+  lastSessionId;
   constructor(theme) {
     super();
     this.theme = theme ?? DEFAULT_THEME;
@@ -15577,8 +15584,13 @@ var CacheMetricsWidget = class extends StdinDataWidget {
    */
   async update(data) {
     await super.update(data);
+    const sessionChanged = this.lastSessionId && this.lastSessionId !== data.session_id;
+    if (sessionChanged) {
+      this.renderData = void 0;
+    }
+    this.lastSessionId = data.session_id;
     const usage = data.context_window?.current_usage;
-    if (usage) {
+    if (usage && usage.input_tokens > 0 && !sessionChanged) {
       this.cacheManager.setCachedUsage(data.session_id, {
         input_tokens: usage.input_tokens,
         output_tokens: usage.output_tokens,
@@ -15987,6 +15999,7 @@ var ContextWidget = class extends StdinDataWidget {
   colors;
   styleFn = contextStyles.balanced;
   cacheManager;
+  lastSessionId;
   constructor(colors8) {
     super();
     this.colors = colors8 ?? DEFAULT_THEME;
@@ -16003,14 +16016,19 @@ var ContextWidget = class extends StdinDataWidget {
    */
   async update(data) {
     await super.update(data);
+    const sessionChanged = this.lastSessionId && this.lastSessionId !== data.session_id;
+    this.lastSessionId = data.session_id;
     const { current_usage } = data.context_window;
-    if (current_usage) {
-      this.cacheManager.setCachedUsage(data.session_id, {
-        input_tokens: current_usage.input_tokens,
-        output_tokens: current_usage.output_tokens,
-        cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
-        cache_read_input_tokens: current_usage.cache_read_input_tokens
-      });
+    if (current_usage && !sessionChanged) {
+      const hasAnyTokens = (current_usage.input_tokens ?? 0) > 0 || (current_usage.output_tokens ?? 0) > 0 || (current_usage.cache_creation_input_tokens ?? 0) > 0 || (current_usage.cache_read_input_tokens ?? 0) > 0;
+      if (hasAnyTokens) {
+        this.cacheManager.setCachedUsage(data.session_id, {
+          input_tokens: current_usage.input_tokens,
+          output_tokens: current_usage.output_tokens,
+          cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
+          cache_read_input_tokens: current_usage.cache_read_input_tokens
+        });
+      }
     }
   }
   renderWithData(data, _context) {
@@ -16739,7 +16757,9 @@ async function loadWidgetConfig() {
     return {
       lines: config.lines
     };
-  } catch {
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    console.warn(`Config error loading ${configPath}: ${errorMsg}`);
     return null;
   }
 }

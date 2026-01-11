@@ -16,6 +16,7 @@ export class ContextWidget extends StdinDataWidget {
     colors;
     styleFn = contextStyles.balanced;
     cacheManager;
+    lastSessionId;
     constructor(colors) {
         super();
         this.colors = colors ?? DEFAULT_THEME;
@@ -32,15 +33,33 @@ export class ContextWidget extends StdinDataWidget {
      */
     async update(data) {
         await super.update(data);
+        // Detect session change: if session_id changed, we're in a new session
+        // This ensures that when user presses /new, the widget doesn't cache old session's data
+        const sessionChanged = this.lastSessionId && this.lastSessionId !== data.session_id;
+        this.lastSessionId = data.session_id;
         const { current_usage } = data.context_window;
         // If we have valid current_usage, cache it
-        if (current_usage) {
-            this.cacheManager.setCachedUsage(data.session_id, {
-                input_tokens: current_usage.input_tokens,
-                output_tokens: current_usage.output_tokens,
-                cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
-                cache_read_input_tokens: current_usage.cache_read_input_tokens,
-            });
+        // Only cache if ANY token value > 0. This prevents zero values from
+        // overwriting valid cache data. ContextWidget tracks ALL token types
+        // (input, output, cache_read, cache_creation), so a valid state could
+        // have zero input_tokens but non-zero output_tokens or cache_read_tokens.
+        //
+        // IMPORTANT: Skip caching if we just detected a session change. This prevents
+        // old session data (which may come with the new session_id) from being cached
+        // under the new session ID.
+        if (current_usage && !sessionChanged) {
+            const hasAnyTokens = (current_usage.input_tokens ?? 0) > 0 ||
+                (current_usage.output_tokens ?? 0) > 0 ||
+                (current_usage.cache_creation_input_tokens ?? 0) > 0 ||
+                (current_usage.cache_read_input_tokens ?? 0) > 0;
+            if (hasAnyTokens) {
+                this.cacheManager.setCachedUsage(data.session_id, {
+                    input_tokens: current_usage.input_tokens,
+                    output_tokens: current_usage.output_tokens,
+                    cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
+                    cache_read_input_tokens: current_usage.cache_read_input_tokens,
+                });
+            }
         }
     }
     renderWithData(data, _context) {

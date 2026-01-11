@@ -11,10 +11,16 @@ import { getUserConfigDir, getUserConfigPath } from "./config-loader.js";
 export async function saveConfig(config) {
     const configDir = getUserConfigDir();
     const configPath = getUserConfigPath();
-    // Ensure directory exists
-    await mkdir(configDir, { recursive: true });
-    // Write with formatted JSON
-    const json = JSON.stringify(config, null, 2);
-    await writeFile(configPath, json, "utf-8");
+    try {
+        // Ensure directory exists
+        await mkdir(configDir, { recursive: true });
+        // Write with formatted JSON
+        const json = JSON.stringify(config, null, 2);
+        await writeFile(configPath, json, "utf-8");
+    }
+    catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "Unknown error";
+        throw new Error(`Failed to save config to ${configPath}: ${errorMsg}`);
+    }
 }
 //# sourceMappingURL=config-writer.js.map

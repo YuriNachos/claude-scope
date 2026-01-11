@@ -14,6 +14,7 @@ export declare class ContextWidget extends StdinDataWidget {
     private colors;
     private styleFn;
     private cacheManager;
+    private lastSessionId?;
     constructor(colors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
     /**

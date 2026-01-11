@@ -3,6 +3,13 @@
  *
  * Stores last valid context_usage values to prevent flickering
  * when Claude Code sends null current_usage during tool execution.
+ *
+ * IMPORTANT: Widgets should only cache data when there are meaningful
+ * (non-zero) token values. This prevents zero-value state from overwriting
+ * valid cache data, which would cause widgets to incorrectly display zeros
+ * when falling back to cache during tool execution.
+ *
+ * Cache entries are session-specific and expire after 5 minutes by default.
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
