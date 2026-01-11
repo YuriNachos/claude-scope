@@ -51,16 +51,25 @@ type StyleableWidget = { setStyle?(style: WidgetStyle): void };
  * @param widgetId - Widget identifier (e.g., "model", "git", "context")
  * @param config - Loaded configuration object
  */
-function applyWidgetConfig(widget: StyleableWidget, widgetId: string, config: LoadedConfig): void {
+function applyWidgetConfig(
+  widget: StyleableWidget & { setLine?(line: number): void },
+  widgetId: string,
+  config: LoadedConfig
+): void {
   // Find widget config by scanning lines
-  for (const line of Object.values(config.lines)) {
-    const widgetConfig = line.find((w) => w.id === widgetId);
-    if (
-      widgetConfig &&
-      typeof widget.setStyle === "function" &&
-      isValidWidgetStyle(widgetConfig.style)
-    ) {
-      widget.setStyle(widgetConfig.style);
+  for (const [lineNum, widgets] of Object.entries(config.lines)) {
+    const widgetConfig = widgets.find((w) => w.id === widgetId);
+    if (widgetConfig) {
+      // Apply style
+      if (typeof widget.setStyle === "function" && isValidWidgetStyle(widgetConfig.style)) {
+        widget.setStyle(widgetConfig.style);
+      }
+
+      // Apply line override
+      if (typeof widget.setLine === "function") {
+        widget.setLine(parseInt(lineNum, 10));
+      }
+
       break;
     }
   }
@@ -77,7 +86,9 @@ function applyWidgetConfig(widget: StyleableWidget, widgetId: string, config: Lo
  * before registering it with the widget registry. The widget must implement IWidget
  * and optionally support setStyle() for configuration.
  */
-async function registerWidgetWithConfig<T extends { setStyle?(style: WidgetStyle): void }>(
+async function registerWidgetWithConfig<
+  T extends { setStyle?(style: WidgetStyle): void; setLine?(line: number): void },
+>(
   registry: WidgetRegistry,
   widget: T & Parameters<WidgetRegistry["register"]>[0],
   widgetId: string,
