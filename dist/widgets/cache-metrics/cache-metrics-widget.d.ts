@@ -12,6 +12,7 @@ export declare class CacheMetricsWidget extends StdinDataWidget {
     readonly id = "cache-metrics";
     readonly metadata: import("../../core/types.js").IWidgetMetadata;
     private theme;
+    private _lineOverride?;
     private style;
     private renderData?;
     private cacheManager;
@@ -21,6 +22,8 @@ export declare class CacheMetricsWidget extends StdinDataWidget {
      * Set display style
      */
     setStyle(style: CacheMetricsStyle): void;
+    setLine(line: number): void;
+    getLine(): number;
     /**
      * Calculate cache metrics from context usage data
      * Returns null if no usage data is available (current or cached)

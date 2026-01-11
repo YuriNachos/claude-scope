@@ -12,11 +12,14 @@ export declare class ContextWidget extends StdinDataWidget {
     readonly id = "context";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
     private colors;
+    private _lineOverride?;
     private styleFn;
     private cacheManager;
     private lastSessionId?;
     constructor(colors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
+    setLine(line: number): void;
+    getLine(): number;
     /**
      * Update widget with new data, storing valid values in cache
      */

@@ -19,6 +19,7 @@ export class LinesWidget extends StdinDataWidget {
     metadata = createWidgetMetadata("Lines", "Displays lines added/removed in session", "1.0.0", "claude-scope", 0 // First line
     );
     colors;
+    _lineOverride;
     styleFn = linesStyles.balanced;
     constructor(colors) {
         super();
@@ -29,6 +30,12 @@ export class LinesWidget extends StdinDataWidget {
         if (fn) {
             this.styleFn = fn;
         }
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     renderWithData(data, _context) {
         const added = data.cost?.total_lines_added ?? 0;

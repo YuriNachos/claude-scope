@@ -25,6 +25,7 @@ export declare class GitWidget implements IWidget {
     private enabled;
     private cwd;
     private colors;
+    private _lineOverride?;
     private styleFn;
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
@@ -34,6 +35,8 @@ export declare class GitWidget implements IWidget {
      */
     constructor(gitFactory?: (cwd: string) => IGit, colors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
+    setLine(line: number): void;
+    getLine(): number;
     initialize(context: WidgetContext): Promise<void>;
     render(_context: RenderContext): Promise<string | null>;
     update(data: StdinData): Promise<void>;

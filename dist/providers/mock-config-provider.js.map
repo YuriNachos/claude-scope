@@ -1,0 +1,1 @@
+{"version":3,"file":"mock-config-provider.js","sourceRoot":"","sources":["../../src/providers/mock-config-provider.ts"],"names":[],"mappings":"AAAA;;;GAGG;AAIH;;;;;;;;GAQG;AACH,MAAM,OAAO,kBAAkB;IAC7B;;;OAGG;IACH,KAAK,CAAC,UAAU;QACd,OAAO;YACL,aAAa,EAAE,CAAC;YAChB,UAAU,EAAE,CAAC;YACb,QAAQ,EAAE,CAAC;YACX,UAAU,EAAE,CAAC;SACd,CAAC;IACJ,CAAC;CACF"}

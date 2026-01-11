@@ -26,6 +26,7 @@ export class GitTagWidget {
     enabled = true;
     cwd = null;
     colors;
+    _lineOverride;
     styleFn = gitTagStyles.balanced;
     /**
      * @param gitFactory - Optional factory function for creating IGit instances
@@ -42,6 +43,12 @@ export class GitTagWidget {
         if (fn) {
             this.styleFn = fn;
         }
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     async initialize(context) {
         this.enabled = context.config?.enabled !== false;

@@ -16,8 +16,11 @@ export declare class PokerWidget extends StdinDataWidget {
     private lastUpdateTimestamp;
     private readonly THROTTLE_MS;
     private colors;
+    private _lineOverride?;
     private styleFn;
     setStyle(style?: WidgetStyle): void;
+    setLine(line: number): void;
+    getLine(): number;
     constructor(colors?: IThemeColors);
     /**
      * Generate new poker hand on each update

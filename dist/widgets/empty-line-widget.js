@@ -9,12 +9,19 @@ export class EmptyLineWidget extends StdinDataWidget {
     id = "empty-line";
     metadata = createWidgetMetadata("Empty Line", "Empty line separator", "1.0.0", "claude-scope", 5 // Sixth line (0-indexed)
     );
+    _lineOverride;
     /**
      * All styles return the same value (Braille Pattern Blank).
      * This method exists for API consistency with other widgets.
      */
     setStyle(_style) {
         // No-op - all styles return the same value
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     /**
      * Return Braille Pattern Blank to create a visible empty separator line.

@@ -36,7 +36,7 @@ export class Renderer {
             if (!widget.isEnabled()) {
                 continue;
             }
-            const line = widget.metadata.line ?? 0;
+            const line = widget.getLine ? widget.getLine() : (widget.metadata.line ?? 0);
             if (!lineMap.has(line)) {
                 lineMap.set(line, []);
             }

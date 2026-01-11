@@ -22,9 +22,12 @@ export declare class ConfigCountWidget implements IWidget {
     private configs?;
     private cwd?;
     private themeColors;
+    private _lineOverride?;
     private styleFn;
     constructor(configProvider?: IConfigProvider, themeColors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
+    setLine(line: number): void;
+    getLine(): number;
     initialize(): Promise<void>;
     update(data: StdinData): Promise<void>;
     isEnabled(): boolean;

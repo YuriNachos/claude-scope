@@ -24,6 +24,7 @@ export class ConfigCountWidget {
     configs;
     cwd;
     themeColors;
+    _lineOverride;
     styleFn = configCountStyles.balanced;
     constructor(configProvider, themeColors) {
         this.configProvider = configProvider ?? new ConfigProvider();
@@ -34,6 +35,12 @@ export class ConfigCountWidget {
         if (fn) {
             this.styleFn = fn;
         }
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     async initialize() {
         // No initialization needed

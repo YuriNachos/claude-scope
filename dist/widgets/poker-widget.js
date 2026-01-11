@@ -21,12 +21,19 @@ export class PokerWidget extends StdinDataWidget {
     lastUpdateTimestamp = 0;
     THROTTLE_MS = 5000; // 5 seconds
     colors;
+    _lineOverride;
     styleFn = pokerStyles.balanced;
     setStyle(style = DEFAULT_WIDGET_STYLE) {
         const fn = pokerStyles[style];
         if (fn) {
             this.styleFn = fn;
         }
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     constructor(colors) {
         super();

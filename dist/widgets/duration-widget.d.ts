@@ -11,9 +11,12 @@ export declare class DurationWidget extends StdinDataWidget {
     readonly id = "duration";
     readonly metadata: import("../core/types.js").IWidgetMetadata;
     private colors;
+    private _lineOverride?;
     private styleFn;
     constructor(colors?: IThemeColors);
     setStyle(style?: WidgetStyle): void;
+    setLine(line: number): void;
+    getLine(): number;
     protected renderWithData(data: StdinData, _context: RenderContext): string | null;
 }
 //# sourceMappingURL=duration-widget.d.ts.map

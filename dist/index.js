@@ -42,12 +42,17 @@ async function readStdin() {
  */
 function applyWidgetConfig(widget, widgetId, config) {
     // Find widget config by scanning lines
-    for (const line of Object.values(config.lines)) {
-        const widgetConfig = line.find((w) => w.id === widgetId);
-        if (widgetConfig &&
-            typeof widget.setStyle === "function" &&
-            isValidWidgetStyle(widgetConfig.style)) {
-            widget.setStyle(widgetConfig.style);
+    for (const [lineNum, widgets] of Object.entries(config.lines)) {
+        const widgetConfig = widgets.find((w) => w.id === widgetId);
+        if (widgetConfig) {
+            // Apply style
+            if (typeof widget.setStyle === "function" && isValidWidgetStyle(widgetConfig.style)) {
+                widget.setStyle(widgetConfig.style);
+            }
+            // Apply line override
+            if (typeof widget.setLine === "function") {
+                widget.setLine(parseInt(lineNum, 10));
+            }
             break;
         }
     }

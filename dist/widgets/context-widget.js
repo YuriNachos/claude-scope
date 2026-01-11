@@ -14,6 +14,7 @@ export class ContextWidget extends StdinDataWidget {
     metadata = createWidgetMetadata("Context", "Displays context window usage with progress bar", "1.0.0", "claude-scope", 0 // First line
     );
     colors;
+    _lineOverride;
     styleFn = contextStyles.balanced;
     cacheManager;
     lastSessionId;
@@ -27,6 +28,12 @@ export class ContextWidget extends StdinDataWidget {
         if (fn) {
             this.styleFn = fn;
         }
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     /**
      * Update widget with new data, storing valid values in cache

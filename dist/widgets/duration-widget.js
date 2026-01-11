@@ -12,6 +12,7 @@ export class DurationWidget extends StdinDataWidget {
     metadata = createWidgetMetadata("Duration", "Displays elapsed session time", "1.0.0", "claude-scope", 0 // First line
     );
     colors;
+    _lineOverride;
     styleFn = durationStyles.balanced;
     constructor(colors) {
         super();
@@ -22,6 +23,12 @@ export class DurationWidget extends StdinDataWidget {
         if (fn) {
             this.styleFn = fn;
         }
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     renderWithData(data, _context) {
         if (!data.cost || data.cost.total_duration_ms === undefined)

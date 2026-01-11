@@ -1229,7 +1229,7 @@ var init_renderer = __esm({
           if (!widget.isEnabled()) {
             continue;
           }
-          const line = widget.metadata.line ?? 0;
+          const line = widget.getLine ? widget.getLine() : widget.metadata.line ?? 0;
           if (!lineMap.has(line)) {
             lineMap.set(line, []);
           }
@@ -1823,6 +1823,7 @@ var init_active_tools_widget = __esm({
         // Display on third line (0-indexed)
       };
       style = "balanced";
+      _lineOverride;
       tools = [];
       renderData;
       /**
@@ -1831,6 +1832,12 @@ var init_active_tools_widget = __esm({
        */
       setStyle(style) {
         this.style = style;
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       /**
        * Aggregate completed tools by name and sort by count (descending)
@@ -2202,6 +2209,7 @@ var init_cache_metrics_widget = __esm({
         // Third line
       );
       theme;
+      _lineOverride;
       style = "balanced";
       renderData;
       cacheManager;
@@ -2216,6 +2224,12 @@ var init_cache_metrics_widget = __esm({
        */
       setStyle(style) {
         this.style = style;
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       /**
        * Calculate cache metrics from context usage data
@@ -2623,6 +2637,7 @@ var init_config_count_widget = __esm({
       configs;
       cwd;
       themeColors;
+      _lineOverride;
       styleFn = configCountStyles.balanced;
       constructor(configProvider, themeColors) {
         this.configProvider = configProvider ?? new ConfigProvider();
@@ -2633,6 +2648,12 @@ var init_config_count_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       async initialize() {
       }
@@ -2773,6 +2794,7 @@ var init_context_widget = __esm({
         // First line
       );
       colors;
+      _lineOverride;
       styleFn = contextStyles.balanced;
       cacheManager;
       lastSessionId;
@@ -2786,6 +2808,12 @@ var init_context_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       /**
        * Update widget with new data, storing valid values in cache
@@ -2895,6 +2923,7 @@ var init_cost_widget = __esm({
         // First line
       );
       colors;
+      _lineOverride;
       styleFn = costStyles.balanced;
       constructor(colors2) {
         super();
@@ -2905,6 +2934,12 @@ var init_cost_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       renderWithData(data, _context) {
         if (!data.cost || data.cost.total_cost_usd === void 0) return null;
@@ -3034,6 +3069,7 @@ var init_duration_widget = __esm({
         // First line
       );
       colors;
+      _lineOverride;
       styleFn = durationStyles.balanced;
       constructor(colors2) {
         super();
@@ -3044,6 +3080,12 @@ var init_duration_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       renderWithData(data, _context) {
         if (!data.cost || data.cost.total_duration_ms === void 0) return null;
@@ -3187,6 +3229,7 @@ var init_git_tag_widget = __esm({
       enabled = true;
       cwd = null;
       colors;
+      _lineOverride;
       styleFn = gitTagStyles.balanced;
       /**
        * @param gitFactory - Optional factory function for creating IGit instances
@@ -3203,6 +3246,12 @@ var init_git_tag_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       async initialize(context) {
         this.enabled = context.config?.enabled !== false;
@@ -3354,6 +3403,7 @@ var init_git_widget = __esm({
       enabled = true;
       cwd = null;
       colors;
+      _lineOverride;
       styleFn = gitStyles.balanced;
       /**
        * @param gitFactory - Optional factory function for creating IGit instances
@@ -3370,6 +3420,12 @@ var init_git_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       async initialize(context) {
         this.enabled = context.config?.enabled !== false;
@@ -3495,6 +3551,7 @@ var init_lines_widget = __esm({
         // First line
       );
       colors;
+      _lineOverride;
       styleFn = linesStyles.balanced;
       constructor(colors2) {
         super();
@@ -3505,6 +3562,12 @@ var init_lines_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       renderWithData(data, _context) {
         const added = data.cost?.total_lines_added ?? 0;
@@ -3588,6 +3651,7 @@ var init_model_widget = __esm({
         // First line
       );
       colors;
+      _lineOverride;
       styleFn = modelStyles.balanced;
       constructor(colors2) {
         super();
@@ -3598,6 +3662,12 @@ var init_model_widget = __esm({
         if (fn) {
           this.styleFn = fn;
         }
+      }
+      setLine(line) {
+        this._lineOverride = line;
+      }
+      getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
       }
       renderWithData(data, _context) {
         const renderData = {
@@ -7441,11 +7511,18 @@ var EmptyLineWidget = class extends StdinDataWidget {
     5
     // Sixth line (0-indexed)
   );
+  _lineOverride;
   /**
    * All styles return the same value (Braille Pattern Blank).
    * This method exists for API consistency with other widgets.
    */
   setStyle(_style) {
+  }
+  setLine(line) {
+    this._lineOverride = line;
+  }
+  getLine() {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
   /**
    * Return Braille Pattern Blank to create a visible empty separator line.
@@ -8026,12 +8103,19 @@ var PokerWidget = class extends StdinDataWidget {
   THROTTLE_MS = 5e3;
   // 5 seconds
   colors;
+  _lineOverride;
   styleFn = pokerStyles.balanced;
   setStyle(style = DEFAULT_WIDGET_STYLE) {
     const fn = pokerStyles[style];
     if (fn) {
       this.styleFn = fn;
     }
+  }
+  setLine(line) {
+    this._lineOverride = line;
+  }
+  getLine() {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
   constructor(colors2) {
     super();
@@ -8119,10 +8203,15 @@ async function readStdin() {
   return Buffer.concat(chunks).toString("utf8");
 }
 function applyWidgetConfig(widget, widgetId, config) {
-  for (const line of Object.values(config.lines)) {
-    const widgetConfig = line.find((w) => w.id === widgetId);
-    if (widgetConfig && typeof widget.setStyle === "function" && isValidWidgetStyle(widgetConfig.style)) {
-      widget.setStyle(widgetConfig.style);
+  for (const [lineNum, widgets] of Object.entries(config.lines)) {
+    const widgetConfig = widgets.find((w) => w.id === widgetId);
+    if (widgetConfig) {
+      if (typeof widget.setStyle === "function" && isValidWidgetStyle(widgetConfig.style)) {
+        widget.setStyle(widgetConfig.style);
+      }
+      if (typeof widget.setLine === "function") {
+        widget.setLine(parseInt(lineNum, 10));
+      }
       break;
     }
   }

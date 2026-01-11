@@ -22,6 +22,7 @@ export declare class ActiveToolsWidget extends StdinDataWidget {
     readonly id = "active-tools";
     readonly metadata: IWidgetMetadata;
     private style;
+    private _lineOverride?;
     private tools;
     private renderData?;
     constructor(theme: IThemeColors, transcriptProvider: ITranscriptProvider);
@@ -30,6 +31,8 @@ export declare class ActiveToolsWidget extends StdinDataWidget {
      * @param style - Style to use for rendering
      */
     setStyle(style: ActiveToolsStyle): void;
+    setLine(line: number): void;
+    getLine(): number;
     /**
      * Aggregate completed tools by name and sort by count (descending)
      * @param tools - Array of tool entries

@@ -14,6 +14,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     metadata = createWidgetMetadata("Cache Metrics", "Cache hit rate and savings display", "1.0.0", "claude-scope", 2 // Third line
     );
     theme;
+    _lineOverride;
     style = "balanced";
     renderData;
     cacheManager;
@@ -28,6 +29,12 @@ export class CacheMetricsWidget extends StdinDataWidget {
      */
     setStyle(style) {
         this.style = style;
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     /**
      * Calculate cache metrics from context usage data

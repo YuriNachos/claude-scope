@@ -12,6 +12,7 @@ export class ModelWidget extends StdinDataWidget {
     metadata = createWidgetMetadata("Model", "Displays the current Claude model name", "1.0.0", "claude-scope", 0 // First line
     );
     colors;
+    _lineOverride;
     styleFn = modelStyles.balanced;
     constructor(colors) {
         super();
@@ -22,6 +23,12 @@ export class ModelWidget extends StdinDataWidget {
         if (fn) {
             this.styleFn = fn;
         }
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     renderWithData(data, _context) {
         const renderData = {

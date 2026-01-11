@@ -24,6 +24,7 @@ export class ActiveToolsWidget extends StdinDataWidget {
         line: 2, // Display on third line (0-indexed)
     };
     style = "balanced";
+    _lineOverride;
     tools = [];
     renderData;
     constructor(theme, transcriptProvider) {
@@ -37,6 +38,12 @@ export class ActiveToolsWidget extends StdinDataWidget {
      */
     setStyle(style) {
         this.style = style;
+    }
+    setLine(line) {
+        this._lineOverride = line;
+    }
+    getLine() {
+        return this._lineOverride ?? this.metadata.line ?? 0;
     }
     /**
      * Aggregate completed tools by name and sort by count (descending)
