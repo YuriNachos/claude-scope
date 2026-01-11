@@ -1,11 +1,19 @@
 /**
- * Quick Config Command
- *
- * This command will be implemented in Task 6.3
- * For now, this stub allows TypeScript compilation
+ * Quick Config Command Entry Point
  */
 
+export { generateDefaultConfig } from "../../../config/default-config.js";
+export { getUserConfigPath, loadConfig } from "./config-loader.js";
+export type { QuickConfigStyle, ScopeConfig, WidgetConfig } from "./config-schema.js";
+export { saveConfig } from "./config-writer.js";
+export { runQuickConfigMenu } from "./menu.js";
+export { renderPreview } from "./preview.js";
+
+/**
+ * Handle quick-config command
+ */
+import { runQuickConfigMenu } from "./menu.js";
+
 export async function handleQuickConfigCommand(): Promise<void> {
-  // TODO: Implement quick config command in Task 6.3
-  console.log("Quick config command will be implemented in Task 6.3");
+  await runQuickConfigMenu();
 }
