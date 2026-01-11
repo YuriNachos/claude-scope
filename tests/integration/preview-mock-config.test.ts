@@ -14,8 +14,9 @@ describe("Preview with Mock Config Data", () => {
     const preview = await renderPreviewFromConfig(config, "balanced", "monokai");
 
     // Should show "CLAUDE.md:1" from mock data
-    assert.ok(preview.includes("CLAUDE.md"), "Preview should show CLAUDE.md label");
-    assert.ok(preview.includes("1"), "Preview should show count");
+    // Strip ANSI codes for testing since color codes are inserted between label and count
+    const stripped = preview.replace(/\x1b\[[0-9;]*m/g, "");
+    assert.ok(/CLAUDE\.md:\d+/.test(stripped), "Preview should show CLAUDE.md with count");
   });
 
   it("should show multiple config types in preview", async () => {
@@ -23,11 +24,14 @@ describe("Preview with Mock Config Data", () => {
     const preview = await renderPreviewFromConfig(config, "balanced", "monokai");
 
     // Should show rules, MCPs, hooks from mock data
-    const hasRules = preview.includes("rules");
-    const hasMCPs = preview.includes("MCPs");
-    const hasHooks = preview.includes("hooks");
+    // Require at least 2 config types to truly test "multiple"
+    const configTypes = ["rules", "MCPs", "hooks"];
+    const presentTypes = configTypes.filter((type) => preview.includes(type));
 
-    assert.ok(hasRules || hasMCPs || hasHooks, "Preview should show config items");
+    assert.ok(
+      presentTypes.length >= 2,
+      `Preview should show at least 2 config types, got: ${presentTypes.join(", ")}`
+    );
   });
 
   it("should NOT show empty config widget", async () => {
