@@ -49,5 +49,20 @@ describe("layout-preview", () => {
       // ANSI escape sequences start with \x1b[
       assert.ok(preview.includes("\x1b["), "Preview should contain ANSI color codes");
     });
+
+    it("should fallback to monokai for invalid theme name", async () => {
+      const config = generateBalancedLayout("balanced", "monokai");
+
+      // getThemeByName returns monokai for unknown themes (default fallback)
+      const invalidPreview = await renderPreviewFromConfig(
+        config,
+        "balanced",
+        "invalid-theme-name-xyz"
+      );
+      const monokaiPreview = await renderPreviewFromConfig(config, "balanced", "monokai");
+
+      // Should fall back to monokai (same preview)
+      assert.strictEqual(invalidPreview, monokaiPreview);
+    });
   });
 });
