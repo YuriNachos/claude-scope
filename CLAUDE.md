@@ -22,8 +22,9 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - All cards show suit color (red for ♥♦, gray for ♠♣)
 - Update throttling (5 seconds minimum between hand regeneration)
 - Empty line separator widget (4th line)
+- Quick config command with interactive style and theme selection
 
-**Planned features**: Running agents, todo progress, session analytics, configuration system.
+**Planned features**: Running agents, todo progress, session analytics.
 
 ## Architecture
 
@@ -682,16 +683,46 @@ interface IGit {
 }
 ```
 
-### Configuration (PLANNED)
+### Configuration System
 
-Widget behavior will be configured via JSON (`~/.config/claude-scope/config.json`):
+#### Quick Config Command
+
+The `quick-config` command provides interactive configuration:
+
+```bash
+claude-scope quick-config
+```
+
+**Flow:**
+1. **Pre-check**: If config exists, show current vs fresh choice
+2. **Stage 1**: Select display style (balanced/playful/compact)
+3. **Stage 2**: Select theme (17 built-in options)
+4. **Live preview** shown for each selection
+5. **Config saved** to `~/.claude-scope/config.json`
+
+**Config Structure:**
+```json
+{
+  "version": "1.0.0",
+  "lines": {
+    "0": [
+      {"id": "model", "style": "balanced", "colors": {...}},
+      {"id": "context", "style": "balanced", "colors": {...}}
+    ]
+  }
+}
+```
+
+#### Configuration File Format (PLANNED)
+
+Widget behavior will be configured via JSON (`~/.claude-scope/config.json`):
 
 ```json
 {
   "updateIntervalMs": 300,
   "persistence": {
     "enabled": true,
-    "path": "~/.config/claude-scope/sessions.db"
+    "path": "~/.claude-scope/sessions.db"
   },
   "widgets": ["session", "context", "git", "tools", "agents", "todos", "cost", "analytics"],
   "widgetConfig": {
