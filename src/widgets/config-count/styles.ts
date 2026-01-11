@@ -3,99 +3,139 @@
  */
 
 import type { StyleMap } from "../../core/style-types.js";
-import type { ConfigCountRenderData } from "./types.js";
+import type { IThemeColors } from "../../ui/theme/types.js";
+import { colorize } from "../../ui/utils/colors.js";
+import type { ConfigCountStyleRenderData } from "./types.js";
 
-export const configCountStyles: StyleMap<ConfigCountRenderData> = {
-  balanced: (data: ConfigCountRenderData) => {
+export const configCountStyles: StyleMap<ConfigCountStyleRenderData, IThemeColors> = {
+  balanced: (data: ConfigCountStyleRenderData, colors?: IThemeColors) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts: string[] = [];
 
+    const info = colors?.semantic.info ?? "";
+    const muted = colors?.base.muted ?? "";
+
     if (claudeMdCount > 0) {
-      parts.push(`CLAUDE.md:${claudeMdCount}`);
+      const label = info ? colorize("CLAUDE.md", info) : "CLAUDE.md";
+      parts.push(`${label}:${claudeMdCount}`);
     }
 
     if (rulesCount > 0) {
-      parts.push(`rules:${rulesCount}`);
+      const label = info ? colorize("rules", info) : "rules";
+      parts.push(`${label}:${rulesCount}`);
     }
 
     if (mcpCount > 0) {
-      parts.push(`MCPs:${mcpCount}`);
+      const label = info ? colorize("MCPs", info) : "MCPs";
+      parts.push(`${label}:${mcpCount}`);
     }
 
     if (hooksCount > 0) {
-      parts.push(`hooks:${hooksCount}`);
+      const label = info ? colorize("hooks", info) : "hooks";
+      parts.push(`${label}:${hooksCount}`);
     }
 
-    return parts.join(" │ ");
+    const sep = muted ? colorize(" │ ", muted) : " │ ";
+    return parts.join(sep);
   },
 
-  compact: (data: ConfigCountRenderData) => {
+  compact: (data: ConfigCountStyleRenderData, colors?: IThemeColors) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts: string[] = [];
 
+    const info = colors?.semantic.info ?? "";
+    const muted = colors?.base.muted ?? "";
+
     if (claudeMdCount > 0) {
-      parts.push(`${claudeMdCount} docs`);
+      const text = info ? colorize(`${claudeMdCount} docs`, info) : `${claudeMdCount} docs`;
+      parts.push(text);
     }
 
     if (rulesCount > 0) {
-      parts.push(`${rulesCount} rules`);
+      const text = info ? colorize(`${rulesCount} rules`, info) : `${rulesCount} rules`;
+      parts.push(text);
     }
 
     if (mcpCount > 0) {
-      parts.push(`${mcpCount} MCPs`);
+      const text = info ? colorize(`${mcpCount} MCPs`, info) : `${mcpCount} MCPs`;
+      parts.push(text);
     }
 
     if (hooksCount > 0) {
       const hookLabel = hooksCount === 1 ? "hook" : "hooks";
-      parts.push(`${hooksCount} ${hookLabel}`);
+      const text = info
+        ? colorize(`${hooksCount} ${hookLabel}`, info)
+        : `${hooksCount} ${hookLabel}`;
+      parts.push(text);
     }
 
-    return parts.join(" │ ");
+    const sep = muted ? colorize(" │ ", muted) : " │ ";
+    return parts.join(sep);
   },
 
-  playful: (data: ConfigCountRenderData) => {
+  playful: (data: ConfigCountStyleRenderData, colors?: IThemeColors) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts: string[] = [];
 
+    const info = colors?.semantic.info ?? "";
+    const muted = colors?.base.muted ?? "";
+
     if (claudeMdCount > 0) {
-      parts.push(`📄 CLAUDE.md:${claudeMdCount}`);
+      const text = info
+        ? colorize(`CLAUDE.md:${claudeMdCount}`, info)
+        : `CLAUDE.md:${claudeMdCount}`;
+      parts.push(`📄 ${text}`);
     }
 
     if (rulesCount > 0) {
-      parts.push(`📜 rules:${rulesCount}`);
+      const text = info ? colorize(`rules:${rulesCount}`, info) : `rules:${rulesCount}`;
+      parts.push(`📜 ${text}`);
     }
 
     if (mcpCount > 0) {
-      parts.push(`🔌 MCPs:${mcpCount}`);
+      const text = info ? colorize(`MCPs:${mcpCount}`, info) : `MCPs:${mcpCount}`;
+      parts.push(`🔌 ${text}`);
     }
 
     if (hooksCount > 0) {
-      parts.push(`🪝 hooks:${hooksCount}`);
+      const text = info ? colorize(`hooks:${hooksCount}`, info) : `hooks:${hooksCount}`;
+      parts.push(`🪝 ${text}`);
     }
 
-    return parts.join(" │ ");
+    const sep = muted ? colorize(" │ ", muted) : " │ ";
+    return parts.join(sep);
   },
 
-  verbose: (data: ConfigCountRenderData) => {
+  verbose: (data: ConfigCountStyleRenderData, colors?: IThemeColors) => {
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = data;
     const parts: string[] = [];
 
+    const info = colors?.semantic.info ?? "";
+    const muted = colors?.base.muted ?? "";
+
     if (claudeMdCount > 0) {
-      parts.push(`${claudeMdCount} CLAUDE.md`);
+      const text = info
+        ? colorize(`${claudeMdCount} CLAUDE.md`, info)
+        : `${claudeMdCount} CLAUDE.md`;
+      parts.push(text);
     }
 
     if (rulesCount > 0) {
-      parts.push(`${rulesCount} rules`);
+      const text = info ? colorize(`${rulesCount} rules`, info) : `${rulesCount} rules`;
+      parts.push(text);
     }
 
     if (mcpCount > 0) {
-      parts.push(`${mcpCount} MCP servers`);
+      const text = info ? colorize(`${mcpCount} MCP servers`, info) : `${mcpCount} MCP servers`;
+      parts.push(text);
     }
 
     if (hooksCount > 0) {
-      parts.push(`${hooksCount} hook`);
+      const text = info ? colorize(`${hooksCount} hooks`, info) : `${hooksCount} hooks`;
+      parts.push(text);
     }
 
-    return parts.join(" │ ");
+    const sep = muted ? colorize(" │ ", muted) : " │ ";
+    return parts.join(sep);
   },
 };

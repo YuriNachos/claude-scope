@@ -73,7 +73,7 @@ async function registerWidgetsFromConfig(
       return w;
     },
     "config-count": (s) => {
-      const w = new ConfigCountWidget();
+      const w = new ConfigCountWidget(themeColors);
       w.setStyle(s);
       return w;
     },

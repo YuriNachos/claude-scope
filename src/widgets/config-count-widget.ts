@@ -10,8 +10,10 @@ import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 import type { IWidget, RenderContext, StdinData } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import { type ConfigCounts, ConfigProvider } from "../providers/config-provider.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
+import type { IThemeColors } from "../ui/theme/types.js";
 import { configCountStyles } from "./config-count/styles.js";
-import type { ConfigCountRenderData } from "./config-count/types.js";
+import type { ConfigCountStyleRenderData } from "./config-count/types.js";
 
 /**
  * Widget displaying configuration counts
@@ -33,7 +35,13 @@ export class ConfigCountWidget implements IWidget {
   private configProvider = new ConfigProvider();
   private configs?: ConfigCounts;
   private cwd?: string;
-  private styleFn: StyleRendererFn<ConfigCountRenderData> = configCountStyles.balanced!;
+  private themeColors: IThemeColors;
+  private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IThemeColors> =
+    configCountStyles.balanced!;
+
+  constructor(themeColors?: IThemeColors) {
+    this.themeColors = themeColors ?? DEFAULT_THEME;
+  }
 
   setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
     const fn = configCountStyles[style];
@@ -67,14 +75,15 @@ export class ConfigCountWidget implements IWidget {
     }
 
     const { claudeMdCount, rulesCount, mcpCount, hooksCount } = this.configs;
-    const renderData: ConfigCountRenderData = {
+    const renderData: ConfigCountStyleRenderData = {
       claudeMdCount,
       rulesCount,
       mcpCount,
       hooksCount,
+      colors: this.themeColors,
     };
 
-    return this.styleFn(renderData);
+    return this.styleFn(renderData, this.themeColors);
   }
 
   async cleanup(): Promise<void> {

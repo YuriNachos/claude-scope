@@ -10,6 +10,7 @@ import { expect } from "chai";
 import { rimraf } from "rimraf";
 import { ConfigCountWidget } from "../../../src/widgets/config-count-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
+import { stripAnsi } from "../../helpers/snapshot.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const testHomeDir = path.join(__dirname, "../fixtures/config-home");
@@ -66,7 +67,7 @@ describe("ConfigCountWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("CLAUDE.md:");
+    expect(stripAnsi(result || "")).to.include("CLAUDE.md:");
   });
 
   it("should not show categories with zero count", async () => {
@@ -77,8 +78,8 @@ describe("ConfigCountWidget", () => {
     const result = await widget.render({ width: 80, timestamp: 0 });
 
     // Should not show MCPs or hooks if they don't exist
-    expect(result).to.not.include("🔌");
-    expect(result).to.not.include("🪝");
+    expect(stripAnsi(result || "")).to.not.include("🔌");
+    expect(stripAnsi(result || "")).to.not.include("🪝");
   });
 
   it("should use separator between multiple items", async () => {
@@ -95,7 +96,7 @@ describe("ConfigCountWidget", () => {
 
     const result = await widget2.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include(" │ ");
+    expect(stripAnsi(result || "")).to.include(" │ ");
   });
 
   describe("style renderers", () => {
@@ -115,9 +116,9 @@ describe("ConfigCountWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("CLAUDE.md:");
-      expect(result).to.include("rules:");
-      expect(result).to.include(" │ ");
+      expect(stripAnsi(result || "")).to.include("CLAUDE.md:");
+      expect(stripAnsi(result || "")).to.include("rules:");
+      expect(stripAnsi(result || "")).to.include(" │ ");
     });
 
     it("should render compact style", async () => {
@@ -128,9 +129,9 @@ describe("ConfigCountWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("docs");
-      expect(result).to.include("rules");
-      expect(result).to.include(" │ ");
+      expect(stripAnsi(result || "")).to.include("docs");
+      expect(stripAnsi(result || "")).to.include("rules");
+      expect(stripAnsi(result || "")).to.include(" │ ");
     });
 
     it("should render playful style with emojis", async () => {
@@ -141,9 +142,9 @@ describe("ConfigCountWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("📄");
-      expect(result).to.include("📜");
-      expect(result).to.include(" │ ");
+      expect(stripAnsi(result || "")).to.include("📄");
+      expect(stripAnsi(result || "")).to.include("📜");
+      expect(stripAnsi(result || "")).to.include(" │ ");
     });
 
     it("should render verbose style", async () => {
@@ -154,7 +155,7 @@ describe("ConfigCountWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("CLAUDE.md");
+      expect(stripAnsi(result || "")).to.include("CLAUDE.md");
       // Only check for items that exist in test data
       expect(result).to.be.a("string");
     });
@@ -180,7 +181,7 @@ describe("ConfigCountWidget", () => {
       widget.setStyle("unknown" as any);
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.include("CLAUDE.md:");
+      expect(stripAnsi(result || "")).to.include("CLAUDE.md:");
     });
   });
 });
