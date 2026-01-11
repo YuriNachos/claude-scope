@@ -55,15 +55,16 @@ export async function generatePreviews<T>(
   const isStyleSelection = choices.length >= 3 && choices.every((c) => isQuickConfigStyle(c.value));
 
   // Detect if this is a theme selection stage (choices have theme names as values)
+  // IMPORTANT: This must match the first 8 themes in AVAILABLE_THEMES from src/ui/theme/index.ts
   const availableThemes = [
-    "monokai",
-    "nord",
-    "dracula",
-    "catppuccin-mocha",
-    "tokyo-night",
-    "vscode-dark-plus",
-    "github-dark-dimmed",
-    "dusty-sage",
+    "catppuccin-mocha", // AVAILABLE_THEMES[0]
+    "cyberpunk-neon", // AVAILABLE_THEMES[1]
+    "dracula", // AVAILABLE_THEMES[2]
+    "dusty-sage", // AVAILABLE_THEMES[3]
+    "github-dark-dimmed", // AVAILABLE_THEMES[4]
+    "gray", // AVAILABLE_THEMES[5] - was missing!
+    "monokai", // AVAILABLE_THEMES[6]
+    "muted-gray", // AVAILABLE_THEMES[7] - was missing!
   ];
   const isThemeSelection = choices.some((c) => isThemeName(c.value, availableThemes));
 

@@ -8,6 +8,7 @@ import {
   generateBalancedLayout,
   generateCompactLayout,
 } from "../../../../../src/config/default-config.js";
+import { AVAILABLE_THEMES } from "../../../../../src/ui/theme/index.js";
 
 describe("selectWithPreview", () => {
   describe("PreviewChoice interface", () => {
@@ -296,6 +297,110 @@ describe("selectWithPreview", () => {
         const config = choice.getConfig(style, "monokai");
         assert.strictEqual(config.lines["0"]?.[0].style, style);
       });
+    });
+  });
+
+  describe("theme detection", () => {
+    it("AVAILABLE_THEMES should contain gray, monokai, and muted-gray", () => {
+      const themeNames = AVAILABLE_THEMES.map((t) => t.name);
+
+      assert.ok(themeNames.includes("gray"), "gray should be in AVAILABLE_THEMES");
+      assert.ok(themeNames.includes("monokai"), "monokai should be in AVAILABLE_THEMES");
+      assert.ok(themeNames.includes("muted-gray"), "muted-gray should be in AVAILABLE_THEMES");
+    });
+
+    it("AVAILABLE_THEMES first 8 themes should be in correct order", () => {
+      const first8 = AVAILABLE_THEMES.slice(0, 8).map((t) => t.name);
+
+      assert.deepStrictEqual(first8, [
+        "catppuccin-mocha",
+        "cyberpunk-neon",
+        "dracula",
+        "dusty-sage",
+        "github-dark-dimmed",
+        "gray",
+        "monokai",
+        "muted-gray",
+      ]);
+    });
+
+    it("should generate previews for gray theme", async () => {
+      const choices: PreviewChoice<string>[] = [
+        {
+          name: "Gray",
+          value: "gray",
+          description: "Neutral gray theme",
+          getConfig: (_, t) => generateBalancedLayout("balanced", t),
+        },
+      ];
+
+      const previews = await generatePreviews(choices, "balanced", "monokai");
+
+      assert.strictEqual(previews.length, 1);
+      assert.ok(typeof previews[0] === "string");
+      assert.ok(previews[0].length > 0);
+    });
+
+    it("should generate previews for monokai theme", async () => {
+      const choices: PreviewChoice<string>[] = [
+        {
+          name: "Monokai",
+          value: "monokai",
+          description: "Vibrant high-contrast theme",
+          getConfig: (_, t) => generateBalancedLayout("balanced", t),
+        },
+      ];
+
+      const previews = await generatePreviews(choices, "balanced", "monokai");
+
+      assert.strictEqual(previews.length, 1);
+      assert.ok(typeof previews[0] === "string");
+      assert.ok(previews[0].length > 0);
+    });
+
+    it("should generate previews for muted-gray theme", async () => {
+      const choices: PreviewChoice<string>[] = [
+        {
+          name: "Muted Gray",
+          value: "muted-gray",
+          description: "Very subtle grays",
+          getConfig: (_, t) => generateBalancedLayout("balanced", t),
+        },
+      ];
+
+      const previews = await generatePreviews(choices, "balanced", "monokai");
+
+      assert.strictEqual(previews.length, 1);
+      assert.ok(typeof previews[0] === "string");
+      assert.ok(previews[0].length > 0);
+    });
+
+    it("should generate different previews for different themes", async () => {
+      const choices: PreviewChoice<string>[] = [
+        {
+          name: "Gray",
+          value: "gray",
+          getConfig: (_, t) => generateBalancedLayout("balanced", t),
+        },
+        {
+          name: "Monokai",
+          value: "monokai",
+          getConfig: (_, t) => generateBalancedLayout("balanced", t),
+        },
+        {
+          name: "Muted Gray",
+          value: "muted-gray",
+          getConfig: (_, t) => generateBalancedLayout("balanced", t),
+        },
+      ];
+
+      const previews = await generatePreviews(choices, "balanced", "monokai");
+
+      assert.strictEqual(previews.length, 3);
+      // Each theme should produce a different preview (different color codes)
+      assert.notStrictEqual(previews[0], previews[1]);
+      assert.notStrictEqual(previews[1], previews[2]);
+      assert.notStrictEqual(previews[0], previews[2]);
     });
   });
 });
