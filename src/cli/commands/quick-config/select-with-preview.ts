@@ -133,10 +133,9 @@ function selectWithPreviewImpl<T>(
   }
 
   // Return tuple: [select UI, preview UI]
+  const line = "\x1b[1;37m" + "─".repeat(60) + "\x1b[0m";
   const previewBox =
-    "\x1b[1;37m┌─ Live Preview ─────────────────────────────────────┐\x1b[0m\n" +
-    `${preview}\n` +
-    "\x1b[1;37m└────────────────────────────────────────────────────┘\x1b[0m";
+    `${line}\n` + "\x1b[1;37mLive Preview\x1b[0m\n" + `\n${preview}\n` + `\n${line}`;
 
   return [config.message, `${page}\n\n${previewBox}`];
 }
