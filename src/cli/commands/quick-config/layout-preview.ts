@@ -28,9 +28,10 @@ import { createDemoData } from "./demo-data.js";
 async function registerWidgetsFromConfig(
   registry: WidgetRegistry,
   config: ScopeConfig,
-  style: QuickConfigStyle
+  style: QuickConfigStyle,
+  themeName: string
 ): Promise<void> {
-  const themeColors = getThemeByName("monokai").colors; // Use monokai for preview consistency
+  const themeColors = getThemeByName(themeName).colors;
   const transcriptProvider = new TranscriptProvider();
 
   // Widget factory map with proper IWidget typing
@@ -112,7 +113,7 @@ export async function renderPreviewFromConfig(
 ): Promise<string> {
   // Create registry and register widgets
   const registry = new WidgetRegistry();
-  await registerWidgetsFromConfig(registry, config, style);
+  await registerWidgetsFromConfig(registry, config, style, themeName);
 
   // Create renderer
   const renderer = new Renderer({
