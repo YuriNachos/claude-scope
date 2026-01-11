@@ -70,13 +70,13 @@ export const DEMO_DATA = {
   /** Demo total output tokens */
   TOTAL_OUTPUT_TOKENS: 50000,
   /** Demo current input tokens */
-  CURRENT_INPUT_TOKENS: 150000,
+  CURRENT_INPUT_TOKENS: 80000,
   /** Demo current output tokens */
-  CURRENT_OUTPUT_TOKENS: 50000,
+  CURRENT_OUTPUT_TOKENS: 30000,
   /** Demo cache creation tokens */
-  CACHE_CREATION_TOKENS: 5000,
+  CACHE_CREATION_TOKENS: 1000,
   /** Demo cache read tokens */
-  CACHE_READ_TOKENS: 35000,
+  CACHE_READ_TOKENS: 15000,
 } as const;
 
 // Re-export for backward compatibility
