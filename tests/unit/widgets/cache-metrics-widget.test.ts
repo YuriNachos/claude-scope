@@ -517,5 +517,68 @@ describe("CacheMetricsWidget", () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
       expect(result).to.be.null;
     });
+
+    it("should not overwrite cache with zero values", async () => {
+      const widget = new CacheMetricsWidget();
+
+      // First update with valid data - this should be cached
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-zero-jump",
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 50000,
+              output_tokens: 30000,
+              cache_read_input_tokens: 35000,
+              cache_creation_input_tokens: 5000,
+            },
+          },
+        })
+      );
+
+      const result1 = await widget.render({ width: 80, timestamp: 0 });
+      expect(result1).to.not.be.null;
+      expect(result1).to.include("35k"); // formatK(35000)
+
+      // Second update with zero values - should NOT overwrite cache
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-zero-jump",
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 0,
+              output_tokens: 0,
+              cache_read_input_tokens: 0,
+              cache_creation_input_tokens: 0,
+            },
+          },
+        })
+      );
+
+      // Third update with null current_usage (tool execution scenario)
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-zero-jump",
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: null,
+          },
+        })
+      );
+
+      const result3 = await widget.render({ width: 80, timestamp: 0 });
+      // Should still show 35k from the first update, NOT 0
+      expect(result3).to.not.be.null;
+      expect(result3).to.include("35k");
+      expect(result3).to.not.include("0 cache");
+    });
   });
 });
