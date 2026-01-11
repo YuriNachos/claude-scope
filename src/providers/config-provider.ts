@@ -21,9 +21,25 @@ export interface ConfigScanOptions {
 }
 
 /**
+ * Interface for config provider operations
+ *
+ * Abstraction over config scanning to enable:
+ * - Easy testing with mocks
+ * - Preview mode with demo data
+ * - No tight coupling to filesystem implementation
+ */
+export interface IConfigProvider {
+  /**
+   * Get config counts
+   * @returns Promise resolving to config counts
+   */
+  getConfigs(options?: ConfigScanOptions): Promise<ConfigCounts>;
+}
+
+/**
  * Provider for scanning Claude Code configuration with caching
  */
-export class ConfigProvider {
+export class ConfigProvider implements IConfigProvider {
   private cachedCounts?: ConfigCounts;
   private lastScan = 0;
   private readonly cacheInterval = 5000; // 5 seconds

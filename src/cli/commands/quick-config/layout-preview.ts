@@ -6,6 +6,7 @@
 import { Renderer } from "../../../core/renderer.js";
 import type { IWidget } from "../../../core/types.js";
 import { WidgetRegistry } from "../../../core/widget-registry.js";
+import { MockConfigProvider } from "../../../providers/mock-config-provider.js";
 import { MockGit } from "../../../providers/mock-git.js";
 import { MockTranscriptProvider } from "../../../providers/mock-transcript-provider.js";
 import { getThemeByName } from "../../../ui/theme/index.js";
@@ -73,7 +74,8 @@ async function registerWidgetsFromConfig(
       return w;
     },
     "config-count": (s) => {
-      const w = new ConfigCountWidget(themeColors);
+      const mockConfig = new MockConfigProvider();
+      const w = new ConfigCountWidget(mockConfig, themeColors);
       w.setStyle(s);
       return w;
     },

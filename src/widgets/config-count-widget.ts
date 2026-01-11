@@ -9,7 +9,11 @@ import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
 import type { IWidget, RenderContext, StdinData } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { type ConfigCounts, ConfigProvider } from "../providers/config-provider.js";
+import {
+  type ConfigCounts,
+  ConfigProvider,
+  type IConfigProvider,
+} from "../providers/config-provider.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
 import type { IThemeColors } from "../ui/theme/types.js";
 import { configCountStyles } from "./config-count/styles.js";
@@ -32,14 +36,15 @@ export class ConfigCountWidget implements IWidget {
     1 // Second line
   );
 
-  private configProvider = new ConfigProvider();
+  private configProvider: IConfigProvider;
   private configs?: ConfigCounts;
   private cwd?: string;
   private themeColors: IThemeColors;
   private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IThemeColors> =
     configCountStyles.balanced!;
 
-  constructor(themeColors?: IThemeColors) {
+  constructor(configProvider?: IConfigProvider, themeColors?: IThemeColors) {
+    this.configProvider = configProvider ?? new ConfigProvider();
     this.themeColors = themeColors ?? DEFAULT_THEME;
   }
 
