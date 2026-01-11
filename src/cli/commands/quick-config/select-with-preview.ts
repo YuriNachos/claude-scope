@@ -49,11 +49,20 @@ export async function generatePreviews<T>(
   themeName: string
 ): Promise<string[]> {
   const previews: string[] = [];
+
+  // Detect if this is a style selection stage (all choices are styles)
+  // Stage 2 always has exactly 3 style choices (balanced, playful, compact)
+  const isStyleSelection = choices.length >= 3 && choices.every((c) => isQuickConfigStyle(c.value));
+
   for (const choice of choices) {
     try {
+      // For style selection stage, each choice uses its own value as the style
+      // For other stages, use the provided style parameter
+      const previewStyle = isStyleSelection ? (choice.value as QuickConfigStyle) : style;
+
       const preview = await renderPreviewFromConfig(
-        choice.getConfig(style, themeName),
-        style,
+        choice.getConfig(previewStyle, themeName),
+        previewStyle,
         themeName
       );
       previews.push(preview);
@@ -63,6 +72,14 @@ export async function generatePreviews<T>(
     }
   }
   return previews;
+}
+
+/**
+ * Helper: Check if a value is a valid QuickConfigStyle
+ * Used to detect style choices in generatePreviews
+ */
+function isQuickConfigStyle(value: unknown): boolean {
+  return typeof value === "string" && ["balanced", "playful", "compact"].includes(value);
 }
 
 /**
