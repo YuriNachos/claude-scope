@@ -32,7 +32,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 
 This project uses a **modular widget architecture** with a central registry, following Dependency Inversion Principle and modern TypeScript plugin best practices.
 
-**Current Implementation** (v0.3.0):
+**Current Implementation** (v0.6.17):
 ```
 src/
 ├── cli/
@@ -50,6 +50,10 @@ src/
 │           ├── menu.test.ts
 │           ├── preview.test.ts
 │           └── config-schema.test.ts
+├── config/
+│   ├── default-config.ts     # Default configuration generator
+│   ├── config-loader.ts      # Widget config loader for main CLI
+│   └── widget-flags.ts       # Feature flag configuration
 ├── core/
 │   ├── types.ts              # Core types (IWidget, IWidgetMetadata, etc.)
 │   ├── widget-registry.ts    # Central registry for widget management
