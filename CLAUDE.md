@@ -741,6 +741,8 @@ As you navigate options with arrow keys (↑↓), the preview panel updates inst
 
 **Stage 3/3: Choose Color Theme**
 
+Select color theme for your statusline. Preview shows final configuration with live theme colors - as you navigate themes, the preview updates to show each theme's actual colors.
+
 17 built-in themes available: monokai, nord, dracula, catppuccin-mocha, tokyo-night, vscode-dark-plus, github-dark-dimmed, dusty-sage, gray, muted-gray, slate-blue, professional-blue, rose-pine, semantic-classic, solarized-dark, one-dark-pro, cyberpunk-neon.
 
 **Navigation:**
