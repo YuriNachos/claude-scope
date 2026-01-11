@@ -9,6 +9,7 @@ import { parseCommand, routeCommand } from "./cli/index.js";
 import { type LoadedConfig, loadWidgetConfig } from "./config/config-loader.js";
 import { isWidgetEnabled } from "./config/widget-flags.js";
 import { Renderer } from "./core/renderer.js";
+import { isValidWidgetStyle, type WidgetStyle } from "./core/style-types.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
 import { TranscriptProvider } from "./providers/transcript-provider.js";
@@ -40,20 +41,52 @@ async function readStdin(): Promise<string> {
 }
 
 /**
+ * Type for widgets that support optional style configuration
+ */
+type StyleableWidget = { setStyle?(style: WidgetStyle): void };
+
+/**
  * Apply widget configuration from loaded config to a widget instance
  * @param widget - Widget instance to configure
  * @param widgetId - Widget identifier (e.g., "model", "git", "context")
  * @param config - Loaded configuration object
  */
-function applyWidgetConfig(widget: any, widgetId: string, config: LoadedConfig): void {
+function applyWidgetConfig(widget: StyleableWidget, widgetId: string, config: LoadedConfig): void {
   // Find widget config by scanning lines
   for (const line of Object.values(config.lines)) {
     const widgetConfig = line.find((w) => w.id === widgetId);
-    if (widgetConfig && widget.setStyle) {
+    if (
+      widgetConfig &&
+      typeof widget.setStyle === "function" &&
+      isValidWidgetStyle(widgetConfig.style)
+    ) {
       widget.setStyle(widgetConfig.style);
       break;
     }
   }
+}
+
+/**
+ * Register a widget with the registry, applying configuration if available
+ * @param registry - Widget registry instance
+ * @param widget - Widget instance to register (must be IWidget)
+ * @param widgetId - Widget identifier for config lookup
+ * @param config - Loaded configuration object (null if no config)
+ *
+ * @description This helper function applies style configuration to a widget
+ * before registering it with the widget registry. The widget must implement IWidget
+ * and optionally support setStyle() for configuration.
+ */
+async function registerWidgetWithConfig<T extends { setStyle?(style: WidgetStyle): void }>(
+  registry: WidgetRegistry,
+  widget: T & Parameters<WidgetRegistry["register"]>[0],
+  widgetId: string,
+  config: LoadedConfig | null
+): Promise<void> {
+  if (config) {
+    applyWidgetConfig(widget, widgetId, config);
+  }
+  await registry.register(widget);
 }
 
 /**
@@ -92,69 +125,32 @@ export async function main(): Promise<string> {
     const widgetConfig = await loadWidgetConfig();
 
     // Register all widgets with configuration applied
-    const modelWidget = new ModelWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(modelWidget, "model", widgetConfig);
-    }
-    await registry.register(modelWidget);
-
-    const contextWidget = new ContextWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(contextWidget, "context", widgetConfig);
-    }
-    await registry.register(contextWidget);
-
-    const costWidget = new CostWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(costWidget, "cost", widgetConfig);
-    }
-    await registry.register(costWidget);
-
-    const linesWidget = new LinesWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(linesWidget, "lines", widgetConfig);
-    }
-    await registry.register(linesWidget);
-
-    const durationWidget = new DurationWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(durationWidget, "duration", widgetConfig);
-    }
-    await registry.register(durationWidget);
-
-    const gitWidget = new GitWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(gitWidget, "git", widgetConfig);
-    }
-    await registry.register(gitWidget);
-
-    const gitTagWidget = new GitTagWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(gitTagWidget, "git-tag", widgetConfig);
-    }
-    await registry.register(gitTagWidget);
-
-    const configCountWidget = new ConfigCountWidget();
-    if (widgetConfig) {
-      applyWidgetConfig(configCountWidget, "config-count", widgetConfig);
-    }
-    await registry.register(configCountWidget);
+    await registerWidgetWithConfig(registry, new ModelWidget(), "model", widgetConfig);
+    await registerWidgetWithConfig(registry, new ContextWidget(), "context", widgetConfig);
+    await registerWidgetWithConfig(registry, new CostWidget(), "cost", widgetConfig);
+    await registerWidgetWithConfig(registry, new LinesWidget(), "lines", widgetConfig);
+    await registerWidgetWithConfig(registry, new DurationWidget(), "duration", widgetConfig);
+    await registerWidgetWithConfig(registry, new GitWidget(), "git", widgetConfig);
+    await registerWidgetWithConfig(registry, new GitTagWidget(), "git-tag", widgetConfig);
+    await registerWidgetWithConfig(registry, new ConfigCountWidget(), "config-count", widgetConfig);
 
     // Register feature-flagged widgets
     if (isWidgetEnabled("cacheMetrics")) {
-      const cacheMetricsWidget = new CacheMetricsWidget(DEFAULT_THEME);
-      if (widgetConfig) {
-        applyWidgetConfig(cacheMetricsWidget, "cache-metrics", widgetConfig);
-      }
-      await registry.register(cacheMetricsWidget);
+      await registerWidgetWithConfig(
+        registry,
+        new CacheMetricsWidget(DEFAULT_THEME),
+        "cache-metrics",
+        widgetConfig
+      );
     }
 
     if (isWidgetEnabled("activeTools")) {
-      const activeToolsWidget = new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider);
-      if (widgetConfig) {
-        applyWidgetConfig(activeToolsWidget, "active-tools", widgetConfig);
-      }
-      await registry.register(activeToolsWidget);
+      await registerWidgetWithConfig(
+        registry,
+        new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider),
+        "active-tools",
+        widgetConfig
+      );
     }
 
     // Poker widget is NOT in the config (excluded from quick-config)
