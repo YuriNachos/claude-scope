@@ -3,13 +3,13 @@
  * Represents current behavior (without Poker widget)
  */
 
-import type { ScopeConfig } from "../cli/commands/quick-config/config-schema.js";
-import { DUSTY_SAGE_THEME } from "../ui/theme/index.js";
+import type { QuickConfigStyle, ScopeConfig } from "../cli/commands/quick-config/config-schema.js";
+import { getThemeByName } from "../ui/theme/index.js";
 
 /**
  * Convert RGB color object to ANSI escape sequence
  */
-function rgbToAnsi(r: number, g: number, b: number): string {
+function _rgbToAnsi(r: number, g: number, b: number): string {
   return `\u001b[38;2;${r};${g};${b}m`;
 }
 
@@ -17,7 +17,7 @@ function rgbToAnsi(r: number, g: number, b: number): string {
  * Extract RGB values from ANSI escape sequence
  * ANSI format: \x1b[38;2;R;G;Bm or \u001b[38;2;R;G;Bm
  */
-function extractRgbFromAnsi(ansiColor: string): { r: number; g: number; b: number } {
+function _extractRgbFromAnsi(ansiColor: string): { r: number; g: number; b: number } {
   // Match both \x1b and \u001b escape sequences
   const match = ansiColor.match(/\x1b\[38;2;(\d+);(\d+);(\d+)m/);
   if (!match) {
@@ -33,9 +33,23 @@ function extractRgbFromAnsi(ansiColor: string): { r: number; g: number; b: numbe
 
 /**
  * Generate default config using Dusty Sage theme
+ * @deprecated Use generateConfigWithStyleAndTheme instead
  */
 export function generateDefaultConfig(): ScopeConfig {
-  const theme = DUSTY_SAGE_THEME.colors;
+  return generateConfigWithStyleAndTheme("balanced", "dusty-sage");
+}
+
+/**
+ * Generate config with specified style and theme
+ * @param style - Display style (balanced, playful, compact)
+ * @param themeName - Theme name (e.g., "monokai", "nord", "dracula")
+ * @returns Config object
+ */
+export function generateConfigWithStyleAndTheme(
+  style: QuickConfigStyle,
+  themeName: string
+): ScopeConfig {
+  const theme = getThemeByName(themeName).colors;
 
   return {
     version: "1.0.0",
@@ -43,7 +57,7 @@ export function generateDefaultConfig(): ScopeConfig {
       "0": [
         {
           id: "model",
-          style: "balanced",
+          style: style,
           colors: {
             name: theme.model.name,
             version: theme.model.version,
@@ -51,7 +65,7 @@ export function generateDefaultConfig(): ScopeConfig {
         },
         {
           id: "context",
-          style: "balanced",
+          style: style,
           colors: {
             low: theme.context.low,
             medium: theme.context.medium,
@@ -61,7 +75,7 @@ export function generateDefaultConfig(): ScopeConfig {
         },
         {
           id: "cost",
-          style: "balanced",
+          style: style,
           colors: {
             amount: theme.cost.amount,
             currency: theme.cost.currency,
@@ -69,7 +83,7 @@ export function generateDefaultConfig(): ScopeConfig {
         },
         {
           id: "lines",
-          style: "balanced",
+          style: style,
           colors: {
             added: theme.lines.added,
             removed: theme.lines.removed,
@@ -77,7 +91,7 @@ export function generateDefaultConfig(): ScopeConfig {
         },
         {
           id: "duration",
-          style: "balanced",
+          style: style,
           colors: {
             value: theme.duration.value,
             unit: theme.duration.unit,
@@ -85,7 +99,7 @@ export function generateDefaultConfig(): ScopeConfig {
         },
         {
           id: "git",
-          style: "balanced",
+          style: style,
           colors: {
             branch: theme.git.branch,
             changes: theme.git.changes,
@@ -95,14 +109,14 @@ export function generateDefaultConfig(): ScopeConfig {
       "1": [
         {
           id: "git-tag",
-          style: "balanced",
+          style: style,
           colors: {
             base: theme.base.text,
           },
         },
         {
           id: "config-count",
-          style: "balanced",
+          style: style,
           colors: {
             base: theme.base.muted,
           },
@@ -111,7 +125,7 @@ export function generateDefaultConfig(): ScopeConfig {
       "2": [
         {
           id: "active-tools",
-          style: "balanced",
+          style: style,
           colors: {
             running: theme.tools.running,
             completed: theme.tools.completed,
@@ -123,7 +137,7 @@ export function generateDefaultConfig(): ScopeConfig {
         },
         {
           id: "cache-metrics",
-          style: "balanced",
+          style: style,
           colors: {
             high: theme.cache.high,
             medium: theme.cache.medium,
