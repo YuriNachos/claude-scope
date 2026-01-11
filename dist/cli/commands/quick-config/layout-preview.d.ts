@@ -2,7 +2,7 @@
  * Layout-specific preview renderer
  * Renders widgets based on layout configuration
  */
-import type { ScopeConfig, QuickConfigStyle } from "./config-schema.js";
+import type { QuickConfigStyle, ScopeConfig } from "./config-schema.js";
 /**
  * Render preview from config
  */

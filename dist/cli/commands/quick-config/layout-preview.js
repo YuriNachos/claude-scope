@@ -6,7 +6,6 @@ import { Renderer } from "../../../core/renderer.js";
 import { WidgetRegistry } from "../../../core/widget-registry.js";
 import { TranscriptProvider } from "../../../providers/transcript-provider.js";
 import { getThemeByName } from "../../../ui/theme/index.js";
-import { createDemoData } from "./demo-data.js";
 // Widget constructors
 import { ActiveToolsWidget } from "../../../widgets/active-tools/index.js";
 import { CacheMetricsWidget } from "../../../widgets/cache-metrics/index.js";
@@ -18,24 +17,65 @@ import { GitTagWidget } from "../../../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../../../widgets/git/git-widget.js";
 import { LinesWidget } from "../../../widgets/lines-widget.js";
 import { ModelWidget } from "../../../widgets/model-widget.js";
+import { createDemoData } from "./demo-data.js";
 /**
  * Register widgets from config into registry
  */
 async function registerWidgetsFromConfig(registry, config, style) {
     const themeColors = getThemeByName("monokai").colors; // Use monokai for preview consistency
     const transcriptProvider = new TranscriptProvider();
-    // Widget factory map
+    // Widget factory map with proper IWidget typing
     const widgetFactory = {
-        model: (s) => { const w = new ModelWidget(themeColors); w.setStyle(s); return w; },
-        context: (s) => { const w = new ContextWidget(themeColors); w.setStyle(s); return w; },
-        cost: (s) => { const w = new CostWidget(themeColors); w.setStyle(s); return w; },
-        duration: (s) => { const w = new DurationWidget(themeColors); w.setStyle(s); return w; },
-        lines: (s) => { const w = new LinesWidget(themeColors); w.setStyle(s); return w; },
-        git: (s) => { const w = new GitWidget(undefined, themeColors); w.setStyle(s); return w; },
-        "git-tag": (s) => { const w = new GitTagWidget(undefined, themeColors); w.setStyle(s); return w; },
-        "config-count": (s) => { const w = new ConfigCountWidget(); w.setStyle(s); return w; },
-        "active-tools": (s) => { const w = new ActiveToolsWidget(themeColors, transcriptProvider); w.setStyle(s); return w; },
-        "cache-metrics": (s) => { const w = new CacheMetricsWidget(themeColors); w.setStyle(s); return w; },
+        model: (s) => {
+            const w = new ModelWidget(themeColors);
+            w.setStyle(s);
+            return w;
+        },
+        context: (s) => {
+            const w = new ContextWidget(themeColors);
+            w.setStyle(s);
+            return w;
+        },
+        cost: (s) => {
+            const w = new CostWidget(themeColors);
+            w.setStyle(s);
+            return w;
+        },
+        duration: (s) => {
+            const w = new DurationWidget(themeColors);
+            w.setStyle(s);
+            return w;
+        },
+        lines: (s) => {
+            const w = new LinesWidget(themeColors);
+            w.setStyle(s);
+            return w;
+        },
+        git: (s) => {
+            const w = new GitWidget(undefined, themeColors);
+            w.setStyle(s);
+            return w;
+        },
+        "git-tag": (s) => {
+            const w = new GitTagWidget(undefined, themeColors);
+            w.setStyle(s);
+            return w;
+        },
+        "config-count": (s) => {
+            const w = new ConfigCountWidget();
+            w.setStyle(s);
+            return w;
+        },
+        "active-tools": (s) => {
+            const w = new ActiveToolsWidget(themeColors, transcriptProvider);
+            w.setStyle(s);
+            return w;
+        },
+        "cache-metrics": (s) => {
+            const w = new CacheMetricsWidget(themeColors);
+            w.setStyle(s);
+            return w;
+        },
     };
     // Register widgets from config lines
     for (const [lineNum, widgets] of Object.entries(config.lines)) {

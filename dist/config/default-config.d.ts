@@ -18,7 +18,7 @@ export declare function generateConfigWithStyleAndTheme(style: QuickConfigStyle,
 /**
  * Generate Balanced layout configuration
  * Line 0: model, context, cost, duration, lines
- * Line 1: git, cache-metrics, active-tools
+ * Line 1: git, cache-metrics, config-count, active-tools
  */
 export declare function generateBalancedLayout(style: QuickConfigStyle, themeName: string): ScopeConfig;
 /**

@@ -2,10 +2,10 @@
  * Three-Stage Interactive Menu: Layout -> Style -> Theme
  */
 import { select } from "@inquirer/prompts";
+import { generateBalancedLayout, generateCompactLayout, generateRichLayout, } from "../../../config/default-config.js";
 import { AVAILABLE_THEMES } from "../../../ui/theme/index.js";
 import { saveConfig } from "./config-writer.js";
 import { renderPreviewFromConfig } from "./layout-preview.js";
-import { generateBalancedLayout, generateCompactLayout, generateRichLayout, } from "../../../config/default-config.js";
 /**
  * Get layout generator function by layout type
  */
@@ -96,6 +96,7 @@ async function selectTheme(layout, style) {
     console.log("│  Select color theme for your statusline.                        │");
     console.log("│  Preview shows your final configuration with live colors.        │");
     console.log("└─────────────────────────────────────────────────────────────────┘\n");
+    // Show first 8 themes for better terminal UX (avoid overwhelming list)
     const themeChoices = AVAILABLE_THEMES.slice(0, 8).map((theme) => ({
         name: theme.name,
         description: theme.description,
