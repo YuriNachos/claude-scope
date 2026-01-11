@@ -8,6 +8,7 @@ import { CacheManager } from "../../../src/storage/cache-manager.js";
 import { DEFAULT_THEME } from "../../../src/ui/theme/index.js";
 import { CacheMetricsWidget } from "../../../src/widgets/cache-metrics/cache-metrics-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
+import { stripAnsi } from "../../helpers/snapshot.js";
 
 describe("CacheMetricsWidget", () => {
   beforeEach(() => {
@@ -579,6 +580,71 @@ describe("CacheMetricsWidget", () => {
       expect(result3).to.not.be.null;
       expect(result3).to.include("35k");
       expect(result3).to.not.include("0 cache");
+    });
+
+    it("should reset cache and renderData when session_id changes", async () => {
+      const widget = new CacheMetricsWidget(DEFAULT_THEME);
+
+      // First session with valid data - this should be cached
+      await widget.update(
+        createMockStdinData({
+          session_id: "session-alpha",
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 100,
+              output_tokens: 50,
+              cache_creation_input_tokens: 1000,
+              cache_read_input_tokens: 50000,
+            },
+          },
+        })
+      );
+
+      const result1 = await widget.render({ width: 80, timestamp: 0 });
+      expect(result1).to.not.be.null;
+      const clean1 = stripAnsi(result1 || "");
+      expect(clean1).to.include("50k"); // formatK(50000) = "50k" (since 50 >= 10, rounds to whole number)
+
+      // Second update with different session_id BUT OLD data
+      // This simulates what happens when /new is pressed - Claude Code
+      // may send the previous session's current_usage with the new session_id
+      await widget.update(
+        createMockStdinData({
+          session_id: "session-beta", // Different session!
+          context_window: {
+            total_input_tokens: 100000,
+            total_output_tokens: 50000,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 100, // OLD data from session-alpha!
+              output_tokens: 50,
+              cache_creation_input_tokens: 1000,
+              cache_read_input_tokens: 50000,
+            },
+          },
+        })
+      );
+
+      // Third update with null current_usage (simulating tool execution)
+      await widget.update(
+        createMockStdinData({
+          session_id: "session-beta", // Same session
+          context_window: {
+            total_input_tokens: 0,
+            total_output_tokens: 0,
+            context_window_size: 200000,
+            current_usage: null,
+          },
+        })
+      );
+
+      const result3 = await widget.render({ width: 80, timestamp: 0 });
+      // BUG: Should return null but shows "50k cache" because old data was cached
+      // under "session-beta" in step 2
+      expect(result3).to.be.null; // This will fail - showing the bug
     });
   });
 });

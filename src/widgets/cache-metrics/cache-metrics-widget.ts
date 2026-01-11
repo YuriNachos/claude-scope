@@ -28,6 +28,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
   private style: CacheMetricsStyle = "balanced";
   private renderData?: CacheMetricsRenderData;
   private cacheManager: CacheManager;
+  private lastSessionId?: string;
 
   constructor(theme?: IThemeColors) {
     super();
@@ -97,11 +98,24 @@ export class CacheMetricsWidget extends StdinDataWidget {
   async update(data: StdinData): Promise<void> {
     await super.update(data);
 
+    const sessionChanged = this.lastSessionId && this.lastSessionId !== data.session_id;
+
+    // Detect session change: if session_id changed, reset widget state
+    // This ensures that when user presses /new, the widget doesn't show old session's data
+    if (sessionChanged) {
+      // New session detected - reset renderData to prevent showing old session's data
+      // Note: We don't clear the cache here; instead, we skip caching old data
+      // by checking !sessionChanged below
+      this.renderData = undefined;
+    }
+    this.lastSessionId = data.session_id;
+
     // Store valid current_usage in cache
     // Only cache if there are meaningful values (input_tokens > 0)
     // This prevents zero values from overwriting valid cache data
+    // Also skip caching when session just changed (to avoid caching old session's data)
     const usage = data.context_window?.current_usage;
-    if (usage && usage.input_tokens > 0) {
+    if (usage && usage.input_tokens > 0 && !sessionChanged) {
       this.cacheManager.setCachedUsage(data.session_id, {
         input_tokens: usage.input_tokens,
         output_tokens: usage.output_tokens,
