@@ -31,6 +31,7 @@ export class LinesWidget extends StdinDataWidget {
   );
 
   private colors: IThemeColors;
+  private _lineOverride?: number;
   private styleFn: StyleRendererFn<LinesRenderData, ILinesColors> = linesStyles.balanced!;
 
   constructor(colors?: IThemeColors) {
@@ -43,6 +44,14 @@ export class LinesWidget extends StdinDataWidget {
     if (fn) {
       this.styleFn = fn;
     }
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {

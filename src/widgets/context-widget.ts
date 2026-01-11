@@ -26,6 +26,7 @@ export class ContextWidget extends StdinDataWidget {
   );
 
   private colors: IThemeColors;
+  private _lineOverride?: number;
   private styleFn: StyleRendererFn<ContextRenderData, IContextColors> = contextStyles.balanced!;
   private cacheManager: CacheManager;
   private lastSessionId?: string;
@@ -41,6 +42,14 @@ export class ContextWidget extends StdinDataWidget {
     if (fn) {
       this.styleFn = fn;
     }
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   /**

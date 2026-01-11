@@ -31,6 +31,7 @@ export class ActiveToolsWidget extends StdinDataWidget {
   };
 
   private style: ActiveToolsStyle = "balanced";
+  private _lineOverride?: number;
   private tools: ToolEntry[] = [];
   private renderData?: ActiveToolsRenderData;
 
@@ -47,6 +48,14 @@ export class ActiveToolsWidget extends StdinDataWidget {
    */
   setStyle(style: ActiveToolsStyle): void {
     this.style = style;
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   /**

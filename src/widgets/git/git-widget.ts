@@ -39,6 +39,7 @@ export class GitWidget implements IWidget {
   private enabled = true;
   private cwd: string | null = null;
   private colors: IThemeColors;
+  private _lineOverride?: number;
   private styleFn: StyleRendererFn<GitRenderData, IGitColors> = gitStyles.balanced!;
 
   /**
@@ -57,6 +58,14 @@ export class GitWidget implements IWidget {
     if (fn) {
       this.styleFn = fn;
     }
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   async initialize(context: WidgetContext): Promise<void> {

@@ -25,6 +25,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
   );
 
   private theme: IThemeColors;
+  private _lineOverride?: number;
   private style: CacheMetricsStyle = "balanced";
   private renderData?: CacheMetricsRenderData;
   private cacheManager: CacheManager;
@@ -41,6 +42,14 @@ export class CacheMetricsWidget extends StdinDataWidget {
    */
   setStyle(style: CacheMetricsStyle): void {
     this.style = style;
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   /**

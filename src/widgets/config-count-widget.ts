@@ -40,6 +40,7 @@ export class ConfigCountWidget implements IWidget {
   private configs?: ConfigCounts;
   private cwd?: string;
   private themeColors: IThemeColors;
+  private _lineOverride?: number;
   private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IThemeColors> =
     configCountStyles.balanced!;
 
@@ -53,6 +54,14 @@ export class ConfigCountWidget implements IWidget {
     if (fn) {
       this.styleFn = fn;
     }
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   async initialize(): Promise<void> {

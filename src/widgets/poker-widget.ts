@@ -33,6 +33,7 @@ export class PokerWidget extends StdinDataWidget {
   private lastUpdateTimestamp = 0;
   private readonly THROTTLE_MS = 5000; // 5 seconds
   private colors: IThemeColors;
+  private _lineOverride?: number;
   private styleFn: StyleRendererFn<PokerRenderData, IPokerColors> = pokerStyles.balanced!;
 
   setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
@@ -40,6 +41,14 @@ export class PokerWidget extends StdinDataWidget {
     if (fn) {
       this.styleFn = fn;
     }
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   constructor(colors?: IThemeColors) {
