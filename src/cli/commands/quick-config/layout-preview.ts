@@ -6,7 +6,8 @@
 import { Renderer } from "../../../core/renderer.js";
 import type { IWidget } from "../../../core/types.js";
 import { WidgetRegistry } from "../../../core/widget-registry.js";
-import { TranscriptProvider } from "../../../providers/transcript-provider.js";
+import { MockGit } from "../../../providers/mock-git.js";
+import { MockTranscriptProvider } from "../../../providers/mock-transcript-provider.js";
 import { getThemeByName } from "../../../ui/theme/index.js";
 // Widget constructors
 import { ActiveToolsWidget } from "../../../widgets/active-tools/index.js";
@@ -32,7 +33,7 @@ async function registerWidgetsFromConfig(
   themeName: string
 ): Promise<void> {
   const themeColors = getThemeByName(themeName).colors;
-  const transcriptProvider = new TranscriptProvider();
+  const transcriptProvider = new MockTranscriptProvider();
 
   // Widget factory map with proper IWidget typing
   const widgetFactory: Record<string, (style: QuickConfigStyle) => IWidget> = {
@@ -62,12 +63,12 @@ async function registerWidgetsFromConfig(
       return w;
     },
     git: (s) => {
-      const w = new GitWidget(undefined, themeColors);
+      const w = new GitWidget((cwd: string) => new MockGit(cwd), themeColors);
       w.setStyle(s);
       return w;
     },
     "git-tag": (s) => {
-      const w = new GitTagWidget(undefined, themeColors);
+      const w = new GitTagWidget((cwd: string) => new MockGit(cwd), themeColors);
       w.setStyle(s);
       return w;
     },
