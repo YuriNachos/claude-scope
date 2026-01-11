@@ -167,3 +167,9 @@ export const CONFIG_VERSION = "1.0.0";
  */
 export const QUICK_CONFIG_STYLES = ["balanced", "playful", "compact"] as const;
 export type QuickConfigStyle = (typeof QUICK_CONFIG_STYLES)[number];
+
+/**
+ * Layout presets for widget arrangement
+ */
+export const LAYOUT_PRESETS = ["balanced", "compact", "rich"] as const;
+export type QuickConfigLayout = (typeof LAYOUT_PRESETS)[number];
