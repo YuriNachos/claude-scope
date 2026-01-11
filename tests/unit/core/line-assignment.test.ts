@@ -3,8 +3,8 @@
  * Verify that widgets use config line override
  */
 
-import assert from "node:assert";
 import { describe, it } from "node:test";
+import { expect } from "chai";
 import { ConfigCountWidget } from "../../../src/widgets/config-count-widget.js";
 import { ContextWidget } from "../../../src/widgets/context-widget.js";
 import { ModelWidget } from "../../../src/widgets/model-widget.js";
@@ -13,17 +13,17 @@ describe("Line Assignment", () => {
   describe("Default line from metadata", () => {
     it("should return default line from metadata when no override", () => {
       const widget = new ModelWidget();
-      assert.strictEqual(widget.getLine(), 0);
+      expect(widget.getLine()).to.equal(0);
     });
 
-    it("ConfigCountWidget should default to line 1", () => {
+    it("should return default line 1 for ConfigCountWidget", () => {
       const widget = new ConfigCountWidget();
-      assert.strictEqual(widget.getLine(), 1);
+      expect(widget.getLine()).to.equal(1);
     });
 
-    it("ContextWidget should default to line 0", () => {
+    it("should return default line 0 for ContextWidget", () => {
       const widget = new ContextWidget();
-      assert.strictEqual(widget.getLine(), 0);
+      expect(widget.getLine()).to.equal(0);
     });
   });
 
@@ -31,18 +31,18 @@ describe("Line Assignment", () => {
     it("should override default line when setLine is called", () => {
       const widget = new ModelWidget();
       widget.setLine(5);
-      assert.strictEqual(widget.getLine(), 5);
+      expect(widget.getLine()).to.equal(5);
     });
 
     it("should allow changing line multiple times", () => {
       const widget = new ConfigCountWidget();
-      assert.strictEqual(widget.getLine(), 1); // default
+      expect(widget.getLine()).to.equal(1); // default
 
       widget.setLine(3);
-      assert.strictEqual(widget.getLine(), 3);
+      expect(widget.getLine()).to.equal(3);
 
       widget.setLine(0);
-      assert.strictEqual(widget.getLine(), 0);
+      expect(widget.getLine()).to.equal(0);
     });
   });
 
@@ -55,7 +55,7 @@ describe("Line Assignment", () => {
       } as any;
 
       const line = mockWidget.getLine ? mockWidget.getLine() : (mockWidget.metadata.line ?? 0);
-      assert.strictEqual(line, 5);
+      expect(line).to.equal(5);
     });
   });
 });
