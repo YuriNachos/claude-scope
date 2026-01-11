@@ -2,7 +2,6 @@
  * Three-Stage Interactive Menu: Layout -> Style -> Theme
  */
 
-import { select } from "@inquirer/prompts";
 import {
   generateBalancedLayout,
   generateCompactLayout,
@@ -13,15 +12,6 @@ import type { QuickConfigLayout, QuickConfigStyle, ScopeConfig } from "./config-
 import { saveConfig } from "./config-writer.js";
 import { renderPreviewFromConfig } from "./layout-preview.js";
 import { type PreviewChoice, selectWithPreview } from "./select-with-preview.js";
-
-/**
- * Theme choice interface
- */
-interface ThemeChoice {
-  name: string;
-  description: string;
-  value: string;
-}
 
 /**
  * Get layout generator function by layout type
@@ -141,24 +131,32 @@ async function selectStyle(layout: QuickConfigLayout): Promise<QuickConfigStyle>
  * Stage 3: Select theme with layout + style aware preview
  */
 async function selectTheme(layout: QuickConfigLayout, style: QuickConfigStyle): Promise<string> {
+  // Show first 8 themes for better terminal UX (avoid overwhelming list)
+  const themeChoices: PreviewChoice<string>[] = AVAILABLE_THEMES.slice(0, 8).map((theme) => ({
+    name: theme.name,
+    description: theme.description,
+    value: theme.name,
+    getConfig: () => getLayoutGenerator(layout)(style, theme.name),
+  }));
+
   console.log("\n┌─────────────────────────────────────────────────────────────────┐");
   console.log("│  Stage 3/3: Choose Color Theme                                   │");
   console.log("├─────────────────────────────────────────────────────────────────┤");
   console.log("│  Select color theme for your statusline.                        │");
-  console.log("│  Preview shows your final configuration with live colors.        │");
+  console.log("│  Preview shows final config with live theme colors.             │");
   console.log("└─────────────────────────────────────────────────────────────────┘\n");
 
-  // Show first 8 themes for better terminal UX (avoid overwhelming list)
-  const themeChoices: ThemeChoice[] = AVAILABLE_THEMES.slice(0, 8).map((theme) => ({
-    name: theme.name,
-    description: theme.description,
-    value: theme.name,
-  }));
+  // Generate previews BEFORE showing the prompt
+  const { generatePreviews } = await import("./select-with-preview.js");
+  const previews = await generatePreviews(themeChoices, style, "monokai");
 
-  const theme = await select<string>({
+  const theme = await selectWithPreview<string>({
     message: "Choose a theme:",
     choices: themeChoices,
     pageSize: 8,
+    style,
+    themeName: "monokai", // Will be overridden by getConfig
+    previews,
   });
 
   return theme;
