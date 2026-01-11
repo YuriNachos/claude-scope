@@ -51,7 +51,9 @@ export class ContextWidget extends StdinDataWidget {
     const { current_usage } = data.context_window;
 
     // If we have valid current_usage, cache it
-    if (current_usage) {
+    // Only cache if there are meaningful values (input_tokens > 0)
+    // This prevents zero values from overwriting valid cache data
+    if (current_usage && current_usage.input_tokens > 0) {
       this.cacheManager.setCachedUsage(data.session_id, {
         input_tokens: current_usage.input_tokens,
         output_tokens: current_usage.output_tokens,

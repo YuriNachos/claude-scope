@@ -98,8 +98,10 @@ export class CacheMetricsWidget extends StdinDataWidget {
     await super.update(data);
 
     // Store valid current_usage in cache
+    // Only cache if there are meaningful values (input_tokens > 0)
+    // This prevents zero values from overwriting valid cache data
     const usage = data.context_window?.current_usage;
-    if (usage) {
+    if (usage && usage.input_tokens > 0) {
       this.cacheManager.setCachedUsage(data.session_id, {
         input_tokens: usage.input_tokens,
         output_tokens: usage.output_tokens,
