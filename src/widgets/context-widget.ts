@@ -28,6 +28,7 @@ export class ContextWidget extends StdinDataWidget {
   private colors: IThemeColors;
   private styleFn: StyleRendererFn<ContextRenderData, IContextColors> = contextStyles.balanced!;
   private cacheManager: CacheManager;
+  private lastSessionId?: string;
 
   constructor(colors?: IThemeColors) {
     super();
@@ -48,6 +49,11 @@ export class ContextWidget extends StdinDataWidget {
   async update(data: StdinData): Promise<void> {
     await super.update(data);
 
+    // Detect session change: if session_id changed, we're in a new session
+    // This ensures that when user presses /new, the widget doesn't cache old session's data
+    const sessionChanged = this.lastSessionId && this.lastSessionId !== data.session_id;
+    this.lastSessionId = data.session_id;
+
     const { current_usage } = data.context_window;
 
     // If we have valid current_usage, cache it
@@ -55,7 +61,11 @@ export class ContextWidget extends StdinDataWidget {
     // overwriting valid cache data. ContextWidget tracks ALL token types
     // (input, output, cache_read, cache_creation), so a valid state could
     // have zero input_tokens but non-zero output_tokens or cache_read_tokens.
-    if (current_usage) {
+    //
+    // IMPORTANT: Skip caching if we just detected a session change. This prevents
+    // old session data (which may come with the new session_id) from being cached
+    // under the new session ID.
+    if (current_usage && !sessionChanged) {
       const hasAnyTokens =
         (current_usage.input_tokens ?? 0) > 0 ||
         (current_usage.output_tokens ?? 0) > 0 ||

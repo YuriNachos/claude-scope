@@ -623,4 +623,71 @@ describe("ContextWidget", () => {
       expect(clean3).to.not.include("0%");
     });
   });
+
+  describe("Zero value handling", () => {
+    it("should reset cache when session_id changes", async () => {
+      const widget = new ContextWidget();
+
+      // First session with valid data - this should be cached
+      await widget.update(
+        createMockStdinData({
+          session_id: "session-alpha",
+          context_window: {
+            total_input_tokens: 1000,
+            total_output_tokens: 500,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 75000,
+              output_tokens: 10000,
+              cache_creation_input_tokens: 5000,
+              cache_read_input_tokens: 0,
+            },
+          },
+        })
+      );
+
+      const result1 = await widget.render({ width: 80, timestamp: 0 });
+      assert.ok(result1);
+      const clean1 = stripAnsi(result1 || "");
+      expect(clean1).to.include("45%"); // (75000 + 10000 + 5000) / 200000 = 45%
+
+      // Second update with different session_id BUT OLD data
+      // This simulates what happens when /new is pressed - Claude Code
+      // may send the previous session's current_usage with the new session_id
+      await widget.update(
+        createMockStdinData({
+          session_id: "session-beta", // Different session!
+          context_window: {
+            total_input_tokens: 1000,
+            total_output_tokens: 500,
+            context_window_size: 200000,
+            current_usage: {
+              input_tokens: 75000, // OLD data from session-alpha!
+              output_tokens: 10000,
+              cache_creation_input_tokens: 5000,
+              cache_read_input_tokens: 0,
+            },
+          },
+        })
+      );
+
+      // Third update with null current_usage (simulating tool execution)
+      await widget.update(
+        createMockStdinData({
+          session_id: "session-beta", // Same session
+          context_window: {
+            total_input_tokens: 0,
+            total_output_tokens: 0,
+            context_window_size: 200000,
+            current_usage: null,
+          },
+        })
+      );
+
+      const result3 = await widget.render({ width: 80, timestamp: 0 });
+      // BUG: Should return null but shows 45% because old data was cached
+      // under "session-beta" in step 2
+      expect(result3).to.be.null; // This will fail - showing the bug
+    });
+  });
 });
