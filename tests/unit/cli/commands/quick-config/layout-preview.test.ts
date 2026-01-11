@@ -41,5 +41,13 @@ describe("layout-preview", () => {
       // Should have different color codes
       assert.notStrictEqual(nordPreview, rosePinePreview);
     });
+
+    it("should contain ANSI color codes in preview", async () => {
+      const config = generateBalancedLayout("balanced", "monokai");
+      const preview = await renderPreviewFromConfig(config, "balanced", "monokai");
+
+      // ANSI escape sequences start with \x1b[
+      assert.ok(preview.includes("\x1b["), "Preview should contain ANSI color codes");
+    });
   });
 });
