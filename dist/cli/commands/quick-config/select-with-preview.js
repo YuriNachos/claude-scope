@@ -10,9 +10,34 @@ import { renderPreviewFromConfig } from "./layout-preview.js";
  */
 export async function generatePreviews(choices, style, themeName) {
     const previews = [];
+    // Detect if this is a style selection stage (all choices are styles)
+    // Stage 2 always has exactly 3 style choices (balanced, playful, compact)
+    const isStyleSelection = choices.length >= 3 && choices.every((c) => isQuickConfigStyle(c.value));
+    // Detect if this is a theme selection stage (choices have theme names as values)
+    const availableThemes = [
+        "monokai",
+        "nord",
+        "dracula",
+        "catppuccin-mocha",
+        "tokyo-night",
+        "vscode-dark-plus",
+        "github-dark-dimmed",
+        "dusty-sage",
+    ];
+    const isThemeSelection = choices.some((c) => isThemeName(c.value, availableThemes));
     for (const choice of choices) {
         try {
-            const preview = await renderPreviewFromConfig(choice.getConfig(style, themeName), style, themeName);
+            // Determine preview style: use choice value for style selection, otherwise use provided style
+            let previewStyle = style;
+            if (isStyleSelection) {
+                previewStyle = choice.value;
+            }
+            // Determine preview theme: use choice value for theme selection, otherwise use provided theme
+            let previewTheme = themeName;
+            if (isThemeSelection && isThemeName(choice.value, availableThemes)) {
+                previewTheme = choice.value;
+            }
+            const preview = await renderPreviewFromConfig(choice.getConfig(previewStyle, previewTheme), previewStyle, previewTheme);
             previews.push(preview);
         }
         catch (error) {
@@ -21,6 +46,20 @@ export async function generatePreviews(choices, style, themeName) {
         }
     }
     return previews;
+}
+/**
+ * Helper: Check if a value is a valid QuickConfigStyle
+ * Used to detect style choices in generatePreviews
+ */
+function isQuickConfigStyle(value) {
+    return typeof value === "string" && ["balanced", "playful", "compact"].includes(value);
+}
+/**
+ * Helper: Check if a value is a valid theme name
+ * Used to detect theme choices in generatePreviews
+ */
+function isThemeName(value, availableThemes) {
+    return typeof value === "string" && availableThemes.includes(value);
 }
 /**
  * Custom select prompt with live preview panel.

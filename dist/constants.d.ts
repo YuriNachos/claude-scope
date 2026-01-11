@@ -65,13 +65,13 @@ export declare const DEMO_DATA: {
     /** Demo total output tokens */
     readonly TOTAL_OUTPUT_TOKENS: 50000;
     /** Demo current input tokens */
-    readonly CURRENT_INPUT_TOKENS: 150000;
+    readonly CURRENT_INPUT_TOKENS: 80000;
     /** Demo current output tokens */
-    readonly CURRENT_OUTPUT_TOKENS: 50000;
+    readonly CURRENT_OUTPUT_TOKENS: 30000;
     /** Demo cache creation tokens */
-    readonly CACHE_CREATION_TOKENS: 5000;
+    readonly CACHE_CREATION_TOKENS: 1000;
     /** Demo cache read tokens */
-    readonly CACHE_READ_TOKENS: 35000;
+    readonly CACHE_READ_TOKENS: 15000;
 };
 export declare const DEFAULT_PROGRESS_BAR_WIDTH: 20;
 //# sourceMappingURL=constants.d.ts.map

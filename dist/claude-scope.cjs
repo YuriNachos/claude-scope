@@ -1185,13 +1185,13 @@ var init_constants = __esm({
       /** Demo total output tokens */
       TOTAL_OUTPUT_TOKENS: 5e4,
       /** Demo current input tokens */
-      CURRENT_INPUT_TOKENS: 15e4,
+      CURRENT_INPUT_TOKENS: 8e4,
       /** Demo current output tokens */
-      CURRENT_OUTPUT_TOKENS: 5e4,
+      CURRENT_OUTPUT_TOKENS: 3e4,
       /** Demo cache creation tokens */
-      CACHE_CREATION_TOKENS: 5e3,
+      CACHE_CREATION_TOKENS: 1e3,
       /** Demo cache read tokens */
-      CACHE_READ_TOKENS: 35e3
+      CACHE_READ_TOKENS: 15e3
     };
     DEFAULT_PROGRESS_BAR_WIDTH = DEFAULTS.PROGRESS_BAR_WIDTH;
   }
@@ -1355,107 +1355,104 @@ var init_widget_registry = __esm({
   }
 });
 
-// src/providers/transcript-provider.ts
-var import_node_fs, import_node_readline, TranscriptProvider;
-var init_transcript_provider = __esm({
-  "src/providers/transcript-provider.ts"() {
+// src/providers/mock-git.ts
+var MockGit;
+var init_mock_git = __esm({
+  "src/providers/mock-git.ts"() {
     "use strict";
-    import_node_fs = require("node:fs");
-    import_node_readline = require("node:readline");
-    TranscriptProvider = class {
-      MAX_TOOLS = 20;
-      /**
-       * Parse tools from a JSONL transcript file
-       * @param transcriptPath Path to the transcript file
-       * @returns Array of tool entries, limited to last 20
-       */
-      async parseTools(transcriptPath) {
-        if (!(0, import_node_fs.existsSync)(transcriptPath)) {
-          return [];
-        }
-        const toolMap = /* @__PURE__ */ new Map();
-        try {
-          const fileStream = (0, import_node_fs.createReadStream)(transcriptPath, { encoding: "utf-8" });
-          const rl = (0, import_node_readline.createInterface)({
-            input: fileStream,
-            crlfDelay: Infinity
-          });
-          for await (const line of rl) {
-            if (!line.trim()) continue;
-            try {
-              const entry = JSON.parse(line);
-              this.processLine(entry, toolMap);
-            } catch {
-            }
-          }
-          const tools = Array.from(toolMap.values());
-          return tools.slice(-this.MAX_TOOLS);
-        } catch {
-          return [];
-        }
+    MockGit = class {
+      // biome-ignore lint/correctness/noUnusedPrivateClassMembers: kept for API consistency with NativeGit
+      cwd;
+      constructor(cwd) {
+        this.cwd = cwd;
       }
       /**
-       * Process a single transcript line and update tool map
+       * Return demo git status
+       * @returns Status with "main" branch
        */
-      processLine(line, toolMap) {
-        const blocks = line.message?.content ?? [];
-        const timestamp = /* @__PURE__ */ new Date();
-        for (const block of blocks) {
-          if (block.type === "tool_use" && block.id && block.name) {
-            const tool = {
-              id: block.id,
-              name: block.name,
-              target: this.extractTarget(block.name, block.input),
-              status: "running",
-              startTime: timestamp
-            };
-            toolMap.set(block.id, tool);
-          }
-          if (block.type === "tool_result" && block.tool_use_id) {
-            const existing = toolMap.get(block.tool_use_id);
-            if (existing) {
-              existing.status = block.is_error ? "error" : "completed";
-              existing.endTime = timestamp;
-            }
-          }
-        }
+      async status() {
+        return { current: "main" };
       }
       /**
-       * Extract target from tool input based on tool type
+       * Return demo diff summary
+       * @returns Diff with 3 files, 142 insertions, 27 deletions
        */
-      extractTarget(toolName, input) {
-        if (!input) return void 0;
-        switch (toolName) {
-          case "Read":
-          case "Write":
-          case "Edit":
-            return this.asString(input.file_path ?? input.path);
-          case "Glob":
-            return this.asString(input.pattern);
-          case "Grep":
-            return this.asString(input.pattern);
-          case "Bash": {
-            const cmd = this.asString(input.command);
-            return cmd ? this.truncateCommand(cmd) : void 0;
+      async diffSummary(_options) {
+        return {
+          fileCount: 3,
+          files: [
+            { file: "src/widget.ts", insertions: 85, deletions: 12 },
+            { file: "src/config.ts", insertions: 42, deletions: 8 },
+            { file: "tests/widget.test.ts", insertions: 15, deletions: 7 }
+          ]
+        };
+      }
+      /**
+       * Return demo latest tag
+       * @returns Current version tag
+       */
+      async latestTag() {
+        return "v0.8.3";
+      }
+    };
+  }
+});
+
+// src/providers/mock-transcript-provider.ts
+var MockTranscriptProvider;
+var init_mock_transcript_provider = __esm({
+  "src/providers/mock-transcript-provider.ts"() {
+    "use strict";
+    MockTranscriptProvider = class {
+      /**
+       * Return demo tool entries
+       * @param path - Transcript path (ignored in mock)
+       * @returns Array of demo tool entries
+       */
+      async parseTools(_path) {
+        const now = /* @__PURE__ */ new Date();
+        const minuteAgo = new Date(now.getTime() - 60 * 1e3);
+        return [
+          {
+            id: "tool_1",
+            name: "Read",
+            target: "src/config.ts",
+            status: "completed",
+            startTime: minuteAgo,
+            endTime: minuteAgo
+          },
+          {
+            id: "tool_2",
+            name: "Edit",
+            target: "src/config.ts",
+            status: "completed",
+            startTime: minuteAgo,
+            endTime: minuteAgo
+          },
+          {
+            id: "tool_3",
+            name: "Read",
+            target: "src/widget.ts",
+            status: "completed",
+            startTime: minuteAgo,
+            endTime: minuteAgo
+          },
+          {
+            id: "tool_4",
+            name: "Bash",
+            target: "npm test",
+            status: "running",
+            startTime: now
+          },
+          {
+            id: "tool_5",
+            name: "Edit",
+            target: "src/styles.ts",
+            status: "completed",
+            startTime: minuteAgo,
+            endTime: minuteAgo
           }
-          default:
-            return void 0;
-        }
-      }
-      /**
-       * Safely convert value to string
-       */
-      asString(value) {
-        if (typeof value === "string") return value;
-        if (typeof value === "number") return String(value);
-        return void 0;
-      }
-      /**
-       * Truncate long commands to 30 chars
-       */
-      truncateCommand(cmd) {
-        if (cmd.length <= 30) return cmd;
-        return `${cmd.slice(0, 30)}...`;
+        ];
       }
     };
   }
@@ -1917,11 +1914,11 @@ var init_widget_types = __esm({
 });
 
 // src/storage/cache-manager.ts
-var import_node_fs2, import_node_os2, import_node_path2, DEFAULT_CACHE_PATH, DEFAULT_EXPIRY_MS, CacheManager;
+var import_node_fs, import_node_os2, import_node_path2, DEFAULT_CACHE_PATH, DEFAULT_EXPIRY_MS, CacheManager;
 var init_cache_manager = __esm({
   "src/storage/cache-manager.ts"() {
     "use strict";
-    import_node_fs2 = require("node:fs");
+    import_node_fs = require("node:fs");
     import_node_os2 = require("node:os");
     import_node_path2 = require("node:path");
     DEFAULT_CACHE_PATH = `${(0, import_node_os2.homedir)()}/.config/claude-scope/cache.json`;
@@ -1994,11 +1991,11 @@ var init_cache_manager = __esm({
        * Load cache from file
        */
       loadCache() {
-        if (!(0, import_node_fs2.existsSync)(this.cachePath)) {
+        if (!(0, import_node_fs.existsSync)(this.cachePath)) {
           return { sessions: {}, version: 1 };
         }
         try {
-          const content = (0, import_node_fs2.readFileSync)(this.cachePath, "utf-8");
+          const content = (0, import_node_fs.readFileSync)(this.cachePath, "utf-8");
           return JSON.parse(content);
         } catch {
           return { sessions: {}, version: 1 };
@@ -2009,7 +2006,7 @@ var init_cache_manager = __esm({
        */
       saveCache(cache) {
         try {
-          (0, import_node_fs2.writeFileSync)(this.cachePath, JSON.stringify(cache, null, 2), "utf-8");
+          (0, import_node_fs.writeFileSync)(this.cachePath, JSON.stringify(cache, null, 2), "utf-8");
         } catch {
         }
       }
@@ -2019,8 +2016,8 @@ var init_cache_manager = __esm({
       ensureCacheDir() {
         try {
           const dir = (0, import_node_path2.dirname)(this.cachePath);
-          if (!(0, import_node_fs2.existsSync)(dir)) {
-            (0, import_node_fs2.mkdirSync)(dir, { recursive: true });
+          if (!(0, import_node_fs.existsSync)(dir)) {
+            (0, import_node_fs.mkdirSync)(dir, { recursive: true });
           }
         } catch {
         }
@@ -3596,7 +3593,7 @@ var init_demo_data = __esm({
 // src/cli/commands/quick-config/layout-preview.ts
 async function registerWidgetsFromConfig(registry, config, style, themeName) {
   const themeColors = getThemeByName(themeName).colors;
-  const transcriptProvider = new TranscriptProvider();
+  const transcriptProvider = new MockTranscriptProvider();
   const widgetFactory = {
     model: (s) => {
       const w = new ModelWidget(themeColors);
@@ -3624,12 +3621,12 @@ async function registerWidgetsFromConfig(registry, config, style, themeName) {
       return w;
     },
     git: (s) => {
-      const w = new GitWidget(void 0, themeColors);
+      const w = new GitWidget((cwd) => new MockGit(cwd), themeColors);
       w.setStyle(s);
       return w;
     },
     "git-tag": (s) => {
-      const w = new GitTagWidget(void 0, themeColors);
+      const w = new GitTagWidget((cwd) => new MockGit(cwd), themeColors);
       w.setStyle(s);
       return w;
     },
@@ -3685,7 +3682,8 @@ var init_layout_preview = __esm({
     "use strict";
     init_renderer();
     init_widget_registry();
-    init_transcript_provider();
+    init_mock_git();
+    init_mock_transcript_provider();
     init_theme();
     init_active_tools();
     init_cache_metrics();
@@ -6486,12 +6484,32 @@ __export(select_with_preview_exports, {
 });
 async function generatePreviews(choices, style, themeName) {
   const previews = [];
+  const isStyleSelection = choices.length >= 3 && choices.every((c) => isQuickConfigStyle(c.value));
+  const availableThemes = [
+    "monokai",
+    "nord",
+    "dracula",
+    "catppuccin-mocha",
+    "tokyo-night",
+    "vscode-dark-plus",
+    "github-dark-dimmed",
+    "dusty-sage"
+  ];
+  const isThemeSelection = choices.some((c) => isThemeName(c.value, availableThemes));
   for (const choice of choices) {
     try {
+      let previewStyle = style;
+      if (isStyleSelection) {
+        previewStyle = choice.value;
+      }
+      let previewTheme = themeName;
+      if (isThemeSelection && isThemeName(choice.value, availableThemes)) {
+        previewTheme = choice.value;
+      }
       const preview = await renderPreviewFromConfig(
-        choice.getConfig(style, themeName),
-        style,
-        themeName
+        choice.getConfig(previewStyle, previewTheme),
+        previewStyle,
+        previewTheme
       );
       previews.push(preview);
     } catch (error) {
@@ -6500,6 +6518,12 @@ async function generatePreviews(choices, style, themeName) {
     }
   }
   return previews;
+}
+function isQuickConfigStyle(value) {
+  return typeof value === "string" && ["balanced", "playful", "compact"].includes(value);
+}
+function isThemeName(value, availableThemes) {
+  return typeof value === "string" && availableThemes.includes(value);
 }
 function selectWithPreviewImpl(config, done) {
   const [active, setActive] = useState(0);
@@ -6966,7 +6990,108 @@ async function runQuickConfigMenu() {
 // src/cli/commands/quick-config/preview.ts
 init_renderer();
 init_widget_registry();
-init_transcript_provider();
+
+// src/providers/transcript-provider.ts
+var import_node_fs2 = require("node:fs");
+var import_node_readline = require("node:readline");
+var TranscriptProvider = class {
+  MAX_TOOLS = 20;
+  /**
+   * Parse tools from a JSONL transcript file
+   * @param transcriptPath Path to the transcript file
+   * @returns Array of tool entries, limited to last 20
+   */
+  async parseTools(transcriptPath) {
+    if (!(0, import_node_fs2.existsSync)(transcriptPath)) {
+      return [];
+    }
+    const toolMap = /* @__PURE__ */ new Map();
+    try {
+      const fileStream = (0, import_node_fs2.createReadStream)(transcriptPath, { encoding: "utf-8" });
+      const rl = (0, import_node_readline.createInterface)({
+        input: fileStream,
+        crlfDelay: Infinity
+      });
+      for await (const line of rl) {
+        if (!line.trim()) continue;
+        try {
+          const entry = JSON.parse(line);
+          this.processLine(entry, toolMap);
+        } catch {
+        }
+      }
+      const tools = Array.from(toolMap.values());
+      return tools.slice(-this.MAX_TOOLS);
+    } catch {
+      return [];
+    }
+  }
+  /**
+   * Process a single transcript line and update tool map
+   */
+  processLine(line, toolMap) {
+    const blocks = line.message?.content ?? [];
+    const timestamp = /* @__PURE__ */ new Date();
+    for (const block of blocks) {
+      if (block.type === "tool_use" && block.id && block.name) {
+        const tool = {
+          id: block.id,
+          name: block.name,
+          target: this.extractTarget(block.name, block.input),
+          status: "running",
+          startTime: timestamp
+        };
+        toolMap.set(block.id, tool);
+      }
+      if (block.type === "tool_result" && block.tool_use_id) {
+        const existing = toolMap.get(block.tool_use_id);
+        if (existing) {
+          existing.status = block.is_error ? "error" : "completed";
+          existing.endTime = timestamp;
+        }
+      }
+    }
+  }
+  /**
+   * Extract target from tool input based on tool type
+   */
+  extractTarget(toolName, input) {
+    if (!input) return void 0;
+    switch (toolName) {
+      case "Read":
+      case "Write":
+      case "Edit":
+        return this.asString(input.file_path ?? input.path);
+      case "Glob":
+        return this.asString(input.pattern);
+      case "Grep":
+        return this.asString(input.pattern);
+      case "Bash": {
+        const cmd = this.asString(input.command);
+        return cmd ? this.truncateCommand(cmd) : void 0;
+      }
+      default:
+        return void 0;
+    }
+  }
+  /**
+   * Safely convert value to string
+   */
+  asString(value) {
+    if (typeof value === "string") return value;
+    if (typeof value === "number") return String(value);
+    return void 0;
+  }
+  /**
+   * Truncate long commands to 30 chars
+   */
+  truncateCommand(cmd) {
+    if (cmd.length <= 30) return cmd;
+    return `${cmd.slice(0, 30)}...`;
+  }
+};
+
+// src/cli/commands/quick-config/preview.ts
 init_theme();
 init_active_tools();
 init_cache_metrics();
@@ -7227,7 +7352,6 @@ var StdinProvider = class {
 };
 
 // src/index.ts
-init_transcript_provider();
 init_theme();
 init_active_tools();
 init_cache_metrics();
