@@ -26,9 +26,11 @@ describe("ConfigLoader (Main CLI)", () => {
   });
 
   describe("loadWidgetConfig", () => {
-    it("should return null when config does not exist", async () => {
+    it("should create default config when config does not exist", async () => {
       const config = await loadWidgetConfig();
-      assert.strictEqual(config, null);
+      // Config is now created by ensureDefaultConfig()
+      assert.ok(config);
+      assert.ok(config.lines);
     });
 
     it("should load valid config file and extract lines", async () => {

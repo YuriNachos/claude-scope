@@ -7,6 +7,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { ensureDefaultConfig } from "./default-config-generator.js";
 
 /**
  * Individual widget configuration from loaded config
@@ -45,7 +46,10 @@ function getConfigPath(): string {
 export async function loadWidgetConfig(): Promise<LoadedConfig | null> {
   const configPath = getConfigPath();
 
-  // Check if file exists
+  // Ensure default config exists before loading
+  await ensureDefaultConfig();
+
+  // Check if file exists (should exist now after ensureDefaultConfig)
   if (!existsSync(configPath)) {
     return null;
   }

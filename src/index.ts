@@ -164,9 +164,7 @@ export async function main(): Promise<string> {
       );
     }
 
-    // Poker widget is NOT in the config (excluded from quick-config)
-    await registry.register(new PokerWidget());
-    await registry.register(new EmptyLineWidget());
+    // NOTE: PokerWidget and EmptyLineWidget are only registered if present in config
 
     // Create renderer with error handling configuration
     const renderer = new Renderer({
