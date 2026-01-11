@@ -12,15 +12,7 @@ import { AVAILABLE_THEMES } from "../../../ui/theme/index.js";
 import type { QuickConfigLayout, QuickConfigStyle, ScopeConfig } from "./config-schema.js";
 import { saveConfig } from "./config-writer.js";
 import { renderPreviewFromConfig } from "./layout-preview.js";
-
-/**
- * Layout choice interface
- */
-interface LayoutChoice {
-  name: string;
-  description: string;
-  value: QuickConfigLayout;
-}
+import { type PreviewChoice, selectWithPreview } from "./select-with-preview.js";
 
 /**
  * Style choice interface
@@ -58,21 +50,24 @@ function getLayoutGenerator(layout: QuickConfigLayout) {
  * Stage 1: Select layout with live previews
  */
 async function selectLayout(): Promise<QuickConfigLayout> {
-  const layoutChoices: LayoutChoice[] = [
+  const layoutChoices: PreviewChoice<QuickConfigLayout>[] = [
     {
       name: "Balanced",
       description: "2 lines: AI metrics + Git, Cache, Tools, MCP, Hooks",
       value: "balanced",
+      getConfig: (s, t) => generateBalancedLayout(s, t),
     },
     {
       name: "Compact",
       description: "1 line: Model, Context, Cost, Git, Duration",
       value: "compact",
+      getConfig: (s, t) => generateCompactLayout(s, t),
     },
     {
       name: "Rich",
       description: "3 lines: Full details with Git Tag, Config Count",
       value: "rich",
+      getConfig: (s, t) => generateRichLayout(s, t),
     },
   ];
 
@@ -80,13 +75,24 @@ async function selectLayout(): Promise<QuickConfigLayout> {
   console.log("│  Stage 1/3: Choose Widget Layout                                  │");
   console.log("├─────────────────────────────────────────────────────────────────┤");
   console.log("│  Select how widgets are arranged across statusline lines.        │");
-  console.log("│  Each option shows a live preview with demo data.               │");
+  console.log("│  Preview updates as you navigate options.                       │");
   console.log("└─────────────────────────────────────────────────────────────────┘\n");
 
-  const layout = await select<QuickConfigLayout>({
+  // Use default style (balanced) and default theme (monokai) for initial preview
+  const defaultStyle: QuickConfigStyle = "balanced";
+  const defaultTheme = "monokai";
+
+  // Generate previews BEFORE showing the prompt
+  const { generatePreviews } = await import("./select-with-preview.js");
+  const previews = await generatePreviews(layoutChoices, defaultStyle, defaultTheme);
+
+  const layout = await selectWithPreview<QuickConfigLayout>({
     message: "Choose a layout preset:",
     choices: layoutChoices,
     pageSize: 3,
+    style: defaultStyle,
+    themeName: defaultTheme,
+    previews,
   });
 
   return layout;
