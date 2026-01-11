@@ -110,9 +110,6 @@ export async function renderPreviewFromConfig(
   style: QuickConfigStyle,
   themeName: string
 ): Promise<string> {
-  // Get theme colors
-  const _theme = getThemeByName(themeName);
-
   // Create registry and register widgets
   const registry = new WidgetRegistry();
   await registerWidgetsFromConfig(registry, config, style);
