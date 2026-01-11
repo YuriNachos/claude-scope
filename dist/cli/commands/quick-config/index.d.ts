@@ -7,5 +7,6 @@ export type { QuickConfigStyle, ScopeConfig, WidgetConfig } from "./config-schem
 export { saveConfig } from "./config-writer.js";
 export { runQuickConfigMenu } from "./menu.js";
 export { renderPreview } from "./preview.js";
+export { renderPreviewFromConfig } from "./layout-preview.js";
 export declare function handleQuickConfigCommand(): Promise<void>;
 //# sourceMappingURL=index.d.ts.map

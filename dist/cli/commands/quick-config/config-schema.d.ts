@@ -139,4 +139,9 @@ export declare const CONFIG_VERSION = "1.0.0";
  */
 export declare const QUICK_CONFIG_STYLES: readonly ["balanced", "playful", "compact"];
 export type QuickConfigStyle = (typeof QUICK_CONFIG_STYLES)[number];
+/**
+ * Layout presets for widget arrangement
+ */
+export declare const LAYOUT_PRESETS: readonly ["balanced", "compact", "rich"];
+export type QuickConfigLayout = (typeof LAYOUT_PRESETS)[number];
 //# sourceMappingURL=config-schema.d.ts.map

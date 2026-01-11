@@ -1,1 +1,1 @@
-{"version":3,"file":"menu.d.ts","sourceRoot":"","sources":["../../../../src/cli/commands/quick-config/menu.ts"],"names":[],"mappings":"AAAA;;;GAGG;AA0FH;;GAEG;AACH,wBAAsB,kBAAkB,IAAI,OAAO,CAAC,IAAI,CAAC,CAoCxD"}
+{"version":3,"file":"menu.d.ts","sourceRoot":"","sources":["../../../../src/cli/commands/quick-config/menu.ts"],"names":[],"mappings":"AAAA;;GAEG;AAsKH;;GAEG;AACH,wBAAsB,kBAAkB,IAAI,OAAO,CAAC,IAAI,CAAC,CA8CxD"}

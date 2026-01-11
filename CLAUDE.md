@@ -22,7 +22,7 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - All cards show suit color (red for ♥♦, gray for ♠♣)
 - Update throttling (5 seconds minimum between hand regeneration)
 - Empty line separator widget (4th line)
-- Quick config command with interactive style and theme selection
+- Quick config command with three-stage interactive setup (layout → style → theme)
 
 **Planned features**: Running agents, todo progress, session analytics.
 
@@ -40,8 +40,9 @@ src/
 │   └── commands/
 │       └── quick-config/     # Interactive configuration command
 │           ├── index.ts      # Command handler entry point
-│           ├── menu.ts       # Interactive menu (style → theme)
-│           ├── preview.ts    # Live preview renderer
+│           ├── menu.ts       # Interactive menu (layout → style → theme)
+│           ├── layout-preview.ts    # Layout-specific preview renderer
+│           ├── demo-data.ts  # Demo data for previews
 │           ├── config-schema.ts    # Type definitions
 │           ├── config-loader.ts    # Load from ~/.claude-scope/
 │           ├── config-writer.ts    # Save to ~/.claude-scope/
@@ -709,18 +710,28 @@ interface IGit {
 
 #### Quick Config Command
 
-The `quick-config` command provides interactive configuration:
+The `quick-config` command provides an interactive three-stage configuration:
 
 ```bash
 claude-scope quick-config
 ```
 
-**Flow:**
-1. **Pre-check**: If config exists, show current vs fresh choice
-2. **Stage 1**: Select display style (balanced/playful/compact)
-3. **Stage 2**: Select theme (17 built-in options)
-4. **Live preview** shown for each selection
-5. **Config saved** to `~/.claude-scope/config.json`
+**Stage 1: Choose Layout Preset**
+- **Balanced** (2 lines): AI metrics + Git, Cache, Tools, MCP, Hooks
+- **Compact** (1 line): Model, Context, Cost, Git, Duration
+- **Rich** (3 lines): Full details with Git Tag, Config Count
+
+**Stage 2: Choose Display Style**
+- **Balanced**: Clean, balanced display with labels
+- **Playful**: Fun display with emojis
+- **Compact**: Minimal, condensed display
+
+**Stage 3: Choose Color Theme**
+- 17 built-in themes available (Monokai, Nord, Dracula, Catppuccin, etc.)
+
+Each stage shows live previews with demo data. Use ↑↓ arrows to navigate, Enter to select, Esc to exit.
+
+Configuration is saved to `~/.claude-scope/config.json`.
 
 **Config Structure:**
 ```json

@@ -1,9 +1,8 @@
 /**
- * Interactive menu component
- * Two-stage selection: style → theme
+ * Three-Stage Interactive Menu: Layout -> Style -> Theme
  */
 /**
- * Run full quick config flow
+ * Run full three-stage quick config flow
  */
 export declare function runQuickConfigMenu(): Promise<void>;
 //# sourceMappingURL=menu.d.ts.map

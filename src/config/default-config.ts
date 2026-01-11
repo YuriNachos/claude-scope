@@ -150,3 +150,216 @@ export function generateConfigWithStyleAndTheme(
     },
   };
 }
+
+/**
+ * Generate Balanced layout configuration
+ * Line 0: model, context, cost, duration, lines
+ * Line 1: git, cache-metrics, active-tools
+ */
+export function generateBalancedLayout(style: QuickConfigStyle, themeName: string): ScopeConfig {
+  const theme = getThemeByName(themeName).colors;
+
+  return {
+    version: "1.0.0",
+    lines: {
+      "0": [
+        {
+          id: "model",
+          style: style,
+          colors: { name: theme.model.name, version: theme.model.version },
+        },
+        {
+          id: "context",
+          style: style,
+          colors: {
+            low: theme.context.low,
+            medium: theme.context.medium,
+            high: theme.context.high,
+            bar: theme.context.bar,
+          },
+        },
+        {
+          id: "cost",
+          style: style,
+          colors: { amount: theme.cost.amount, currency: theme.cost.currency },
+        },
+        {
+          id: "duration",
+          style: style,
+          colors: { value: theme.duration.value, unit: theme.duration.unit },
+        },
+        {
+          id: "lines",
+          style: style,
+          colors: { added: theme.lines.added, removed: theme.lines.removed },
+        },
+      ],
+      "1": [
+        {
+          id: "git",
+          style: style,
+          colors: { branch: theme.git.branch, changes: theme.git.changes },
+        },
+        {
+          id: "cache-metrics",
+          style: style,
+          colors: {
+            high: theme.cache.high,
+            medium: theme.cache.medium,
+            low: theme.cache.low,
+            read: theme.cache.read,
+            write: theme.cache.write,
+          },
+        },
+        {
+          id: "active-tools",
+          style: style,
+          colors: {
+            running: theme.tools.running,
+            completed: theme.tools.completed,
+            error: theme.tools.error,
+            name: theme.tools.name,
+            target: theme.tools.target,
+            count: theme.tools.count,
+          },
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * Generate Compact layout configuration (1 line)
+ * Line 0: model, context, cost, git, duration
+ */
+export function generateCompactLayout(style: QuickConfigStyle, themeName: string): ScopeConfig {
+  const theme = getThemeByName(themeName).colors;
+
+  return {
+    version: "1.0.0",
+    lines: {
+      "0": [
+        {
+          id: "model",
+          style: style,
+          colors: { name: theme.model.name, version: theme.model.version },
+        },
+        {
+          id: "context",
+          style: style,
+          colors: {
+            low: theme.context.low,
+            medium: theme.context.medium,
+            high: theme.context.high,
+            bar: theme.context.bar,
+          },
+        },
+        {
+          id: "cost",
+          style: style,
+          colors: { amount: theme.cost.amount, currency: theme.cost.currency },
+        },
+        {
+          id: "git",
+          style: style,
+          colors: { branch: theme.git.branch, changes: theme.git.changes },
+        },
+        {
+          id: "duration",
+          style: style,
+          colors: { value: theme.duration.value, unit: theme.duration.unit },
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * Generate Rich layout configuration (3 lines)
+ * Line 0: model, context, cost, duration
+ * Line 1: git, git-tag, lines, active-tools
+ * Line 2: cache-metrics, config-count
+ */
+export function generateRichLayout(style: QuickConfigStyle, themeName: string): ScopeConfig {
+  const theme = getThemeByName(themeName).colors;
+
+  return {
+    version: "1.0.0",
+    lines: {
+      "0": [
+        {
+          id: "model",
+          style: style,
+          colors: { name: theme.model.name, version: theme.model.version },
+        },
+        {
+          id: "context",
+          style: style,
+          colors: {
+            low: theme.context.low,
+            medium: theme.context.medium,
+            high: theme.context.high,
+            bar: theme.context.bar,
+          },
+        },
+        {
+          id: "cost",
+          style: style,
+          colors: { amount: theme.cost.amount, currency: theme.cost.currency },
+        },
+        {
+          id: "duration",
+          style: style,
+          colors: { value: theme.duration.value, unit: theme.duration.unit },
+        },
+      ],
+      "1": [
+        {
+          id: "git",
+          style: style,
+          colors: { branch: theme.git.branch, changes: theme.git.changes },
+        },
+        {
+          id: "git-tag",
+          style: style,
+          colors: { base: theme.base.text },
+        },
+        {
+          id: "lines",
+          style: style,
+          colors: { added: theme.lines.added, removed: theme.lines.removed },
+        },
+        {
+          id: "active-tools",
+          style: style,
+          colors: {
+            running: theme.tools.running,
+            completed: theme.tools.completed,
+            error: theme.tools.error,
+            name: theme.tools.name,
+            target: theme.tools.target,
+            count: theme.tools.count,
+          },
+        },
+      ],
+      "2": [
+        {
+          id: "cache-metrics",
+          style: style,
+          colors: {
+            high: theme.cache.high,
+            medium: theme.cache.medium,
+            low: theme.cache.low,
+            read: theme.cache.read,
+            write: theme.cache.write,
+          },
+        },
+        {
+          id: "config-count",
+          style: style,
+          colors: { base: theme.base.muted },
+        },
+      ],
+    },
+  };
+}

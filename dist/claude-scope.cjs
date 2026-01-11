@@ -11982,7 +11982,7 @@ function getThemeByName(name) {
 }
 
 // src/config/default-config.ts
-function generateConfigWithStyleAndTheme(style, themeName) {
+function generateBalancedLayout(style, themeName) {
   const theme = getThemeByName(themeName).colors;
   return {
     version: "1.0.0",
@@ -11991,93 +11991,143 @@ function generateConfigWithStyleAndTheme(style, themeName) {
         {
           id: "model",
           style,
-          colors: {
-            name: theme.model.name,
-            version: theme.model.version
-          }
+          colors: { name: theme.model.name, version: theme.model.version }
         },
         {
           id: "context",
           style,
-          colors: {
-            low: theme.context.low,
-            medium: theme.context.medium,
-            high: theme.context.high,
-            bar: theme.context.bar
-          }
+          colors: { low: theme.context.low, medium: theme.context.medium, high: theme.context.high, bar: theme.context.bar }
         },
         {
           id: "cost",
           style,
-          colors: {
-            amount: theme.cost.amount,
-            currency: theme.cost.currency
-          }
-        },
-        {
-          id: "lines",
-          style,
-          colors: {
-            added: theme.lines.added,
-            removed: theme.lines.removed
-          }
+          colors: { amount: theme.cost.amount, currency: theme.cost.currency }
         },
         {
           id: "duration",
           style,
-          colors: {
-            value: theme.duration.value,
-            unit: theme.duration.unit
-          }
+          colors: { value: theme.duration.value, unit: theme.duration.unit }
         },
         {
-          id: "git",
+          id: "lines",
           style,
-          colors: {
-            branch: theme.git.branch,
-            changes: theme.git.changes
-          }
+          colors: { added: theme.lines.added, removed: theme.lines.removed }
         }
       ],
       "1": [
         {
-          id: "git-tag",
+          id: "git",
           style,
-          colors: {
-            base: theme.base.text
-          }
-        },
-        {
-          id: "config-count",
-          style,
-          colors: {
-            base: theme.base.muted
-          }
-        }
-      ],
-      "2": [
-        {
-          id: "active-tools",
-          style,
-          colors: {
-            running: theme.tools.running,
-            completed: theme.tools.completed,
-            error: theme.tools.error,
-            name: theme.tools.name,
-            target: theme.tools.target,
-            count: theme.tools.count
-          }
+          colors: { branch: theme.git.branch, changes: theme.git.changes }
         },
         {
           id: "cache-metrics",
           style,
-          colors: {
-            high: theme.cache.high,
-            medium: theme.cache.medium,
-            low: theme.cache.low,
-            read: theme.cache.read,
-            write: theme.cache.write
-          }
+          colors: { high: theme.cache.high, medium: theme.cache.medium, low: theme.cache.low, read: theme.cache.read, write: theme.cache.write }
+        },
+        {
+          id: "active-tools",
+          style,
+          colors: { running: theme.tools.running, completed: theme.tools.completed, error: theme.tools.error, name: theme.tools.name, target: theme.tools.target, count: theme.tools.count }
+        }
+      ]
+    }
+  };
+}
+function generateCompactLayout(style, themeName) {
+  const theme = getThemeByName(themeName).colors;
+  return {
+    version: "1.0.0",
+    lines: {
+      "0": [
+        {
+          id: "model",
+          style,
+          colors: { name: theme.model.name, version: theme.model.version }
+        },
+        {
+          id: "context",
+          style,
+          colors: { low: theme.context.low, medium: theme.context.medium, high: theme.context.high, bar: theme.context.bar }
+        },
+        {
+          id: "cost",
+          style,
+          colors: { amount: theme.cost.amount, currency: theme.cost.currency }
+        },
+        {
+          id: "git",
+          style,
+          colors: { branch: theme.git.branch, changes: theme.git.changes }
+        },
+        {
+          id: "duration",
+          style,
+          colors: { value: theme.duration.value, unit: theme.duration.unit }
+        }
+      ]
+    }
+  };
+}
+function generateRichLayout(style, themeName) {
+  const theme = getThemeByName(themeName).colors;
+  return {
+    version: "1.0.0",
+    lines: {
+      "0": [
+        {
+          id: "model",
+          style,
+          colors: { name: theme.model.name, version: theme.model.version }
+        },
+        {
+          id: "context",
+          style,
+          colors: { low: theme.context.low, medium: theme.context.medium, high: theme.context.high, bar: theme.context.bar }
+        },
+        {
+          id: "cost",
+          style,
+          colors: { amount: theme.cost.amount, currency: theme.cost.currency }
+        },
+        {
+          id: "duration",
+          style,
+          colors: { value: theme.duration.value, unit: theme.duration.unit }
+        }
+      ],
+      "1": [
+        {
+          id: "git",
+          style,
+          colors: { branch: theme.git.branch, changes: theme.git.changes }
+        },
+        {
+          id: "git-tag",
+          style,
+          colors: { base: theme.base.text }
+        },
+        {
+          id: "lines",
+          style,
+          colors: { added: theme.lines.added, removed: theme.lines.removed }
+        },
+        {
+          id: "active-tools",
+          style,
+          colors: { running: theme.tools.running, completed: theme.tools.completed, error: theme.tools.error, name: theme.tools.name, target: theme.tools.target, count: theme.tools.count }
+        }
+      ],
+      "2": [
+        {
+          id: "cache-metrics",
+          style,
+          colors: { high: theme.cache.high, medium: theme.cache.medium, low: theme.cache.low, read: theme.cache.read, write: theme.cache.write }
+        },
+        {
+          id: "config-count",
+          style,
+          colors: { base: theme.base.muted }
         }
       ]
     }
@@ -12085,8 +12135,6 @@ function generateConfigWithStyleAndTheme(style, themeName) {
 }
 
 // src/cli/commands/quick-config/config-loader.ts
-var import_node_fs = require("node:fs");
-var import_promises = require("node:fs/promises");
 var import_node_os = require("node:os");
 var import_node_path = require("node:path");
 function getUserConfigDir() {
@@ -12095,34 +12143,16 @@ function getUserConfigDir() {
 function getUserConfigPath() {
   return (0, import_node_path.join)(getUserConfigDir(), "config.json");
 }
-async function loadConfig() {
-  const configPath = getUserConfigPath();
-  if (!(0, import_node_fs.existsSync)(configPath)) {
-    return null;
-  }
-  try {
-    const content = await (0, import_promises.readFile)(configPath, "utf-8");
-    const config = JSON.parse(content);
-    if (!config.version || !config.lines) {
-      return null;
-    }
-    return config;
-  } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : "Unknown error";
-    console.warn(`Config error loading ${configPath}: ${errorMsg}`);
-    return null;
-  }
-}
 
 // src/cli/commands/quick-config/config-writer.ts
-var import_promises2 = require("node:fs/promises");
+var import_promises = require("node:fs/promises");
 async function saveConfig(config) {
   const configDir = getUserConfigDir();
   const configPath = getUserConfigPath();
   try {
-    await (0, import_promises2.mkdir)(configDir, { recursive: true });
+    await (0, import_promises.mkdir)(configDir, { recursive: true });
     const json = JSON.stringify(config, null, 2);
-    await (0, import_promises2.writeFile)(configPath, json, "utf-8");
+    await (0, import_promises.writeFile)(configPath, json, "utf-8");
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
     throw new Error(`Failed to save config to ${configPath}: ${errorMsg}`);
@@ -14531,83 +14561,6 @@ var esm_default11 = createPrompt((config, done) => {
   return `${lines}${cursorHide}`;
 });
 
-// src/cli/commands/quick-config/menu.ts
-async function showCurrentOrFresh() {
-  const currentConfig = await loadConfig();
-  if (!currentConfig) {
-    return "fresh";
-  }
-  console.log("\n=== Current Configuration ===");
-  console.log("(Preview would render here with current config)");
-  console.log("\n=== Fresh Configuration ===");
-  console.log("(Preview would render here with fresh defaults)");
-  const choice = await esm_default4({
-    message: "Use current configuration as starting point?",
-    default: true
-  });
-  return choice ? "current" : "fresh";
-}
-async function selectStyle() {
-  const style = await esm_default11({
-    message: "Select display style (use arrow keys, Enter to select):",
-    choices: [
-      {
-        name: "Balanced",
-        value: "balanced",
-        description: "Clean, balanced display with labels"
-      },
-      {
-        name: "Playful",
-        value: "playful",
-        description: "Fun display with emojis"
-      },
-      {
-        name: "Compact",
-        value: "compact",
-        description: "Minimal, condensed display"
-      }
-    ]
-  });
-  return style;
-}
-async function selectTheme2() {
-  const themeChoices = AVAILABLE_THEMES.map((theme2) => ({
-    name: theme2.name,
-    description: theme2.description,
-    value: theme2.name
-  }));
-  const theme = await esm_default11({
-    message: "Select theme (use arrow keys, Enter to select):",
-    choices: themeChoices
-  });
-  return theme;
-}
-async function runQuickConfigMenu() {
-  try {
-    const _startMode = await showCurrentOrFresh();
-    const selectedStyle = await selectStyle();
-    const selectedTheme = await selectTheme2();
-    console.log("\nGenerating configuration...");
-    const config = generateConfigWithStyleAndTheme(selectedStyle, selectedTheme);
-    await saveConfig(config);
-    console.log(`
-\u2713 Configuration saved to ~/.claude-scope/config.json`);
-    console.log(`  Style: ${selectedStyle}`);
-    console.log(`  Theme: ${selectedTheme}`);
-  } catch (error) {
-    if (error instanceof Error && error.name === "ExitPromptError") {
-      console.log("\n\u2713 Configuration cancelled. No changes saved.");
-      process.exit(0);
-    }
-    if (error instanceof Error && error.code === "EACCES") {
-      console.error("\n\u2717 Permission denied. Cannot write to ~/.claude-scope/config.json");
-      process.exit(1);
-    }
-    console.error("\n\u2717 Error:", error instanceof Error ? error.message : "Unknown error");
-    process.exit(1);
-  }
-}
-
 // src/constants.ts
 var TIME = {
   /** Milliseconds per second */
@@ -14632,6 +14585,32 @@ var ANSI_COLORS = {
   RED: "\x1B[31m",
   /** Reset color */
   RESET: "\x1B[0m"
+};
+var DEMO_DATA = {
+  /** Demo session cost in USD */
+  COST_USD: 0.42,
+  /** Demo session duration in milliseconds (~1h 1m 5s) */
+  DURATION_MS: 3665e3,
+  /** Demo API duration in milliseconds (~50m) */
+  API_DURATION_MS: 3e6,
+  /** Demo lines added */
+  LINES_ADDED: 142,
+  /** Demo lines removed */
+  LINES_REMOVED: 27,
+  /** Demo context window size in tokens */
+  CONTEXT_WINDOW_SIZE: 2e5,
+  /** Demo total input tokens */
+  TOTAL_INPUT_TOKENS: 185e3,
+  /** Demo total output tokens */
+  TOTAL_OUTPUT_TOKENS: 5e4,
+  /** Demo current input tokens */
+  CURRENT_INPUT_TOKENS: 15e4,
+  /** Demo current output tokens */
+  CURRENT_OUTPUT_TOKENS: 5e4,
+  /** Demo cache creation tokens */
+  CACHE_CREATION_TOKENS: 5e3,
+  /** Demo cache read tokens */
+  CACHE_READ_TOKENS: 35e3
 };
 var DEFAULT_PROGRESS_BAR_WIDTH = DEFAULTS.PROGRESS_BAR_WIDTH;
 
@@ -14781,7 +14760,7 @@ var WidgetRegistry = class {
 };
 
 // src/providers/transcript-provider.ts
-var import_node_fs2 = require("node:fs");
+var import_node_fs = require("node:fs");
 var import_node_readline = require("node:readline");
 var TranscriptProvider = class {
   MAX_TOOLS = 20;
@@ -14791,12 +14770,12 @@ var TranscriptProvider = class {
    * @returns Array of tool entries, limited to last 20
    */
   async parseTools(transcriptPath) {
-    if (!(0, import_node_fs2.existsSync)(transcriptPath)) {
+    if (!(0, import_node_fs.existsSync)(transcriptPath)) {
       return [];
     }
     const toolMap = /* @__PURE__ */ new Map();
     try {
-      const fileStream = (0, import_node_fs2.createReadStream)(transcriptPath, { encoding: "utf-8" });
+      const fileStream = (0, import_node_fs.createReadStream)(transcriptPath, { encoding: "utf-8" });
       const rl = (0, import_node_readline.createInterface)({
         input: fileStream,
         crlfDelay: Infinity
@@ -14879,6 +14858,46 @@ var TranscriptProvider = class {
     return `${cmd.slice(0, 30)}...`;
   }
 };
+
+// src/cli/commands/quick-config/demo-data.ts
+function createDemoData() {
+  return {
+    hook_event_name: "Status",
+    session_id: "demo_session_20250111",
+    transcript_path: "/Users/demo/.claude/projects/-Users-demo-claude-scope/session.jsonl",
+    cwd: "/Users/demo/claude-scope",
+    model: {
+      id: "claude-opus-4-5-20251101",
+      display_name: "Claude Opus 4.5"
+    },
+    workspace: {
+      current_dir: "/Users/demo/claude-scope",
+      project_dir: "/Users/demo/claude-scope"
+    },
+    version: "1.0.0",
+    output_style: {
+      name: "default"
+    },
+    cost: {
+      total_cost_usd: DEMO_DATA.COST_USD,
+      total_duration_ms: DEMO_DATA.DURATION_MS,
+      total_api_duration_ms: DEMO_DATA.API_DURATION_MS,
+      total_lines_added: DEMO_DATA.LINES_ADDED,
+      total_lines_removed: DEMO_DATA.LINES_REMOVED
+    },
+    context_window: {
+      total_input_tokens: DEMO_DATA.TOTAL_INPUT_TOKENS,
+      total_output_tokens: DEMO_DATA.TOTAL_OUTPUT_TOKENS,
+      context_window_size: DEMO_DATA.CONTEXT_WINDOW_SIZE,
+      current_usage: {
+        input_tokens: DEMO_DATA.CURRENT_INPUT_TOKENS,
+        output_tokens: DEMO_DATA.CURRENT_OUTPUT_TOKENS,
+        cache_creation_input_tokens: DEMO_DATA.CACHE_CREATION_TOKENS,
+        cache_read_input_tokens: DEMO_DATA.CACHE_READ_TOKENS
+      }
+    }
+  };
+}
 
 // src/widgets/core/stdin-data-widget.ts
 var StdinDataWidget = class {
@@ -15293,7 +15312,7 @@ function createWidgetMetadata(name, description, version = "1.0.0", author = "cl
 }
 
 // src/storage/cache-manager.ts
-var import_node_fs3 = require("node:fs");
+var import_node_fs2 = require("node:fs");
 var import_node_os3 = require("node:os");
 var import_node_path3 = require("node:path");
 var DEFAULT_CACHE_PATH = `${(0, import_node_os3.homedir)()}/.config/claude-scope/cache.json`;
@@ -15366,11 +15385,11 @@ var CacheManager = class {
    * Load cache from file
    */
   loadCache() {
-    if (!(0, import_node_fs3.existsSync)(this.cachePath)) {
+    if (!(0, import_node_fs2.existsSync)(this.cachePath)) {
       return { sessions: {}, version: 1 };
     }
     try {
-      const content = (0, import_node_fs3.readFileSync)(this.cachePath, "utf-8");
+      const content = (0, import_node_fs2.readFileSync)(this.cachePath, "utf-8");
       return JSON.parse(content);
     } catch {
       return { sessions: {}, version: 1 };
@@ -15381,7 +15400,7 @@ var CacheManager = class {
    */
   saveCache(cache) {
     try {
-      (0, import_node_fs3.writeFileSync)(this.cachePath, JSON.stringify(cache, null, 2), "utf-8");
+      (0, import_node_fs2.writeFileSync)(this.cachePath, JSON.stringify(cache, null, 2), "utf-8");
     } catch {
     }
   }
@@ -15391,8 +15410,8 @@ var CacheManager = class {
   ensureCacheDir() {
     try {
       const dir = (0, import_node_path3.dirname)(this.cachePath);
-      if (!(0, import_node_fs3.existsSync)(dir)) {
-        (0, import_node_fs3.mkdirSync)(dir, { recursive: true });
+      if (!(0, import_node_fs2.existsSync)(dir)) {
+        (0, import_node_fs2.mkdirSync)(dir, { recursive: true });
       }
     } catch {
     }
@@ -16708,6 +16727,224 @@ var ModelWidget = class extends StdinDataWidget {
   }
 };
 
+// src/cli/commands/quick-config/layout-preview.ts
+async function registerWidgetsFromConfig(registry, config, style) {
+  const themeColors = getThemeByName("monokai").colors;
+  const transcriptProvider = new TranscriptProvider();
+  const widgetFactory = {
+    model: (s) => {
+      const w = new ModelWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    context: (s) => {
+      const w = new ContextWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    cost: (s) => {
+      const w = new CostWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    duration: (s) => {
+      const w = new DurationWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    lines: (s) => {
+      const w = new LinesWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    git: (s) => {
+      const w = new GitWidget(void 0, themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    "git-tag": (s) => {
+      const w = new GitTagWidget(void 0, themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    "config-count": (s) => {
+      const w = new ConfigCountWidget();
+      w.setStyle(s);
+      return w;
+    },
+    "active-tools": (s) => {
+      const w = new ActiveToolsWidget(themeColors, transcriptProvider);
+      w.setStyle(s);
+      return w;
+    },
+    "cache-metrics": (s) => {
+      const w = new CacheMetricsWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    }
+  };
+  for (const [lineNum, widgets] of Object.entries(config.lines)) {
+    const line = parseInt(lineNum, 10);
+    for (const widgetConfig of widgets) {
+      const factory = widgetFactory[widgetConfig.id];
+      if (factory) {
+        const widget = factory(style);
+        widget.metadata.line = line;
+        await registry.register(widget);
+      }
+    }
+  }
+}
+async function renderPreviewFromConfig(config, style, themeName) {
+  const theme = getThemeByName(themeName);
+  const registry = new WidgetRegistry();
+  await registerWidgetsFromConfig(registry, config, style);
+  const renderer = new Renderer({
+    separator: " \u2502 ",
+    onError: () => {
+    },
+    showErrors: false
+  });
+  const demoData = createDemoData();
+  for (const widget of registry.getAll()) {
+    await widget.update(demoData);
+  }
+  const lines = await renderer.render(registry.getEnabledWidgets(), {
+    width: 80,
+    timestamp: Date.now()
+  });
+  return lines.join("\n");
+}
+
+// src/cli/commands/quick-config/menu.ts
+function getLayoutGenerator(layout) {
+  switch (layout) {
+    case "balanced":
+      return generateBalancedLayout;
+    case "compact":
+      return generateCompactLayout;
+    case "rich":
+      return generateRichLayout;
+  }
+}
+async function selectLayout() {
+  const layoutChoices = [
+    {
+      name: "Balanced",
+      description: "2 lines: AI metrics + Git, Cache, Tools, MCP, Hooks",
+      value: "balanced"
+    },
+    {
+      name: "Compact",
+      description: "1 line: Model, Context, Cost, Git, Duration",
+      value: "compact"
+    },
+    {
+      name: "Rich",
+      description: "3 lines: Full details with Git Tag, Config Count",
+      value: "rich"
+    }
+  ];
+  console.log("\n\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510");
+  console.log("\u2502  Stage 1/3: Choose Widget Layout                                  \u2502");
+  console.log("\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524");
+  console.log("\u2502  Select how widgets are arranged across statusline lines.        \u2502");
+  console.log("\u2502  Each option shows a live preview with demo data.               \u2502");
+  console.log("\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n");
+  const layout = await esm_default11({
+    message: "Choose a layout preset:",
+    choices: layoutChoices,
+    pageSize: 3
+  });
+  return layout;
+}
+async function selectStyle(layout) {
+  console.log("\n\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510");
+  console.log("\u2502  Stage 2/3: Choose Display Style                                 \u2502");
+  console.log("\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524");
+  console.log("\u2502  Select how widgets are rendered (labels, emojis, etc.).        \u2502");
+  console.log("\u2502  Preview shows your selected layout with each style.            \u2502");
+  console.log("\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n");
+  const styleChoices = [
+    {
+      name: "Balanced",
+      description: "Clean, balanced display with labels",
+      value: "balanced"
+    },
+    {
+      name: "Playful",
+      description: "Fun display with emojis",
+      value: "playful"
+    },
+    {
+      name: "Compact",
+      description: "Minimal, condensed display",
+      value: "compact"
+    }
+  ];
+  const style = await esm_default11({
+    message: "Choose a display style:",
+    choices: styleChoices
+  });
+  return style;
+}
+async function selectTheme2(layout, style) {
+  console.log("\n\u250C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2510");
+  console.log("\u2502  Stage 3/3: Choose Color Theme                                   \u2502");
+  console.log("\u251C\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2524");
+  console.log("\u2502  Select color theme for your statusline.                        \u2502");
+  console.log("\u2502  Preview shows your final configuration with live colors.        \u2502");
+  console.log("\u2514\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2518\n");
+  const themeChoices = AVAILABLE_THEMES.slice(0, 8).map((theme2) => ({
+    name: theme2.name,
+    description: theme2.description,
+    value: theme2.name
+  }));
+  const theme = await esm_default11({
+    message: "Choose a theme:",
+    choices: themeChoices,
+    pageSize: 8
+  });
+  return theme;
+}
+function showNavigationHints() {
+  console.log("\n  Navigation: \u2191\u2193 arrows to move \u2022 Enter to select \u2022 Esc to exit");
+  console.log("\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n");
+}
+async function runQuickConfigMenu() {
+  try {
+    showNavigationHints();
+    const selectedLayout = await selectLayout();
+    showNavigationHints();
+    const selectedStyle = await selectStyle(selectedLayout);
+    showNavigationHints();
+    const selectedTheme = await selectTheme2(selectedLayout, selectedStyle);
+    console.log("\nGenerating configuration...");
+    const config = getLayoutGenerator(selectedLayout)(selectedStyle, selectedTheme);
+    await saveConfig(config);
+    console.log(`\u2713 Configuration saved to ~/.claude-scope/config.json`);
+    console.log(`  Layout: ${selectedLayout}`);
+    console.log(`  Style: ${selectedStyle}`);
+    console.log(`  Theme: ${selectedTheme}`);
+    console.log("\nPreview of your configuration:");
+    console.log("\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501");
+    const finalPreview = await renderPreviewFromConfig(config, selectedStyle, selectedTheme);
+    console.log(finalPreview);
+    console.log("\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501");
+  } catch (error) {
+    if (error instanceof Error && error.name === "ExitPromptError") {
+      console.log("\n\u2713 Configuration cancelled. No changes saved.");
+      process.exit(0);
+    }
+    if (error instanceof Error && error.code === "EACCES") {
+      console.error("\u2717 Permission denied. Cannot write to ~/.claude-scope/config.json");
+      process.exit(1);
+    }
+    console.error("\u2717 Error:", error instanceof Error ? error.message : "Unknown error");
+    process.exit(1);
+  }
+}
+
 // src/cli/commands/quick-config/index.ts
 async function handleQuickConfigCommand() {
   await runQuickConfigMenu();
@@ -16736,8 +16973,8 @@ async function routeCommand(command) {
 }
 
 // src/config/config-loader.ts
-var import_node_fs4 = require("node:fs");
-var import_promises3 = require("node:fs/promises");
+var import_node_fs3 = require("node:fs");
+var import_promises2 = require("node:fs/promises");
 var import_node_os4 = require("node:os");
 var import_node_path4 = require("node:path");
 function getConfigPath() {
@@ -16745,11 +16982,11 @@ function getConfigPath() {
 }
 async function loadWidgetConfig() {
   const configPath = getConfigPath();
-  if (!(0, import_node_fs4.existsSync)(configPath)) {
+  if (!(0, import_node_fs3.existsSync)(configPath)) {
     return null;
   }
   try {
-    const content = await (0, import_promises3.readFile)(configPath, "utf-8");
+    const content = await (0, import_promises2.readFile)(configPath, "utf-8");
     const config = JSON.parse(content);
     if (!config || typeof config !== "object" || !config.lines) {
       return null;
