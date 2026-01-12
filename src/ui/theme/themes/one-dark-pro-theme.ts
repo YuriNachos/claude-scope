@@ -34,5 +34,12 @@ export const ONE_DARK_PRO_THEME: ITheme = {
     toolsName: rgb(97, 175, 239), // Blue
     toolsTarget: rgb(171, 178, 191), // Gray
     toolsCount: rgb(209, 154, 102), // Orange
+    devServerName: rgb(152, 195, 121), // Green
+    devServerStatus: rgb(229, 192, 123), // Yellow
+    devServerLabel: rgb(97, 175, 239), // Blue
+    dockerLabel: rgb(97, 175, 239), // Blue
+    dockerCount: rgb(209, 154, 102), // Orange
+    dockerRunning: rgb(152, 195, 121), // Green
+    dockerStopped: rgb(224, 108, 117), // Red
   }),
 };

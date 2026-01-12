@@ -34,5 +34,12 @@ export const GITHUB_DARK_DIMMED_THEME: ITheme = {
     toolsName: rgb(88, 166, 255), // GitHub blue
     toolsTarget: rgb(201, 209, 217), // Gray
     toolsCount: rgb(163, 113, 247), // Purple
+    devServerName: rgb(35, 134, 54), // GitHub green
+    devServerStatus: rgb(210, 153, 34), // GitHub orange
+    devServerLabel: rgb(88, 166, 255), // GitHub blue
+    dockerLabel: rgb(88, 166, 255), // GitHub blue
+    dockerCount: rgb(163, 113, 247), // Purple
+    dockerRunning: rgb(35, 134, 54), // GitHub green
+    dockerStopped: rgb(248, 81, 73), // GitHub red
   }),
 };

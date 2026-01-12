@@ -34,5 +34,12 @@ export const SEMANTIC_CLASSIC_THEME: ITheme = {
     toolsName: rgb(59, 130, 246), // Blue
     toolsTarget: rgb(107, 114, 128), // Gray
     toolsCount: rgb(99, 102, 241), // Indigo
+    devServerName: rgb(34, 197, 94), // Green
+    devServerStatus: rgb(234, 179, 8), // Yellow
+    devServerLabel: rgb(59, 130, 246), // Blue
+    dockerLabel: rgb(59, 130, 246), // Blue
+    dockerCount: rgb(99, 102, 241), // Indigo
+    dockerRunning: rgb(34, 197, 94), // Green
+    dockerStopped: rgb(239, 68, 68), // Red
   }),
 };

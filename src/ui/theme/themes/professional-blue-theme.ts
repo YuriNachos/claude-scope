@@ -34,5 +34,12 @@ export const PROFESSIONAL_BLUE_THEME: ITheme = {
     toolsName: rgb(37, 99, 235), // Royal blue
     toolsTarget: rgb(148, 163, 184), // Slate gray
     toolsCount: rgb(167, 139, 250), // Purple
+    devServerName: rgb(74, 222, 128), // Green
+    devServerStatus: rgb(251, 191, 36), // Amber
+    devServerLabel: rgb(37, 99, 235), // Royal blue
+    dockerLabel: rgb(37, 99, 235), // Royal blue
+    dockerCount: rgb(167, 139, 250), // Purple
+    dockerRunning: rgb(74, 222, 128), // Green
+    dockerStopped: rgb(248, 113, 113), // Red
   }),
 };

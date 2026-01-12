@@ -34,5 +34,12 @@ export const MONOKAI_THEME: ITheme = {
     toolsName: rgb(102, 217, 239), // Cyan
     toolsTarget: rgb(174, 129, 255), // Purple
     toolsCount: rgb(254, 128, 25), // Bright orange
+    devServerName: rgb(166, 226, 46), // Green
+    devServerStatus: rgb(253, 151, 31), // Orange
+    devServerLabel: rgb(102, 217, 239), // Cyan
+    dockerLabel: rgb(102, 217, 239), // Cyan
+    dockerCount: rgb(174, 129, 255), // Purple
+    dockerRunning: rgb(166, 226, 46), // Green
+    dockerStopped: rgb(174, 129, 255), // Purple
   }),
 };

@@ -34,5 +34,12 @@ export const DUSTY_SAGE_THEME: ITheme = {
     toolsName: rgb(120, 140, 130), // Dusty green
     toolsTarget: rgb(148, 163, 184), // Gray
     toolsCount: rgb(156, 163, 175), // Light gray
+    devServerName: rgb(135, 145, 140), // Subtle sage
+    devServerStatus: rgb(150, 160, 145), // Medium sage
+    devServerLabel: rgb(120, 140, 130), // Dusty green
+    dockerLabel: rgb(120, 140, 130), // Dusty green
+    dockerCount: rgb(148, 163, 184), // Gray
+    dockerRunning: rgb(135, 145, 140), // Subtle sage
+    dockerStopped: rgb(165, 175, 160), // Light sage
   }),
 };

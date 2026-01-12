@@ -34,5 +34,12 @@ export const CATPPUCCIN_MOCHA_THEME: ITheme = {
     toolsName: rgb(137, 180, 250), // Blue
     toolsTarget: rgb(147, 153, 178), // Gray
     toolsCount: rgb(203, 166, 247), // Mauve
+    devServerName: rgb(166, 227, 161), // Green
+    devServerStatus: rgb(238, 212, 159), // Yellow
+    devServerLabel: rgb(137, 180, 250), // Blue
+    dockerLabel: rgb(137, 180, 250), // Blue
+    dockerCount: rgb(203, 166, 247), // Mauve
+    dockerRunning: rgb(166, 227, 161), // Green
+    dockerStopped: rgb(243, 139, 168), // Red
   }),
 };

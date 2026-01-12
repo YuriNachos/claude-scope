@@ -35,5 +35,12 @@ export const VSCODE_DARK_PLUS_THEME: ITheme = {
     toolsName: rgb(96, 165, 250), // Blue
     toolsTarget: rgb(156, 163, 175), // Gray
     toolsCount: rgb(167, 139, 250), // Purple
+    devServerName: rgb(74, 222, 128), // Green
+    devServerStatus: rgb(251, 191, 36), // Yellow
+    devServerLabel: rgb(125, 148, 173), // Dark gray
+    dockerLabel: rgb(125, 148, 173), // Dark gray
+    dockerCount: rgb(96, 165, 250), // Blue
+    dockerRunning: rgb(74, 222, 128), // Green
+    dockerStopped: rgb(171, 178, 191), // Gray
   }),
 };

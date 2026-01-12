@@ -34,5 +34,12 @@ export const TOKYO_NIGHT_THEME: ITheme = {
     toolsName: rgb(122, 132, 173), // Blue
     toolsTarget: rgb(169, 177, 214), // White-ish
     toolsCount: rgb(158, 206, 209), // Teal
+    devServerName: rgb(146, 180, 203), // Cyan
+    devServerStatus: rgb(232, 166, 162), // Pink-red
+    devServerLabel: rgb(122, 132, 173), // Blue
+    dockerLabel: rgb(122, 132, 173), // Blue
+    dockerCount: rgb(158, 206, 209), // Teal
+    dockerRunning: rgb(146, 180, 203), // Cyan
+    dockerStopped: rgb(249, 86, 119), // Red
   }),
 };

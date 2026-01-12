@@ -34,5 +34,12 @@ export const ROSE_PINE_THEME: ITheme = {
     toolsName: rgb(156, 207, 216), // Pine cyan
     toolsTarget: rgb(224, 208, 245), // Pine violet
     toolsCount: rgb(226, 185, 218), // Pine pink
+    devServerName: rgb(156, 207, 216), // Pine cyan
+    devServerStatus: rgb(233, 201, 176), // Pine beige
+    devServerLabel: rgb(156, 207, 216), // Pine cyan
+    dockerLabel: rgb(156, 207, 216), // Pine cyan
+    dockerCount: rgb(226, 185, 218), // Pine pink
+    dockerRunning: rgb(156, 207, 216), // Pine cyan
+    dockerStopped: rgb(235, 111, 146), // Pine red
   }),
 };

@@ -34,5 +34,12 @@ export const SOLARIZED_DARK_THEME: ITheme = {
     toolsName: rgb(38, 139, 210), // Blue
     toolsTarget: rgb(131, 148, 150), // Base0
     toolsCount: rgb(203, 75, 22), // Orange
+    devServerName: rgb(133, 153, 0), // Olive
+    devServerStatus: rgb(181, 137, 0), // Yellow
+    devServerLabel: rgb(38, 139, 210), // Blue
+    dockerLabel: rgb(38, 139, 210), // Blue
+    dockerCount: rgb(203, 75, 22), // Orange
+    dockerRunning: rgb(133, 153, 0), // Olive
+    dockerStopped: rgb(220, 50, 47), // Red
   }),
 };

@@ -34,5 +34,12 @@ export const CYBERPUNK_NEON_THEME: ITheme = {
     toolsName: rgb(0, 191, 255), // Cyan neon
     toolsTarget: rgb(140, 27, 255), // Purple neon
     toolsCount: rgb(255, 111, 97), // Orange neon
+    devServerName: rgb(0, 255, 122), // Green neon
+    devServerStatus: rgb(255, 214, 0), // Yellow neon
+    devServerLabel: rgb(0, 191, 255), // Cyan neon
+    dockerLabel: rgb(0, 191, 255), // Cyan neon
+    dockerCount: rgb(140, 27, 255), // Purple neon
+    dockerRunning: rgb(0, 255, 122), // Green neon
+    dockerStopped: rgb(255, 0, 122), // Magenta neon
   }),
 };

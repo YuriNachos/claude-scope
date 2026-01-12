@@ -34,5 +34,12 @@ export const GRAY_THEME: ITheme = {
     toolsName: gray,
     toolsTarget: gray,
     toolsCount: gray,
+    devServerName: gray,
+    devServerStatus: gray,
+    devServerLabel: gray,
+    dockerLabel: gray,
+    dockerCount: gray,
+    dockerRunning: gray,
+    dockerStopped: gray,
   }),
 };

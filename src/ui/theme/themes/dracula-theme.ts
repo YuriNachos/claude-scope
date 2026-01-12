@@ -34,5 +34,12 @@ export const DRACULA_THEME: ITheme = {
     toolsName: rgb(139, 233, 253), // Cyan
     toolsTarget: rgb(98, 114, 164), // Gray
     toolsCount: rgb(189, 147, 249), // Purple
+    devServerName: rgb(80, 250, 123), // Green
+    devServerStatus: rgb(241, 250, 140), // Yellow
+    devServerLabel: rgb(139, 233, 253), // Cyan
+    dockerLabel: rgb(139, 233, 253), // Cyan
+    dockerCount: rgb(189, 147, 249), // Purple
+    dockerRunning: rgb(80, 250, 123), // Green
+    dockerStopped: rgb(255, 85, 85), // Red
   }),
 };

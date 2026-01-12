@@ -34,5 +34,12 @@ export const NORD_THEME: ITheme = {
     toolsName: rgb(136, 192, 208), // Nordic cyan
     toolsTarget: rgb(129, 161, 193), // Nordic blue
     toolsCount: rgb(216, 222, 233), // Nordic white
+    devServerName: rgb(163, 190, 140), // Nordic green
+    devServerStatus: rgb(235, 203, 139), // Nordic yellow
+    devServerLabel: rgb(136, 192, 208), // Nordic cyan
+    dockerLabel: rgb(136, 192, 208), // Nordic cyan
+    dockerCount: rgb(216, 222, 233), // Nordic white
+    dockerRunning: rgb(163, 190, 140), // Nordic green
+    dockerStopped: rgb(191, 97, 106), // Nordic red
   }),
 };

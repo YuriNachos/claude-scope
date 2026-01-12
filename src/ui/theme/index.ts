@@ -39,6 +39,8 @@ export type {
   ICacheColors,
   IContextColors,
   ICostColors,
+  IDevServerColors,
+  IDockerColors,
   IDurationColors,
   IGitColors,
   ILinesColors,
