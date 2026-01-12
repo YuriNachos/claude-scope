@@ -6,7 +6,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { generateBalancedLayout } from "./default-config.js";
+import { generateRichLayout } from "./default-config.js";
 
 /**
  * Get the default config file path
@@ -35,8 +35,8 @@ export async function ensureDefaultConfig(): Promise<void> {
     mkdirSync(configDir, { recursive: true });
   }
 
-  // Generate default config: balanced layout, balanced style, cyberpunk-neon theme
-  const defaultConfig = generateBalancedLayout("balanced", "cyberpunk-neon");
+  // Generate default config: rich layout, balanced style, dracula theme
+  const defaultConfig = generateRichLayout("balanced", "dracula");
 
   // Write config file
   writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), "utf-8");

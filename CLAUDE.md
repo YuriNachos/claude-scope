@@ -2,7 +2,7 @@
 
 Claude Code CLI tool that displays status information in the terminal.
 
-**Version**: v0.8.14
+**Version**: v0.8.15
 
 ---
 
@@ -14,6 +14,23 @@ npm test               # Run all tests
 npx @biomejs/biome check --write ./src   # Format & lint
 npm version patch      # Bump version (patch/minor/major)
 ```
+
+---
+
+## Installation & Default Config
+
+On first run, `claude-scope` automatically creates `~/.claude-scope/config.json` with default settings:
+
+- **Layout**: `rich` (3 lines)
+- **Display Style**: `balanced`
+- **Theme**: `dracula`
+
+Users can customize via:
+```bash
+claude-scope config      # Interactive configuration menu
+```
+
+Or manually edit `~/.claude-scope/config.json`.
 
 ---
 
