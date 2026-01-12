@@ -127,7 +127,7 @@ export function generateConfigWithStyleAndTheme(
 }
 
 /**
- * Generate Balanced layout configuration
+ * Generate Balanced layout configuration (2 lines)
  * Line 0: model, context, lines, cost, duration
  * Line 1: git, git-tag, cache-metrics, config-count
  */

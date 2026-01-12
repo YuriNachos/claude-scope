@@ -34,19 +34,19 @@ async function selectLayout(): Promise<QuickConfigLayout> {
   const layoutChoices: PreviewChoice<QuickConfigLayout>[] = [
     {
       name: "Balanced",
-      description: "2 lines: AI metrics + Git, Cache, Tools, MCP, Hooks",
+      description: "2 lines: Model|Context|Lines|Cost|Duration + Git|GitTag|Cache|Config",
       value: "balanced",
       getConfig: (s, t) => generateBalancedLayout(s, t),
     },
     {
       name: "Compact",
-      description: "1 line: Model, Context, Cost, Git, Duration",
+      description: "1 line: Model|Context|Cost|Git|Duration",
       value: "compact",
       getConfig: (s, t) => generateCompactLayout(s, t),
     },
     {
       name: "Rich",
-      description: "3 lines: Full details with Git Tag, Config Count",
+      description: "3 lines: + Dev Server|Docker|Active Tools on line 3",
       value: "rich",
       getConfig: (s, t) => generateRichLayout(s, t),
     },
