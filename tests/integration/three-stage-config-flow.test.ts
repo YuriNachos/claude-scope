@@ -116,16 +116,20 @@ describe("Three-Stage Config Flow Integration", () => {
       assert.ok(!widgetIds.includes("lines"));
     });
 
-    it("should include git-tag and config-count in rich layout", () => {
+    it("should include git-tag, config-count in rich layout", () => {
       // Act: Generate rich layout
       const config = generateRichLayout("balanced", "monokai");
 
-      // Assert: Verify widgets
+      // Assert: Verify widgets are on line 1
       const line1Ids = config.lines["1"].map((w) => w.id);
       assert.ok(line1Ids.includes("git-tag"));
+      assert.ok(line1Ids.includes("config-count"));
 
+      // Assert: Verify dev-server, docker, active-tools are on line 2
       const line2Ids = config.lines["2"].map((w) => w.id);
-      assert.ok(line2Ids.includes("config-count"));
+      assert.ok(line2Ids.includes("dev-server"));
+      assert.ok(line2Ids.includes("docker"));
+      assert.ok(line2Ids.includes("active-tools"));
     });
   });
 

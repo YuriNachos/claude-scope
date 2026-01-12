@@ -249,9 +249,9 @@ export function generateCompactLayout(style: QuickConfigStyle, themeName: string
 
 /**
  * Generate Rich layout configuration (3 lines)
- * Line 0: model, context, cost, lines, duration
- * Line 1: git, git-tag, active-tools
- * Line 2: cache-metrics, config-count
+ * Line 0: model, context, lines, cost, duration
+ * Line 1: git, git-tag, cache-metrics, config-count
+ * Line 2: dev-server, docker, active-tools
  */
 export function generateRichLayout(style: QuickConfigStyle, themeName: string): ScopeConfig {
   const theme = getThemeByName(themeName).colors;
@@ -276,14 +276,14 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
           },
         },
         {
-          id: "cost",
-          style: style,
-          colors: { amount: theme.cost.amount, currency: theme.cost.currency },
-        },
-        {
           id: "lines",
           style: style,
           colors: { added: theme.lines.added, removed: theme.lines.removed },
+        },
+        {
+          id: "cost",
+          style: style,
+          colors: { amount: theme.cost.amount, currency: theme.cost.currency },
         },
         {
           id: "duration",
@@ -303,20 +303,6 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
           colors: { base: theme.base.text },
         },
         {
-          id: "active-tools",
-          style: style,
-          colors: {
-            running: theme.tools.running,
-            completed: theme.tools.completed,
-            error: theme.tools.error,
-            name: theme.tools.name,
-            target: theme.tools.target,
-            count: theme.tools.count,
-          },
-        },
-      ],
-      "2": [
-        {
           id: "cache-metrics",
           style: style,
           colors: {
@@ -331,6 +317,40 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
           id: "config-count",
           style: style,
           colors: { base: theme.base.muted },
+        },
+      ],
+      "2": [
+        {
+          id: "dev-server",
+          style: style,
+          colors: {
+            name: theme.devServer.name,
+            status: theme.devServer.status,
+            label: theme.devServer.label,
+            icon: theme.devServer.icon,
+          },
+        },
+        {
+          id: "docker",
+          style: style,
+          colors: {
+            label: theme.docker.label,
+            count: theme.docker.count,
+            running: theme.docker.running,
+            stopped: theme.docker.stopped,
+          },
+        },
+        {
+          id: "active-tools",
+          style: style,
+          colors: {
+            running: theme.tools.running,
+            completed: theme.tools.completed,
+            error: theme.tools.error,
+            name: theme.tools.name,
+            target: theme.tools.target,
+            count: theme.tools.count,
+          },
         },
       ],
     },
