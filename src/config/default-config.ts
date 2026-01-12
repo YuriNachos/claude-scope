@@ -28,6 +28,7 @@ export function generateConfigWithStyleAndTheme(
 
   return {
     version: "1.0.0",
+    $aiDocs: "https://github.com/YuriNachos/claude-scope/blob/main/AI-CONFIG-GUIDE.md",
     lines: {
       "0": [
         {
@@ -136,6 +137,7 @@ export function generateBalancedLayout(style: QuickConfigStyle, themeName: strin
 
   return {
     version: "1.0.0",
+    $aiDocs: "https://github.com/YuriNachos/claude-scope/blob/main/AI-CONFIG-GUIDE.md",
     lines: {
       "0": [
         {
@@ -210,6 +212,7 @@ export function generateCompactLayout(style: QuickConfigStyle, themeName: string
 
   return {
     version: "1.0.0",
+    $aiDocs: "https://github.com/YuriNachos/claude-scope/blob/main/AI-CONFIG-GUIDE.md",
     lines: {
       "0": [
         {
@@ -258,6 +261,7 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
 
   return {
     version: "1.0.0",
+    $aiDocs: "https://github.com/YuriNachos/claude-scope/blob/main/AI-CONFIG-GUIDE.md",
     lines: {
       "0": [
         {

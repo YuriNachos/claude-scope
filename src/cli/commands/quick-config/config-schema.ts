@@ -174,6 +174,8 @@ export interface LinesConfig {
 export interface ScopeConfig {
   /** Config version for future migration */
   version: string;
+  /** AI documentation URL for assistants to modify config */
+  $aiDocs?: string;
   /** Line-based widget configuration */
   lines: LinesConfig;
 }

@@ -2,9 +2,27 @@
 
 ## Version History
 
-### v0.8.15 (2026-01-12) - Current Stable
+### v0.8.16 (2026-01-12) - Current Stable
 
-**Latest version**: v0.8.15
+**Latest version**: v0.8.16
+
+**Recent commits:**
+- **AI-CONFIG-GUIDE.md**: Added comprehensive AI configuration guide in project root
+  - Complete widget catalog with all 14 widgets
+  - All 12 display styles with examples
+  - All 17 themes with descriptions
+  - Color customization rules
+  - AI workflow: Read → Edit directly → Done
+- **Config enhancement**: Added `$aiDocs` field to all generated configs
+  - Points to `https://github.com/YuriNachos/claude-scope/blob/main/AI-CONFIG-GUIDE.md`
+  - Helps AI models discover configuration rules
+- **ScopeConfig**: Updated schema with optional `$aiDocs` field
+
+---
+
+### v0.8.15 (2026-01-12)
+
+**Previous version**: v0.8.15
 
 **Recent commits:**
 - Updated quick-config layouts to match preview designs
@@ -27,6 +45,7 @@
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v0.8.16 | 2026-01-12 | AI-CONFIG-GUIDE.md, $aiDocs field in config |
 | v0.8.15 | 2026-01-12 | Quick-config layout updates |
 | v0.8.13 | 2026-01-12 | Dev server detection improvements |
 | v0.8.12 | 2026-01-12 | Dev server bug fixes |
