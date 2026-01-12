@@ -28,7 +28,7 @@ export interface WidgetContext {
  * Interface that all widgets must implement
  */
 export interface IWidget {
-  /** Unique widget identifier */
+  /** Widget identifier (multiple instances can share the same id) */
   readonly id: string;
 
   /** Widget metadata */

@@ -41,7 +41,7 @@ export abstract class StdinDataWidget implements IWidget {
   protected enabled = true;
 
   /**
-   * Unique widget identifier
+   * Widget identifier (multiple instances can share the same id)
    */
   abstract readonly id: string;
 
