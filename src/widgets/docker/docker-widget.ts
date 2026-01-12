@@ -91,7 +91,7 @@ export class DockerWidget implements IWidget {
     return this.styleFn({ status }, this.colors);
   }
 
-  private async getDockerStatus(): Promise<DockerStatus> {
+  protected async getDockerStatus(): Promise<DockerStatus> {
     try {
       // Check if Docker daemon is available
       await execFileAsync("docker", ["info"], { timeout: 2000 });
