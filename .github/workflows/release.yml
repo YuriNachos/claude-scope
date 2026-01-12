@@ -35,6 +35,9 @@ jobs:
       - name: Run Biome checks
         run: biome ci .
 
+      - name: Build project
+        run: npm run build
+
       - name: Run tests
         run: npm test
 
