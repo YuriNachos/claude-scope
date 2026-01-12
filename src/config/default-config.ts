@@ -327,7 +327,6 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
             name: theme.devServer.name,
             status: theme.devServer.status,
             label: theme.devServer.label,
-            icon: theme.devServer.icon,
           },
         },
         {

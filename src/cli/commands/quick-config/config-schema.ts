@@ -111,6 +111,25 @@ export interface ToolsColors {
 }
 
 /**
+ * Dev server widget colors
+ */
+export interface DevServerColors {
+  name: ColorCode;
+  status: ColorCode;
+  label: ColorCode;
+}
+
+/**
+ * Docker widget colors
+ */
+export interface DockerColors {
+  label: ColorCode;
+  count: ColorCode;
+  running: ColorCode;
+  stopped: ColorCode;
+}
+
+/**
  * Widget-specific color configuration
  * Different widgets have different color requirements
  */
@@ -123,6 +142,8 @@ export type WidgetColors =
   | GitColors
   | CacheColors
   | ToolsColors
+  | DevServerColors
+  | DockerColors
   | PokerColors
   | BaseColors
   | SemanticColors

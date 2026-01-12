@@ -403,7 +403,6 @@ describe("Layout Generators", () => {
       assert.ok("name" in devServerWidget.colors);
       assert.ok("status" in devServerWidget.colors);
       assert.ok("label" in devServerWidget.colors);
-      assert.ok("icon" in devServerWidget.colors);
     });
 
     it("should have correct color structure for docker widget", () => {
