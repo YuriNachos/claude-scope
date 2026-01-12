@@ -187,3 +187,4 @@ main()
     // Silently fail - return empty status line
     process.exit(0);
   });
+// test change for CI verification
