@@ -4,7 +4,7 @@ import { expect } from "chai";
 import { generateRichLayout } from "../../src/config/default-config.js";
 
 describe("Rich Layout Structure", () => {
-  it("should have lines widget on line 0 after cost widget", () => {
+  it("should have correct widgets on line 0", () => {
     const config = generateRichLayout("balanced", "monokai");
 
     // Line 0 should exist
@@ -13,25 +13,14 @@ describe("Rich Layout Structure", () => {
     // Get widget IDs on line 0 in order
     const line0WidgetIds = config.lines["0"].map((w) => w.id);
 
-    // Verify lines widget is on line 0
-    expect(line0WidgetIds).to.include("lines");
+    // Expected order: model, context, lines, cost, duration (5 widgets)
+    expect(line0WidgetIds).to.deep.equal(["model", "context", "lines", "cost", "duration"]);
 
-    // Verify lines comes after cost
-    const costIndex = line0WidgetIds.indexOf("cost");
-    const linesIndex = line0WidgetIds.indexOf("lines");
-    expect(linesIndex).to.be.greaterThan(costIndex, "lines should come after cost");
-
-    // Expected order: model, context, cost, lines, duration
-    expect(line0WidgetIds).to.deep.equal([
-      "model",
-      "context",
-      "cost",
-      "lines", // Moved from line 1 to line 0
-      "duration",
-    ]);
+    // Verify correct count
+    expect(line0WidgetIds).to.have.lengthOf(5);
   });
 
-  it("should NOT have lines widget on line 1", () => {
+  it("should have correct widgets on line 1", () => {
     const config = generateRichLayout("balanced", "monokai");
 
     // Line 1 should exist
@@ -40,17 +29,40 @@ describe("Rich Layout Structure", () => {
     // Get widget IDs on line 1
     const line1WidgetIds = config.lines["1"].map((w) => w.id);
 
-    // lines should NOT be on line 1
-    expect(line1WidgetIds).to.not.include("lines");
+    // Expected on line 1: git, git-tag, cache-metrics, config-count (4 widgets)
+    expect(line1WidgetIds).to.deep.equal(["git", "git-tag", "cache-metrics", "config-count"]);
 
-    // Expected on line 1: git, git-tag, active-tools
-    expect(line1WidgetIds).to.deep.equal(["git", "git-tag", "active-tools"]);
+    // Verify correct count
+    expect(line1WidgetIds).to.have.lengthOf(4);
   });
 
-  it("should maintain line 2 with cache-metrics and config-count", () => {
+  it("should have correct widgets on line 2", () => {
     const config = generateRichLayout("balanced", "monokai");
 
+    // Line 2 should exist
+    expect(config.lines["2"]).to.exist;
+
+    // Get widget IDs on line 2
     const line2WidgetIds = config.lines["2"].map((w) => w.id);
-    expect(line2WidgetIds).to.deep.equal(["cache-metrics", "config-count"]);
+
+    // Expected on line 2: dev-server, docker, active-tools (3 widgets)
+    expect(line2WidgetIds).to.deep.equal(["dev-server", "docker", "active-tools"]);
+
+    // Verify correct count
+    expect(line2WidgetIds).to.have.lengthOf(3);
+  });
+
+  it("should have correct color structures for dev-server and docker", () => {
+    const config = generateRichLayout("balanced", "monokai");
+
+    // Find dev-server widget
+    const devServerWidget = config.lines["2"].find((w) => w.id === "dev-server");
+    expect(devServerWidget).to.exist;
+    expect(devServerWidget!.colors).to.have.all.keys("name", "status", "label");
+
+    // Find docker widget
+    const dockerWidget = config.lines["2"].find((w) => w.id === "docker");
+    expect(dockerWidget).to.exist;
+    expect(dockerWidget!.colors).to.have.all.keys("label", "count", "running", "stopped");
   });
 });
