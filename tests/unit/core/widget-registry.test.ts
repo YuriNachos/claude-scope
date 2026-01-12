@@ -66,21 +66,18 @@ describe("WidgetRegistry", () => {
     expect(registry.has("git")).to.be.false;
   });
 
-  it("should throw when registering duplicate widget", async () => {
+  it("should allow duplicate widget registration", async () => {
     const registry = new WidgetRegistry();
     const widget1 = new GitWidget();
     const widget2 = new GitWidget();
 
     await registry.register(widget1);
+    await registry.register(widget2);
 
-    let error: Error | null = null;
-    try {
-      await registry.register(widget2);
-    } catch (e) {
-      error = e as Error;
-    }
-    expect(error).to.exist;
-    expect(error?.message).to.include("already registered");
+    const all = registry.getAll();
+    expect(all).to.have.length(2);
+    expect(all[0].id).to.equal("git");
+    expect(all[1].id).to.equal("git");
   });
 
   it("should handle widget initialization error", async () => {

@@ -263,21 +263,20 @@ describe("CLI Flow Integration", () => {
       expect(output).to.not.be.undefined;
     });
 
-    it("should handle duplicate widget registration", async () => {
-      // Arrange: Create widget
-      const modelWidget = new ModelWidget();
+    it("should allow duplicate widget registration", async () => {
+      // Arrange: Create two widgets with same id
+      const widget1 = new ModelWidget();
+      const widget2 = new ModelWidget();
 
-      // Act: Try to register same widget twice
-      await registry.register(modelWidget, { config: { enabled: true } });
+      // Act: Register both widgets
+      await registry.register(widget1, { config: { enabled: true } });
+      await registry.register(widget2, { config: { enabled: true } });
 
-      // Assert: Second registration throws
-      try {
-        await registry.register(modelWidget, { config: { enabled: true } });
-        expect.fail("Should have thrown an error");
-      } catch (error) {
-        expect(error).to.be.instanceOf(Error);
-        expect((error as Error).message).to.include("already registered");
-      }
+      // Assert: Both widgets are registered
+      const all = registry.getAll();
+      expect(all).to.have.length(2);
+      expect(all[0].id).to.equal("model");
+      expect(all[1].id).to.equal("model");
     });
 
     it("should handle unregistering non-existent widget", async () => {

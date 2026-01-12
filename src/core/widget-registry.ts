@@ -9,28 +9,32 @@ import type { IWidget, WidgetContext } from "./types.js";
  * Registry for managing widgets
  */
 export class WidgetRegistry {
-  private widgets: Map<string, IWidget> = new Map();
+  private widgets: IWidget[] = [];
 
   /**
    * Register a widget
    */
   async register(widget: IWidget, context?: WidgetContext): Promise<void> {
-    if (this.widgets.has(widget.id)) {
-      throw new Error(`Widget with id '${widget.id}' already registered`);
-    }
-
     if (context) {
       await widget.initialize(context);
     }
 
-    this.widgets.set(widget.id, widget);
+    this.widgets.push(widget);
   }
 
   /**
    * Unregister a widget
+   * @param widgetOrId Widget instance or widget id
    */
-  async unregister(id: string): Promise<void> {
-    const widget = this.widgets.get(id);
+  async unregister(widgetOrId: IWidget | string): Promise<void> {
+    let widget: IWidget | undefined;
+
+    if (typeof widgetOrId === "string") {
+      widget = this.widgets.find((w) => w.id === widgetOrId);
+    } else {
+      widget = this.widgets.find((w) => w === widgetOrId);
+    }
+
     if (!widget) {
       return;
     }
@@ -40,7 +44,10 @@ export class WidgetRegistry {
         await widget.cleanup();
       }
     } finally {
-      this.widgets.delete(id);
+      const index = this.widgets.indexOf(widget);
+      if (index !== -1) {
+        this.widgets.splice(index, 1);
+      }
     }
   }
 
@@ -48,21 +55,21 @@ export class WidgetRegistry {
    * Get a widget by id
    */
   get(id: string): IWidget | undefined {
-    return this.widgets.get(id);
+    return this.widgets.find((w) => w.id === id);
   }
 
   /**
    * Check if widget is registered
    */
   has(id: string): boolean {
-    return this.widgets.has(id);
+    return this.widgets.some((w) => w.id === id);
   }
 
   /**
    * Get all registered widgets
    */
   getAll(): IWidget[] {
-    return Array.from(this.widgets.values());
+    return [...this.widgets];
   }
 
   /**
@@ -76,11 +83,11 @@ export class WidgetRegistry {
    * Clear all widgets
    */
   async clear(): Promise<void> {
-    for (const widget of this.widgets.values()) {
+    for (const widget of this.widgets) {
       if (widget.cleanup) {
         await widget.cleanup();
       }
     }
-    this.widgets.clear();
+    this.widgets = [];
   }
 }
