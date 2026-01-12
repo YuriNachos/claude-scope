@@ -46,4 +46,4 @@ temp/
 tmp/
 
 # Documentation (local working files)
-docs/*.md
+docs/**/*.md
