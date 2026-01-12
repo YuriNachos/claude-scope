@@ -1,1 +1,0 @@
-{"version":3,"file":"widget-flags.js","sourceRoot":"","sources":["../../src/config/widget-flags.ts"],"names":[],"mappings":"AAAA;;;;;;;;;GASG;AACH,MAAM,CAAC,MAAM,YAAY,GAAG;IAC1B,WAAW,EAAE,IAAI;IACjB,YAAY,EAAE,IAAI;CACV,CAAC;AAIX;;GAEG;AACH,MAAM,UAAU,eAAe,CAAC,IAAoB;IAClD,OAAO,YAAY,CAAC,IAAI,CAAC,IAAI,IAAI,CAAC;AACpC,CAAC"}
