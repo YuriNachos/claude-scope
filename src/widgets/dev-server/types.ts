@@ -4,6 +4,8 @@
 
 /**
  * Process detection patterns for dev servers
+ *
+ * @deprecated Import ProcessPattern from detector-types.ts instead
  */
 export interface ProcessPattern {
   /** Regex pattern to match process command line */
@@ -16,6 +18,8 @@ export interface ProcessPattern {
 
 /**
  * Detected dev server status
+ *
+ * @deprecated Import DetectedServer from detector-types.ts instead
  */
 export interface DevServerStatus {
   /** Name of detected server (e.g., "Nuxt", "Vite") */
@@ -35,3 +39,6 @@ export interface DevServerRenderData {
   /** Detected dev server status */
   server: DevServerStatus | null;
 }
+
+// Re-export shared detector types for convenience
+export type { DetectedServer, ExecFileFn } from "./detector-types.js";

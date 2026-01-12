@@ -10,7 +10,7 @@
 
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import type { ExecFileFn } from "../../../../src/widgets/dev-server/process-detector.js";
+import type { ExecFileFn } from "../../../../src/widgets/dev-server/detector-types.js";
 import { ProcessDetector } from "../../../../src/widgets/dev-server/process-detector.js";
 
 describe("ProcessDetector", () => {

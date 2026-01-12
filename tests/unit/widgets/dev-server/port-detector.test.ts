@@ -7,7 +7,7 @@
 
 import assert from "node:assert";
 import { describe, it } from "node:test";
-import type { ExecFileFn } from "../../../../src/widgets/dev-server/port-detector.js";
+import type { ExecFileFn } from "../../../../src/widgets/dev-server/detector-types.js";
 import { PortDetector } from "../../../../src/widgets/dev-server/port-detector.js";
 
 describe("PortDetector", () => {

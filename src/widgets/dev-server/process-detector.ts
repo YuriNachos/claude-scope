@@ -8,37 +8,9 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
+import type { DetectedServer, ExecFileFn, ProcessPattern } from "./detector-types.js";
+
 const execFileAsync = promisify(execFile);
-
-export interface ProcessPattern {
-  regex: RegExp;
-  name: string;
-  icon: string;
-}
-
-export interface DetectedServer {
-  name: string;
-  icon: string;
-  isRunning: boolean;
-  isBuilding: boolean;
-}
-
-/**
- * Result of execFile command
- */
-interface ExecFileResult {
-  stdout: string;
-  stderr?: string;
-}
-
-/**
- * Function signature for execFile (for dependency injection in tests)
- */
-export type ExecFileFn = (
-  command: string,
-  args: string[],
-  options?: { timeout?: number }
-) => Promise<ExecFileResult>;
 
 /**
  * Process Detector
@@ -92,7 +64,7 @@ export class ProcessDetector {
             icon: pattern.icon,
             isRunning,
             isBuilding,
-          };
+          } satisfies DetectedServer;
         }
       }
     } catch {

@@ -7,32 +7,9 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
+import type { DetectedServer, ExecFileFn } from "./detector-types.js";
+
 const execFileAsync = promisify(execFile);
-
-export interface DetectedServer {
-  name: string;
-  icon: string;
-  port: number;
-  isRunning: boolean;
-  isBuilding: boolean;
-}
-
-/**
- * Result of execFile command
- */
-interface ExecFileResult {
-  stdout: string;
-  stderr?: string;
-}
-
-/**
- * Function signature for execFile (for dependency injection in tests)
- */
-export type ExecFileFn = (
-  command: string,
-  args: string[],
-  options?: { timeout?: number }
-) => Promise<ExecFileResult>;
 
 /**
  * Port to server mapping
@@ -110,7 +87,7 @@ export class PortDetector {
               port,
               isRunning: true,
               isBuilding: false,
-            };
+            } satisfies DetectedServer;
           }
         }
       }
