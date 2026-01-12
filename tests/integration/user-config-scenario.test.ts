@@ -3,7 +3,7 @@
  * Verifies that user's real config structure works with new config-driven logic
  */
 
-import { afterEach, beforeEach, describe, it } from "node:test";
+import { describe, it } from "node:test";
 import { expect } from "chai";
 import type { LoadedConfig } from "../../src/config/config-loader.js";
 import { WidgetFactory } from "../../src/core/widget-factory.js";
@@ -57,7 +57,7 @@ describe("User Config Scenario", () => {
     const factory = new WidgetFactory();
 
     // Config-driven registration
-    for (const [lineNum, widgets] of Object.entries(userConfig.lines)) {
+    for (const [_lineNum, widgets] of Object.entries(userConfig.lines)) {
       for (const widgetConfig of widgets) {
         const widget = factory.createWidget(widgetConfig.id);
         if (widget) {
