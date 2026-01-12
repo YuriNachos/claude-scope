@@ -73,7 +73,8 @@ export class Renderer {
       for (const widget of widgetsForLine) {
         try {
           const output = await widget.render(context);
-          if (output !== null) {
+          // Filter out null and empty strings to avoid leading separators
+          if (output && output.trim().length > 0) {
             outputs.push(output);
           }
         } catch (error) {
