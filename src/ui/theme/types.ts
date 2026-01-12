@@ -117,6 +117,32 @@ export interface IToolsColors {
 }
 
 /**
+ * Dev server widget colors
+ */
+export interface IDevServerColors {
+  /** Color for server name (e.g., "Nuxt", "Vite") */
+  name: string;
+  /** Color for status text (e.g., "running", "building") */
+  status: string;
+  /** Color for label "Server:" or "Dev Server:" */
+  label: string;
+}
+
+/**
+ * Docker widget colors
+ */
+export interface IDockerColors {
+  /** Color for "Docker:" label */
+  label: string;
+  /** Color for container count */
+  count: string;
+  /** Color for running indicator */
+  running: string;
+  /** Color for stopped indicator */
+  stopped: string;
+}
+
+/**
  * Unified theme colors interface
  * All widget colors in one place for consistent theming
  */
@@ -132,6 +158,8 @@ export interface IThemeColors {
   poker: IPokerColors;
   cache: ICacheColors;
   tools: IToolsColors;
+  devServer: IDevServerColors;
+  docker: IDockerColors;
 }
 
 /**
