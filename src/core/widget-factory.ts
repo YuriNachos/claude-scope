@@ -8,10 +8,12 @@ import { CostWidget } from "../widgets/cost-widget.js";
 import { DevServerWidget } from "../widgets/dev-server/index.js";
 import { DockerWidget } from "../widgets/docker/index.js";
 import { DurationWidget } from "../widgets/duration-widget.js";
+import { EmptyLineWidget } from "../widgets/empty-line-widget.js";
 import { GitTagWidget } from "../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../widgets/git/git-widget.js";
 import { LinesWidget } from "../widgets/lines-widget.js";
 import { ModelWidget } from "../widgets/model-widget.js";
+import { PokerWidget } from "../widgets/poker-widget.js";
 import type { IWidget } from "./types.js";
 
 /**
@@ -70,6 +72,12 @@ export class WidgetFactory {
       case "docker":
         return new DockerWidget(DEFAULT_THEME);
 
+      case "poker":
+        return new PokerWidget(DEFAULT_THEME);
+
+      case "empty-line":
+        return new EmptyLineWidget();
+
       default:
         return null; // Unknown widget ID
     }
@@ -92,6 +100,8 @@ export class WidgetFactory {
       "active-tools",
       "dev-server",
       "docker",
+      "poker",
+      "empty-line",
     ];
   }
 }
