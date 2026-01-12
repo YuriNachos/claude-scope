@@ -1093,11 +1093,11 @@ git push --tags
 ### Step 3: Monitor CI/CD
 
 The GitHub Actions workflow (`.github/workflows/release.yml`) will:
-1. Run all tests
-2. Build `dist/` files
-3. Commit `dist/` to the main branch
+1. Run Biome code quality checks (`biome ci`)
+2. Run all tests
+3. Build `dist/` files (temporarily, via `prepack` hook)
 4. Publish to npm
-5. Create GitHub release
+5. Create GitHub Release
 
 Monitor the workflow:
 ```bash
