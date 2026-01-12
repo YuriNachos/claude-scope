@@ -1009,6 +1009,50 @@ This project uses **GitHub CLI (gh)** for Git operations instead of direct git c
 - Files in `docs/` directory (plans, research, issues, etc.) should remain untracked by default
 - Exception: CLAUDE.md is part of the project and should be committed when updated
 
+## CI/CD
+
+This project uses GitHub Actions for continuous integration and automated releases.
+
+### Workflows
+
+**CI Workflow** (`.github/workflows/ci.yml`)
+- **Triggers:** Push to `main` branch, Pull Requests to `main`
+- **Checks:**
+  - Biome code quality checks (`biome ci`)
+  - All tests (`npm test`)
+- **Purpose:** Fast feedback on code changes; does NOT build dist/
+- **Runtime:** ~30-60 seconds
+
+**Release Workflow** (`.github/workflows/release.yml`)
+- **Triggers:** Push of git tag matching `v*.*.*`
+- **Steps:**
+  - Biome code quality checks
+  - Run tests
+  - Build (via `npm publish` which triggers `prepack` hook)
+  - Publish to npm registry
+  - Create GitHub Release
+- **Purpose:** Automated publishing to npm
+- **Runtime:** ~1-2 minutes
+
+### Branch Protection
+
+The `main` branch has these protections:
+- Required status checks to pass before merging PRs:
+  - `Code Quality` (Biome)
+  - `Tests`
+- This ensures external contributors' code is validated before merging
+
+**Note:** Direct pushes to `main` by the maintainer are not blocked (the checks run but don't prevent push). This allows the maintainer to work directly in `main` while still protecting against bad PRs from contributors.
+
+### dist/ Folder
+
+The `dist/` folder is **NOT** tracked in git (see `.gitignore`). It is generated during:
+1. Local development: `npm run build`
+2. npm publish: Automatically via `prepack` hook in package.json
+3. Release workflow: Created temporarily, published to npm, then discarded
+
+The `package.json` `files` field specifies that only `dist/claude-scope.cjs` (plus README and LICENSE) are included in the npm package.
+
 ## Release Process
 
 When feature development is complete and all tests pass, follow this process to release a new version.
