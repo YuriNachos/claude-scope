@@ -10,7 +10,7 @@ import { promisify } from "node:util";
 const execFileAsync = promisify(execFile);
 
 import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
-import type { RenderContext, StdinData, WidgetContext } from "../../core/types.js";
+import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
 import type { IThemeColors } from "../../ui/theme/types.js";

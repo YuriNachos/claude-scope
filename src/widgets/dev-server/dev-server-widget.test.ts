@@ -8,17 +8,41 @@ import type { StdinData } from "../../types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
 import { DevServerWidget } from "./dev-server-widget.js";
 
+function createStdinData(): StdinData {
+  return {
+    hook_event_name: "Status",
+    session_id: "test-session",
+    transcript_path: "/tmp/transcript.json",
+    cwd: "/Users/test/project",
+    model: { id: "claude-opus-4-5-20251101", display_name: "Claude Opus 4.5" },
+    workspace: {
+      current_dir: "/Users/test/project",
+      project_dir: "/Users/test/project",
+    },
+    version: "1.0.80",
+    output_style: { name: "default" },
+    cost: undefined,
+    context_window: {
+      total_input_tokens: 15234,
+      total_output_tokens: 4521,
+      context_window_size: 200000,
+      current_usage: {
+        input_tokens: 8500,
+        output_tokens: 1200,
+        cache_creation_input_tokens: 5000,
+        cache_read_input_tokens: 2000,
+      },
+    },
+  };
+}
+
 describe("DevServerWidget", () => {
   let widget: DevServerWidget;
   let mockStdinData: StdinData;
 
   beforeEach(() => {
     widget = new DevServerWidget(DEFAULT_THEME);
-    mockStdinData = {
-      session_id: "test-session",
-      cwd: "/Users/test/project",
-      model: { id: "claude-opus-4-5-20251101", display_name: "Claude Opus 4.5" },
-    };
+    mockStdinData = createStdinData();
   });
 
   describe("initialization", () => {
