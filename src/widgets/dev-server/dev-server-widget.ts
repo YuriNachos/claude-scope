@@ -41,14 +41,20 @@ export class DevServerWidget implements IWidget {
   private cwd: string | null = null;
 
   private readonly processPatterns: ProcessPattern[] = [
-    { regex: /nuxt.*dev/i, name: "Nuxt", icon: "⚡" },
-    { regex: /next.*dev/i, name: "Next.js", icon: "▲" },
-    { regex: /vite.*dev/i, name: "Vite", icon: "⚡" },
-    { regex: /svelte.*dev/i, name: "Svelte", icon: "🔥" },
-    { regex: /astro.*dev/i, name: "Astro", icon: "🚀" },
-    { regex: /remix.*dev/i, name: "Remix", icon: "💿" },
-    { regex: /(npm|yarn|pnpm|bun).*run\s+dev/i, name: "Dev", icon: "🚀" },
-    { regex: /(npm|yarn|pnpm|bun).*run\s+build/i, name: "Build", icon: "🔨" },
+    // Generic server patterns (checked first to catch simple servers)
+    { regex: /(npm|npx)\s+exec\s+serve/i, name: "Server", icon: "🌐" },
+    { regex: /(python|python3)\s+-m\s+http\.server/i, name: "HTTP", icon: "🌐" },
+    { regex: /serve\s+\.?-l?\s*\d+/i, name: "Server", icon: "🌐" },
+    // Generic dev/build patterns
+    { regex: /(npm|yarn|pnpm|bun)\s+run\s+dev/i, name: "Dev", icon: "🚀" },
+    { regex: /(npm|yarn|pnpm|bun)\s+run\s+build/i, name: "Build", icon: "🔨" },
+    // Framework-specific patterns
+    { regex: /nuxt\s+dev/i, name: "Nuxt", icon: "⚡" },
+    { regex: /next\s+dev/i, name: "Next.js", icon: "▲" },
+    { regex: /vite($|\s)/i, name: "Vite", icon: "⚡" },
+    { regex: /svelte-kit\s+dev|svelte\s+dev/i, name: "Svelte", icon: "🔥" },
+    { regex: /astro\s+dev/i, name: "Astro", icon: "🚀" },
+    { regex: /remix\s+dev|remix\s+watch/i, name: "Remix", icon: "💿" },
   ];
 
   constructor(colors?: IThemeColors) {
@@ -143,17 +149,21 @@ export class DevServerWidget implements IWidget {
     isBuilding: boolean;
   } | null> {
     try {
-      const { stdout } = await execFileAsync("ps", ["-aux"], {
+      const { stdout } = await execFileAsync("ps", ["aux"], {
         timeout: 1000,
       });
 
       for (const pattern of this.processPatterns) {
         if (pattern.regex.test(stdout)) {
+          // Determine status based on pattern name
+          const isBuilding = pattern.name.toLowerCase().includes("build");
+          const isRunning = !isBuilding; // If not building, it's running
+
           return {
             name: pattern.name,
             icon: pattern.icon,
-            isRunning: /dev/i.test(stdout),
-            isBuilding: /build/i.test(stdout),
+            isRunning,
+            isBuilding,
           };
         }
       }
