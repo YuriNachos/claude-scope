@@ -12,7 +12,6 @@ import { isValidWidgetStyle, type WidgetStyle } from "./core/style-types.js";
 import { WidgetFactory } from "./core/widget-factory.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
-import { DEFAULT_THEME } from "./ui/theme/index.js";
 
 /**
  * Read stdin as string
@@ -99,7 +98,7 @@ export async function main(): Promise<string> {
 
     // Register widgets from config - config is the SINGLE SOURCE OF TRUTH
     if (widgetConfig) {
-      for (const [lineNum, widgets] of Object.entries(widgetConfig.lines)) {
+      for (const [_lineNum, widgets] of Object.entries(widgetConfig.lines)) {
         for (const widgetConfigItem of widgets) {
           const widget = factory.createWidget(widgetConfigItem.id);
 
