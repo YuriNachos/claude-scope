@@ -5,6 +5,8 @@ import { CacheMetricsWidget } from "../widgets/cache-metrics/index.js";
 import { ConfigCountWidget } from "../widgets/config-count-widget.js";
 import { ContextWidget } from "../widgets/context-widget.js";
 import { CostWidget } from "../widgets/cost-widget.js";
+import { DevServerWidget } from "../widgets/dev-server/index.js";
+import { DockerWidget } from "../widgets/docker/index.js";
 import { DurationWidget } from "../widgets/duration-widget.js";
 import { GitTagWidget } from "../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../widgets/git/git-widget.js";
@@ -62,6 +64,12 @@ export class WidgetFactory {
       case "active-tools":
         return new ActiveToolsWidget(DEFAULT_THEME, this.transcriptProvider);
 
+      case "dev-server":
+        return new DevServerWidget(DEFAULT_THEME);
+
+      case "docker":
+        return new DockerWidget(DEFAULT_THEME);
+
       default:
         return null; // Unknown widget ID
     }
@@ -82,6 +90,8 @@ export class WidgetFactory {
       "config-count",
       "cache-metrics",
       "active-tools",
+      "dev-server",
+      "docker",
     ];
   }
 }
