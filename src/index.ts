@@ -20,12 +20,10 @@ import { ConfigCountWidget } from "./widgets/config-count-widget.js";
 import { ContextWidget } from "./widgets/context-widget.js";
 import { CostWidget } from "./widgets/cost-widget.js";
 import { DurationWidget } from "./widgets/duration-widget.js";
-import { EmptyLineWidget } from "./widgets/empty-line-widget.js";
 import { GitTagWidget } from "./widgets/git/git-tag-widget.js";
 import { GitWidget } from "./widgets/git/git-widget.js";
 import { LinesWidget } from "./widgets/lines-widget.js";
 import { ModelWidget } from "./widgets/model-widget.js";
-import { PokerWidget } from "./widgets/poker-widget.js";
 
 /**
  * Read stdin as string

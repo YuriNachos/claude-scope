@@ -1,10 +1,8 @@
 // tests/integration/config-only-widget-registration.test.ts
-import { afterEach, beforeEach, describe, it } from "node:test";
+import { beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
 import type { LoadedConfig } from "../../src/config/config-loader.js";
-import { Renderer } from "../../src/core/renderer.js";
 import { WidgetRegistry } from "../../src/core/widget-registry.js";
-import { EmptyLineWidget } from "../../src/widgets/empty-line-widget.js";
 import { ModelWidget } from "../../src/widgets/model-widget.js";
 import { PokerWidget } from "../../src/widgets/poker-widget.js";
 
