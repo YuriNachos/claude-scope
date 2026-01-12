@@ -7,23 +7,12 @@
 
 import { parseCommand, routeCommand } from "./cli/index.js";
 import { type LoadedConfig, loadWidgetConfig } from "./config/config-loader.js";
-import { isWidgetEnabled } from "./config/widget-flags.js";
 import { Renderer } from "./core/renderer.js";
 import { isValidWidgetStyle, type WidgetStyle } from "./core/style-types.js";
+import { WidgetFactory } from "./core/widget-factory.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
-import { TranscriptProvider } from "./providers/transcript-provider.js";
 import { DEFAULT_THEME } from "./ui/theme/index.js";
-import { ActiveToolsWidget } from "./widgets/active-tools/index.js";
-import { CacheMetricsWidget } from "./widgets/cache-metrics/index.js";
-import { ConfigCountWidget } from "./widgets/config-count-widget.js";
-import { ContextWidget } from "./widgets/context-widget.js";
-import { CostWidget } from "./widgets/cost-widget.js";
-import { DurationWidget } from "./widgets/duration-widget.js";
-import { GitTagWidget } from "./widgets/git/git-tag-widget.js";
-import { GitWidget } from "./widgets/git/git-widget.js";
-import { LinesWidget } from "./widgets/lines-widget.js";
-import { ModelWidget } from "./widgets/model-widget.js";
 
 /**
  * Read stdin as string
@@ -74,31 +63,6 @@ function applyWidgetConfig(
 }
 
 /**
- * Register a widget with the registry, applying configuration if available
- * @param registry - Widget registry instance
- * @param widget - Widget instance to register (must be IWidget)
- * @param widgetId - Widget identifier for config lookup
- * @param config - Loaded configuration object (null if no config)
- *
- * @description This helper function applies style configuration to a widget
- * before registering it with the widget registry. The widget must implement IWidget
- * and optionally support setStyle() for configuration.
- */
-async function registerWidgetWithConfig<
-  T extends { setStyle?(style: WidgetStyle): void; setLine?(line: number): void },
->(
-  registry: WidgetRegistry,
-  widget: T & Parameters<WidgetRegistry["register"]>[0],
-  widgetId: string,
-  config: LoadedConfig | null
-): Promise<void> {
-  if (config) {
-    applyWidgetConfig(widget, widgetId, config);
-  }
-  await registry.register(widget);
-}
-
-/**
  * Main entry point
  */
 export async function main(): Promise<string> {
@@ -127,42 +91,39 @@ export async function main(): Promise<string> {
     // Create registry
     const registry = new WidgetRegistry();
 
-    // Create transcript provider for ActiveToolsWidget
-    const transcriptProvider = new TranscriptProvider();
-
     // Load widget configuration
     const widgetConfig = await loadWidgetConfig();
 
-    // Register all widgets with configuration applied
-    await registerWidgetWithConfig(registry, new ModelWidget(), "model", widgetConfig);
-    await registerWidgetWithConfig(registry, new ContextWidget(), "context", widgetConfig);
-    await registerWidgetWithConfig(registry, new CostWidget(), "cost", widgetConfig);
-    await registerWidgetWithConfig(registry, new LinesWidget(), "lines", widgetConfig);
-    await registerWidgetWithConfig(registry, new DurationWidget(), "duration", widgetConfig);
-    await registerWidgetWithConfig(registry, new GitWidget(), "git", widgetConfig);
-    await registerWidgetWithConfig(registry, new GitTagWidget(), "git-tag", widgetConfig);
-    await registerWidgetWithConfig(registry, new ConfigCountWidget(), "config-count", widgetConfig);
+    // Create widget factory
+    const factory = new WidgetFactory();
 
-    // Register feature-flagged widgets
-    if (isWidgetEnabled("cacheMetrics")) {
-      await registerWidgetWithConfig(
-        registry,
-        new CacheMetricsWidget(DEFAULT_THEME),
-        "cache-metrics",
-        widgetConfig
-      );
+    // Register widgets from config - config is the SINGLE SOURCE OF TRUTH
+    if (widgetConfig) {
+      for (const [lineNum, widgets] of Object.entries(widgetConfig.lines)) {
+        for (const widgetConfigItem of widgets) {
+          const widget = factory.createWidget(widgetConfigItem.id);
+
+          if (widget) {
+            // Apply style and line from config
+            applyWidgetConfig(widget, widgetConfigItem.id, widgetConfig);
+            await registry.register(widget);
+          }
+          // If widget is null (unknown ID), skip it silently
+        }
+      }
+    } else {
+      // Fallback: if no config, register minimal default widgets
+      const defaultWidgets = ["model", "git", "context"];
+      for (const widgetId of defaultWidgets) {
+        const widget = factory.createWidget(widgetId);
+        if (widget) {
+          await registry.register(widget);
+        }
+      }
     }
 
-    if (isWidgetEnabled("activeTools")) {
-      await registerWidgetWithConfig(
-        registry,
-        new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider),
-        "active-tools",
-        widgetConfig
-      );
-    }
-
-    // NOTE: PokerWidget and EmptyLineWidget are only registered if present in config
+    // NOTE: No feature flags needed - config controls which widgets are shown
+    // TranscriptProvider is now managed by WidgetFactory
 
     // Create renderer with error handling configuration
     const renderer = new Renderer({
@@ -199,8 +160,13 @@ export async function main(): Promise<string> {
 async function tryGitFallback(): Promise<string> {
   try {
     const cwd = process.cwd();
+    const factory = new WidgetFactory();
+    const widget = factory.createWidget("git");
 
-    const widget = new GitWidget();
+    if (!widget) {
+      return "";
+    }
+
     await widget.initialize({ config: {} });
     await widget.update({ cwd, session_id: "fallback" } as any);
 
