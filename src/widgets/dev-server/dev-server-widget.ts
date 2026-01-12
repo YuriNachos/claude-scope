@@ -13,7 +13,7 @@ import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
 import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
-import type { IThemeColors } from "../../ui/theme/types.js";
+import type { IDevServerColors, IThemeColors } from "../../ui/theme/types.js";
 import { devServerStyles } from "./styles.js";
 import type { DevServerRenderData, ProcessPattern } from "./types.js";
 
@@ -36,7 +36,8 @@ export class DevServerWidget implements IWidget {
   private enabled = true;
   private colors: IThemeColors;
   private _lineOverride?: number;
-  private styleFn: StyleRendererFn<DevServerRenderData, unknown> = devServerStyles.balanced!;
+  private styleFn: StyleRendererFn<DevServerRenderData, IDevServerColors> =
+    devServerStyles.balanced!;
   private cwd: string | null = null;
 
   private readonly processPatterns: ProcessPattern[] = [
@@ -128,7 +129,7 @@ export class DevServerWidget implements IWidget {
     }
 
     const renderData: DevServerRenderData = { server };
-    return this.styleFn(renderData, this.colors);
+    return this.styleFn(renderData, this.colors.devServer);
   }
 
   /**

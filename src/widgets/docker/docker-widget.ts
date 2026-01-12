@@ -13,7 +13,7 @@ import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
 import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
-import type { IThemeColors } from "../../ui/theme/types.js";
+import type { IDockerColors, IThemeColors } from "../../ui/theme/types.js";
 import { dockerStyles } from "./styles.js";
 import type { DockerRenderData, DockerStatus } from "./types.js";
 
@@ -30,7 +30,7 @@ export class DockerWidget implements IWidget {
   private enabled = true;
   private colors: IThemeColors;
   private _lineOverride?: number;
-  private styleFn: StyleRendererFn<DockerRenderData, unknown> = dockerStyles.balanced!;
+  private styleFn: StyleRendererFn<DockerRenderData, IDockerColors> = dockerStyles.balanced!;
   private cachedStatus: DockerStatus | null = null;
   private lastCheck = 0;
   private readonly CACHE_TTL = 5000;
@@ -77,7 +77,7 @@ export class DockerWidget implements IWidget {
 
     const now = Date.now();
     if (this.cachedStatus && now - this.lastCheck < this.CACHE_TTL) {
-      return this.styleFn({ status: this.cachedStatus }, this.colors);
+      return this.styleFn({ status: this.cachedStatus }, this.colors.docker);
     }
 
     const status = await this.getDockerStatus();
@@ -88,7 +88,7 @@ export class DockerWidget implements IWidget {
       return null;
     }
 
-    return this.styleFn({ status }, this.colors);
+    return this.styleFn({ status }, this.colors.docker);
   }
 
   protected async getDockerStatus(): Promise<DockerStatus> {
