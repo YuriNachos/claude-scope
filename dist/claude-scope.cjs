@@ -38,15 +38,12 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 function colorize(text, color) {
   return `${color}${text}${reset}`;
 }
-var reset, red, gray, lightGray, bold;
+var reset, gray;
 var init_colors = __esm({
   "src/ui/utils/colors.ts"() {
     "use strict";
     reset = "\x1B[0m";
-    red = "\x1B[31m";
     gray = "\x1B[90m";
-    lightGray = "\x1B[37m";
-    bold = "\x1B[1m";
   }
 });
 
@@ -1139,7 +1136,7 @@ var init_theme = __esm({
 });
 
 // src/constants.ts
-var TIME, DEFAULTS, ANSI_COLORS, DEMO_DATA, DEFAULT_PROGRESS_BAR_WIDTH;
+var TIME, DEFAULTS, DEMO_DATA, DEFAULT_PROGRESS_BAR_WIDTH;
 var init_constants = __esm({
   "src/constants.ts"() {
     "use strict";
@@ -1156,16 +1153,6 @@ var init_constants = __esm({
       SEPARATOR: " ",
       /** Default width for progress bars in characters */
       PROGRESS_BAR_WIDTH: 20
-    };
-    ANSI_COLORS = {
-      /** Green color */
-      GREEN: "\x1B[32m",
-      /** Yellow color */
-      YELLOW: "\x1B[33m",
-      /** Red color */
-      RED: "\x1B[31m",
-      /** Reset color */
-      RESET: "\x1B[0m"
     };
     DEMO_DATA = {
       /** Demo session cost in USD */
@@ -2077,9 +2064,6 @@ function formatDuration(ms) {
 }
 function formatCostUSD(usd) {
   return `$${usd.toFixed(2)}`;
-}
-function colorize2(text, color) {
-  return `${color}${text}${ANSI_COLORS.RESET}`;
 }
 function formatK(n) {
   const absN = Math.abs(n);
@@ -6624,14 +6608,22 @@ async function generatePreviews(choices, style, themeName) {
   const previews = [];
   const isStyleSelection = choices.length >= 3 && choices.every((c) => isQuickConfigStyle(c.value));
   const availableThemes = [
-    "monokai",
-    "nord",
-    "dracula",
     "catppuccin-mocha",
-    "tokyo-night",
-    "vscode-dark-plus",
+    // AVAILABLE_THEMES[0]
+    "cyberpunk-neon",
+    // AVAILABLE_THEMES[1]
+    "dracula",
+    // AVAILABLE_THEMES[2]
+    "dusty-sage",
+    // AVAILABLE_THEMES[3]
     "github-dark-dimmed",
-    "dusty-sage"
+    // AVAILABLE_THEMES[4]
+    "gray",
+    // AVAILABLE_THEMES[5] - was missing!
+    "monokai",
+    // AVAILABLE_THEMES[6]
+    "muted-gray"
+    // AVAILABLE_THEMES[7] - was missing!
   ];
   const isThemeSelection = choices.some((c) => isThemeName(c.value, availableThemes));
   for (const choice of choices) {
@@ -6875,6 +6867,11 @@ function generateRichLayout(style, themeName) {
           colors: { amount: theme.cost.amount, currency: theme.cost.currency }
         },
         {
+          id: "lines",
+          style,
+          colors: { added: theme.lines.added, removed: theme.lines.removed }
+        },
+        {
           id: "duration",
           style,
           colors: { value: theme.duration.value, unit: theme.duration.unit }
@@ -6890,11 +6887,6 @@ function generateRichLayout(style, themeName) {
           id: "git-tag",
           style,
           colors: { base: theme.base.text }
-        },
-        {
-          id: "lines",
-          style,
-          colors: { added: theme.lines.added, removed: theme.lines.removed }
         },
         {
           id: "active-tools",
@@ -7272,16 +7264,39 @@ async function routeCommand(command) {
 }
 
 // src/config/config-loader.ts
-var import_node_fs3 = require("node:fs");
+var import_node_fs4 = require("node:fs");
 var import_promises2 = require("node:fs/promises");
+var import_node_os4 = require("node:os");
+var import_node_path4 = require("node:path");
+
+// src/config/default-config-generator.ts
+var import_node_fs3 = require("node:fs");
 var import_node_os3 = require("node:os");
 var import_node_path3 = require("node:path");
-function getConfigPath() {
+function getDefaultConfigPath() {
   return (0, import_node_path3.join)((0, import_node_os3.homedir)(), ".claude-scope", "config.json");
+}
+async function ensureDefaultConfig() {
+  const configPath = getDefaultConfigPath();
+  if ((0, import_node_fs3.existsSync)(configPath)) {
+    return;
+  }
+  const configDir = (0, import_node_path3.join)((0, import_node_os3.homedir)(), ".claude-scope");
+  if (!(0, import_node_fs3.existsSync)(configDir)) {
+    (0, import_node_fs3.mkdirSync)(configDir, { recursive: true });
+  }
+  const defaultConfig = generateBalancedLayout("balanced", "cyberpunk-neon");
+  (0, import_node_fs3.writeFileSync)(configPath, JSON.stringify(defaultConfig, null, 2), "utf-8");
+}
+
+// src/config/config-loader.ts
+function getConfigPath() {
+  return (0, import_node_path4.join)((0, import_node_os4.homedir)(), ".claude-scope", "config.json");
 }
 async function loadWidgetConfig() {
   const configPath = getConfigPath();
-  if (!(0, import_node_fs3.existsSync)(configPath)) {
+  await ensureDefaultConfig();
+  if (!(0, import_node_fs4.existsSync)(configPath)) {
     return null;
   }
   try {
@@ -7497,704 +7512,10 @@ init_config_count_widget();
 init_context_widget();
 init_cost_widget();
 init_duration_widget();
-
-// src/widgets/empty-line-widget.ts
-init_widget_types();
-init_stdin_data_widget();
-var EmptyLineWidget = class extends StdinDataWidget {
-  id = "empty-line";
-  metadata = createWidgetMetadata(
-    "Empty Line",
-    "Empty line separator",
-    "1.0.0",
-    "claude-scope",
-    5
-    // Sixth line (0-indexed)
-  );
-  _lineOverride;
-  /**
-   * All styles return the same value (Braille Pattern Blank).
-   * This method exists for API consistency with other widgets.
-   */
-  setStyle(_style) {
-  }
-  setLine(line) {
-    this._lineOverride = line;
-  }
-  getLine() {
-    return this._lineOverride ?? this.metadata.line ?? 0;
-  }
-  /**
-   * Return Braille Pattern Blank to create a visible empty separator line.
-   * U+2800 occupies cell width but appears blank, ensuring the line renders.
-   */
-  renderWithData(_data, _context) {
-    return "\u2800";
-  }
-};
-
-// src/index.ts
 init_git_tag_widget();
 init_git_widget();
 init_lines_widget();
 init_model_widget();
-
-// src/widgets/poker-widget.ts
-init_style_types();
-init_widget_types();
-init_theme();
-init_stdin_data_widget();
-
-// src/widgets/poker/deck.ts
-var import_node_crypto = require("node:crypto");
-
-// src/widgets/poker/types.ts
-var Suit = {
-  Spades: "spades",
-  Hearts: "hearts",
-  Diamonds: "diamonds",
-  Clubs: "clubs"
-};
-var SUIT_SYMBOLS = {
-  spades: "\u2660",
-  hearts: "\u2665",
-  diamonds: "\u2666",
-  clubs: "\u2663"
-};
-var EMOJI_SYMBOLS = {
-  spades: "\u2660\uFE0F",
-  // ♠️
-  hearts: "\u2665\uFE0F",
-  // ♥️
-  diamonds: "\u2666\uFE0F",
-  // ♦️
-  clubs: "\u2663\uFE0F"
-  // ♣️
-};
-function isRedSuit(suit) {
-  return suit === "hearts" || suit === "diamonds";
-}
-var Rank = {
-  Two: "2",
-  Three: "3",
-  Four: "4",
-  Five: "5",
-  Six: "6",
-  Seven: "7",
-  Eight: "8",
-  Nine: "9",
-  Ten: "10",
-  Jack: "J",
-  Queen: "Q",
-  King: "K",
-  Ace: "A"
-};
-function getRankValue(rank) {
-  const values = {
-    "2": 2,
-    "3": 3,
-    "4": 4,
-    "5": 5,
-    "6": 6,
-    "7": 7,
-    "8": 8,
-    "9": 9,
-    "10": 10,
-    J: 11,
-    Q: 12,
-    K: 13,
-    A: 14
-  };
-  return values[rank];
-}
-function formatCard(card) {
-  return `${card.rank}${SUIT_SYMBOLS[card.suit]}`;
-}
-function formatCardEmoji(card) {
-  return `${card.rank}${EMOJI_SYMBOLS[card.suit]}`;
-}
-
-// src/widgets/poker/deck.ts
-var ALL_SUITS = [Suit.Spades, Suit.Hearts, Suit.Diamonds, Suit.Clubs];
-var ALL_RANKS = [
-  Rank.Two,
-  Rank.Three,
-  Rank.Four,
-  Rank.Five,
-  Rank.Six,
-  Rank.Seven,
-  Rank.Eight,
-  Rank.Nine,
-  Rank.Ten,
-  Rank.Jack,
-  Rank.Queen,
-  Rank.King,
-  Rank.Ace
-];
-var Deck = class {
-  cards = [];
-  constructor() {
-    this.initialize();
-    this.shuffle();
-  }
-  /**
-   * Create a standard 52-card deck
-   */
-  initialize() {
-    this.cards = [];
-    for (const suit of ALL_SUITS) {
-      for (const rank of ALL_RANKS) {
-        this.cards.push({ rank, suit });
-      }
-    }
-  }
-  /**
-   * Shuffle deck using Fisher-Yates algorithm with crypto.random
-   */
-  shuffle() {
-    for (let i = this.cards.length - 1; i > 0; i--) {
-      const j = (0, import_node_crypto.randomInt)(0, i + 1);
-      [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
-    }
-  }
-  /**
-   * Deal one card from the top of the deck
-   * @throws Error if deck is empty
-   */
-  deal() {
-    if (this.cards.length === 0) {
-      throw new Error("Deck is empty");
-    }
-    return this.cards.pop();
-  }
-  /**
-   * Get number of remaining cards in deck
-   */
-  remaining() {
-    return this.cards.length;
-  }
-};
-
-// src/widgets/poker/hand-evaluator.ts
-var HAND_DISPLAY = {
-  [10 /* RoyalFlush */]: { name: "Royal Flush", emoji: "\u{1F3C6}" },
-  [9 /* StraightFlush */]: { name: "Straight Flush", emoji: "\u{1F525}" },
-  [8 /* FourOfAKind */]: { name: "Four of a Kind", emoji: "\u{1F48E}" },
-  [7 /* FullHouse */]: { name: "Full House", emoji: "\u{1F3E0}" },
-  [6 /* Flush */]: { name: "Flush", emoji: "\u{1F4A7}" },
-  [5 /* Straight */]: { name: "Straight", emoji: "\u{1F4C8}" },
-  [4 /* ThreeOfAKind */]: { name: "Three of a Kind", emoji: "\u{1F3AF}" },
-  [3 /* TwoPair */]: { name: "Two Pair", emoji: "\u270C\uFE0F" },
-  [2 /* OnePair */]: { name: "One Pair", emoji: "\u{1F44D}" },
-  [1 /* HighCard */]: { name: "High Card", emoji: "\u{1F0CF}" }
-};
-function countRanks(cards) {
-  const counts = /* @__PURE__ */ new Map();
-  for (const card of cards) {
-    const value = getRankValue(card.rank);
-    counts.set(value, (counts.get(value) || 0) + 1);
-  }
-  return counts;
-}
-function countSuits(cards) {
-  const counts = /* @__PURE__ */ new Map();
-  for (const card of cards) {
-    counts.set(card.suit, (counts.get(card.suit) || 0) + 1);
-  }
-  return counts;
-}
-function findCardsOfRank(cards, targetRank) {
-  const indices = [];
-  for (let i = 0; i < cards.length; i++) {
-    if (getRankValue(cards[i].rank) === targetRank) {
-      indices.push(i);
-    }
-  }
-  return indices;
-}
-function findCardsOfSuit(cards, targetSuit) {
-  const indices = [];
-  for (let i = 0; i < cards.length; i++) {
-    if (cards[i].suit === targetSuit) {
-      indices.push(i);
-    }
-  }
-  return indices;
-}
-function findFlushSuit(cards) {
-  const suitCounts = countSuits(cards);
-  for (const [suit, count] of suitCounts.entries()) {
-    if (count >= 5) return suit;
-  }
-  return null;
-}
-function getStraightIndices(cards, highCard) {
-  const uniqueValues = /* @__PURE__ */ new Set();
-  const cardIndicesByRank = /* @__PURE__ */ new Map();
-  for (let i = 0; i < cards.length; i++) {
-    const value = getRankValue(cards[i].rank);
-    if (!cardIndicesByRank.has(value)) {
-      cardIndicesByRank.set(value, []);
-      uniqueValues.add(value);
-    }
-    cardIndicesByRank.get(value)?.push(i);
-  }
-  const sortedValues = Array.from(uniqueValues).sort((a, b) => b - a);
-  if (sortedValues.includes(14)) {
-    sortedValues.push(1);
-  }
-  for (let i = 0; i <= sortedValues.length - 5; i++) {
-    const current = sortedValues[i];
-    const next1 = sortedValues[i + 1];
-    const next2 = sortedValues[i + 2];
-    const next3 = sortedValues[i + 3];
-    const next4 = sortedValues[i + 4];
-    if (current - next1 === 1 && current - next2 === 2 && current - next3 === 3 && current - next4 === 4) {
-      if (current === highCard) {
-        const indices = [];
-        indices.push(cardIndicesByRank.get(current)[0]);
-        indices.push(cardIndicesByRank.get(next1)[0]);
-        indices.push(cardIndicesByRank.get(next2)[0]);
-        indices.push(cardIndicesByRank.get(next3)[0]);
-        const rank4 = next4 === 1 ? 14 : next4;
-        indices.push(cardIndicesByRank.get(rank4)[0]);
-        return indices;
-      }
-    }
-  }
-  return [];
-}
-function getStraightFlushHighCard(cards, suit) {
-  const suitCards = cards.filter((c) => c.suit === suit);
-  return getStraightHighCard(suitCards);
-}
-function getStraightFlushIndices(cards, highCard, suit) {
-  const _suitCards = cards.filter((c) => c.suit === suit);
-  const suitCardIndices = [];
-  const indexMap = /* @__PURE__ */ new Map();
-  for (let i = 0; i < cards.length; i++) {
-    if (cards[i].suit === suit) {
-      indexMap.set(suitCardIndices.length, i);
-      suitCardIndices.push(cards[i]);
-    }
-  }
-  const indices = getStraightIndices(suitCardIndices, highCard);
-  return indices.map((idx) => indexMap.get(idx));
-}
-function getFullHouseIndices(cards) {
-  const rankCounts = countRanks(cards);
-  let tripsRank = 0;
-  for (const [rank, count] of rankCounts.entries()) {
-    if (count === 3) {
-      tripsRank = rank;
-      break;
-    }
-  }
-  let pairRank = 0;
-  for (const [rank, count] of rankCounts.entries()) {
-    if (count >= 2 && rank !== tripsRank) {
-      pairRank = rank;
-      break;
-    }
-  }
-  if (pairRank === 0) {
-    const tripsRanks = [];
-    for (const [rank, count] of rankCounts.entries()) {
-      if (count === 3) {
-        tripsRanks.push(rank);
-      }
-    }
-    if (tripsRanks.length >= 2) {
-      tripsRanks.sort((a, b) => b - a);
-      tripsRank = tripsRanks[0];
-      pairRank = tripsRanks[1];
-    }
-  }
-  const tripsIndices = findCardsOfRank(cards, tripsRank);
-  const pairIndices = findCardsOfRank(cards, pairRank);
-  return [...tripsIndices.slice(0, 3), ...pairIndices.slice(0, 2)];
-}
-function isFlush(cards) {
-  const suitCounts = countSuits(cards);
-  for (const count of suitCounts.values()) {
-    if (count >= 5) return true;
-  }
-  return false;
-}
-function getStraightHighCard(cards) {
-  const uniqueValues = /* @__PURE__ */ new Set();
-  for (const card of cards) {
-    uniqueValues.add(getRankValue(card.rank));
-  }
-  const sortedValues = Array.from(uniqueValues).sort((a, b) => b - a);
-  if (sortedValues.includes(14)) {
-    sortedValues.push(1);
-  }
-  for (let i = 0; i <= sortedValues.length - 5; i++) {
-    const current = sortedValues[i];
-    const next1 = sortedValues[i + 1];
-    const next2 = sortedValues[i + 2];
-    const next3 = sortedValues[i + 3];
-    const next4 = sortedValues[i + 4];
-    if (current - next1 === 1 && current - next2 === 2 && current - next3 === 3 && current - next4 === 4) {
-      return current;
-    }
-  }
-  return null;
-}
-function getMaxCount(cards) {
-  const rankCounts = countRanks(cards);
-  let maxCount = 0;
-  for (const count of rankCounts.values()) {
-    if (count > maxCount) {
-      maxCount = count;
-    }
-  }
-  return maxCount;
-}
-function getPairCount(cards) {
-  const rankCounts = countRanks(cards);
-  let pairCount = 0;
-  for (const count of rankCounts.values()) {
-    if (count === 2) {
-      pairCount++;
-    }
-  }
-  return pairCount;
-}
-function getMostCommonRank(cards) {
-  const rankCounts = countRanks(cards);
-  let bestRank = 0;
-  let bestCount = 0;
-  for (const [rank, count] of rankCounts.entries()) {
-    if (count > bestCount) {
-      bestCount = count;
-      bestRank = rank;
-    }
-  }
-  return bestRank > 0 ? bestRank : null;
-}
-function getTwoPairRanks(cards) {
-  const rankCounts = countRanks(cards);
-  const pairRanks = [];
-  for (const [rank, count] of rankCounts.entries()) {
-    if (count >= 2) {
-      pairRanks.push(rank);
-    }
-  }
-  pairRanks.sort((a, b) => b - a);
-  return pairRanks.slice(0, 2);
-}
-function getHighestCardIndex(cards) {
-  let highestIdx = 0;
-  let highestValue = 0;
-  for (let i = 0; i < cards.length; i++) {
-    const value = getRankValue(cards[i].rank);
-    if (value > highestValue) {
-      highestValue = value;
-      highestIdx = i;
-    }
-  }
-  return highestIdx;
-}
-function evaluateHand(hole, board) {
-  const allCards = [...hole, ...board];
-  const flush = isFlush(allCards);
-  const straightHighCard = getStraightHighCard(allCards);
-  const maxCount = getMaxCount(allCards);
-  const pairCount = getPairCount(allCards);
-  if (flush && straightHighCard === 14) {
-    const flushSuit = findFlushSuit(allCards);
-    const sfHighCard = getStraightFlushHighCard(allCards, flushSuit);
-    if (sfHighCard === 14) {
-      const participatingCards = getStraightFlushIndices(allCards, 14, flushSuit);
-      return {
-        rank: 10 /* RoyalFlush */,
-        ...HAND_DISPLAY[10 /* RoyalFlush */],
-        participatingCards
-      };
-    }
-  }
-  if (flush) {
-    const flushSuit = findFlushSuit(allCards);
-    const sfHighCard = getStraightFlushHighCard(allCards, flushSuit);
-    if (sfHighCard !== null) {
-      const participatingCards = getStraightFlushIndices(allCards, sfHighCard, flushSuit);
-      return {
-        rank: 9 /* StraightFlush */,
-        ...HAND_DISPLAY[9 /* StraightFlush */],
-        participatingCards
-      };
-    }
-  }
-  if (maxCount === 4) {
-    const rank = getMostCommonRank(allCards);
-    const participatingCards = findCardsOfRank(allCards, rank);
-    return {
-      rank: 8 /* FourOfAKind */,
-      ...HAND_DISPLAY[8 /* FourOfAKind */],
-      participatingCards
-    };
-  }
-  if (maxCount === 3 && pairCount >= 1) {
-    const participatingCards = getFullHouseIndices(allCards);
-    return { rank: 7 /* FullHouse */, ...HAND_DISPLAY[7 /* FullHouse */], participatingCards };
-  }
-  if (flush) {
-    const flushSuit = findFlushSuit(allCards);
-    const suitIndices = findCardsOfSuit(allCards, flushSuit);
-    const participatingCards = suitIndices.slice(0, 5);
-    return { rank: 6 /* Flush */, ...HAND_DISPLAY[6 /* Flush */], participatingCards };
-  }
-  if (straightHighCard !== null) {
-    const participatingCards = getStraightIndices(allCards, straightHighCard);
-    return { rank: 5 /* Straight */, ...HAND_DISPLAY[5 /* Straight */], participatingCards };
-  }
-  if (maxCount === 3) {
-    const rank = getMostCommonRank(allCards);
-    const participatingCards = findCardsOfRank(allCards, rank);
-    return {
-      rank: 4 /* ThreeOfAKind */,
-      ...HAND_DISPLAY[4 /* ThreeOfAKind */],
-      participatingCards
-    };
-  }
-  if (pairCount >= 2) {
-    const [rank1, rank2] = getTwoPairRanks(allCards);
-    const pair1Indices = findCardsOfRank(allCards, rank1);
-    const pair2Indices = findCardsOfRank(allCards, rank2);
-    const participatingCards = [...pair1Indices, ...pair2Indices];
-    return { rank: 3 /* TwoPair */, ...HAND_DISPLAY[3 /* TwoPair */], participatingCards };
-  }
-  if (pairCount === 1) {
-    const rank = getMostCommonRank(allCards);
-    const participatingCards = findCardsOfRank(allCards, rank);
-    return { rank: 2 /* OnePair */, ...HAND_DISPLAY[2 /* OnePair */], participatingCards };
-  }
-  const highestIdx = getHighestCardIndex(allCards);
-  return {
-    rank: 1 /* HighCard */,
-    ...HAND_DISPLAY[1 /* HighCard */],
-    participatingCards: [highestIdx]
-  };
-}
-
-// src/widgets/poker/styles.ts
-init_colors();
-init_formatters();
-var HAND_ABBREVIATIONS = {
-  "Royal Flush": "RF",
-  "Straight Flush": "SF",
-  "Four of a Kind": "4K",
-  "Full House": "FH",
-  Flush: "FL",
-  Straight: "ST",
-  "Three of a Kind": "3K",
-  "Two Pair": "2P",
-  "One Pair": "1P",
-  "High Card": "HC",
-  Nothing: "\u2014"
-};
-function formatCardByParticipation(cardData, isParticipating) {
-  const color = isRedSuit(cardData.card.suit) ? red : gray;
-  const cardText = formatCard(cardData.card);
-  if (isParticipating) {
-    return `${color}${bold}(${cardText})${reset} `;
-  } else {
-    return `${color}${cardText}${reset} `;
-  }
-}
-function formatCardCompact(cardData, isParticipating) {
-  const color = isRedSuit(cardData.card.suit) ? red : gray;
-  const cardText = formatCardTextCompact(cardData.card);
-  if (isParticipating) {
-    return `${color}${bold}(${cardText})${reset}`;
-  } else {
-    return `${color}${cardText}${reset}`;
-  }
-}
-function formatCardTextCompact(card) {
-  const rankSymbols = {
-    "10": "T",
-    "11": "J",
-    "12": "Q",
-    "13": "K",
-    "14": "A"
-  };
-  const rank = String(card.rank);
-  const rankSymbol = rankSymbols[rank] ?? rank;
-  return `${rankSymbol}${card.suit}`;
-}
-function formatCardEmojiByParticipation(cardData, isParticipating) {
-  const cardText = formatCardEmoji(cardData.card);
-  if (isParticipating) {
-    return `${bold}(${cardText})${reset} `;
-  } else {
-    return `${cardText} `;
-  }
-}
-function formatHandResult(handResult, colors2) {
-  if (!handResult) {
-    return "\u2014";
-  }
-  const playerParticipates = handResult.participatingIndices.some((idx) => idx < 2);
-  const resultText = !playerParticipates ? `Nothing \u{1F0CF}` : `${handResult.name}! ${handResult.emoji}`;
-  if (!colors2) return resultText;
-  return colorize2(resultText, colors2.result);
-}
-function getHandAbbreviation(handResult) {
-  if (!handResult) {
-    return "\u2014 (\u2014)";
-  }
-  const abbreviation = HAND_ABBREVIATIONS[handResult.name] ?? "\u2014";
-  return `${abbreviation} (${handResult.name})`;
-}
-function balancedStyle2(data, colors2) {
-  const { holeCards, boardCards, handResult } = data;
-  const participatingSet = new Set(handResult?.participatingIndices || []);
-  const handStr = holeCards.map((hc, idx) => formatCardByParticipation(hc, participatingSet.has(idx))).join("");
-  const boardStr = boardCards.map((bc, idx) => formatCardByParticipation(bc, participatingSet.has(idx + 2))).join("");
-  const labelColor = colors2?.participating ?? lightGray;
-  const handLabel = colorize2("Hand:", labelColor);
-  const boardLabel = colorize2("Board:", labelColor);
-  return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult, colors2)}`;
-}
-var pokerStyles = {
-  balanced: balancedStyle2,
-  compact: balancedStyle2,
-  playful: balancedStyle2,
-  "compact-verbose": (data, colors2) => {
-    const { holeCards, boardCards, handResult } = data;
-    const participatingSet = new Set(handResult?.participatingIndices || []);
-    const handStr = holeCards.map((hc, idx) => formatCardCompact(hc, participatingSet.has(idx))).join("");
-    const boardStr = boardCards.map((bc, idx) => formatCardCompact(bc, participatingSet.has(idx + 2))).join("");
-    const abbreviation = getHandAbbreviation(handResult);
-    const result = `${handStr}| ${boardStr}\u2192 ${abbreviation}`;
-    if (!colors2) return result;
-    return colorize2(result, colors2.result);
-  },
-  emoji: (data, colors2) => {
-    const { holeCards, boardCards, handResult } = data;
-    const participatingSet = new Set(handResult?.participatingIndices || []);
-    const handStr = holeCards.map((hc, idx) => formatCardEmojiByParticipation(hc, participatingSet.has(idx))).join("");
-    const boardStr = boardCards.map((bc, idx) => formatCardEmojiByParticipation(bc, participatingSet.has(idx + 2))).join("");
-    const labelColor = colors2?.participating ?? lightGray;
-    const handLabel = colorize2("Hand:", labelColor);
-    const boardLabel = colorize2("Board:", labelColor);
-    return `${handLabel} ${handStr}| ${boardLabel} ${boardStr}\u2192 ${formatHandResult(handResult, colors2)}`;
-  }
-};
-
-// src/widgets/poker-widget.ts
-var PokerWidget = class extends StdinDataWidget {
-  id = "poker";
-  metadata = createWidgetMetadata(
-    "Poker",
-    "Displays random Texas Hold'em hands for entertainment",
-    "1.0.0",
-    "claude-scope",
-    4
-    // Fifth line (0-indexed)
-  );
-  holeCards = [];
-  boardCards = [];
-  handResult = null;
-  lastUpdateTimestamp = 0;
-  THROTTLE_MS = 5e3;
-  // 5 seconds
-  colors;
-  _lineOverride;
-  styleFn = pokerStyles.balanced;
-  setStyle(style = DEFAULT_WIDGET_STYLE) {
-    const fn = pokerStyles[style];
-    if (fn) {
-      this.styleFn = fn;
-    }
-  }
-  setLine(line) {
-    this._lineOverride = line;
-  }
-  getLine() {
-    return this._lineOverride ?? this.metadata.line ?? 0;
-  }
-  constructor(colors2) {
-    super();
-    this.colors = colors2 ?? DEFAULT_THEME;
-  }
-  /**
-   * Generate new poker hand on each update
-   */
-  async update(data) {
-    await super.update(data);
-    const now = Date.now();
-    if (this.lastUpdateTimestamp > 0 && now - this.lastUpdateTimestamp < this.THROTTLE_MS) {
-      return;
-    }
-    const deck = new Deck();
-    const hole = [deck.deal(), deck.deal()];
-    const board = [deck.deal(), deck.deal(), deck.deal(), deck.deal(), deck.deal()];
-    const result = evaluateHand(hole, board);
-    this.holeCards = hole.map((card) => ({
-      card,
-      formatted: this.formatCardColor(card)
-    }));
-    this.boardCards = board.map((card) => ({
-      card,
-      formatted: this.formatCardColor(card)
-    }));
-    const playerParticipates = result.participatingCards.some((idx) => idx < 2);
-    if (!playerParticipates) {
-      this.handResult = {
-        text: `Nothing \u{1F0CF}`,
-        participatingIndices: result.participatingCards
-      };
-    } else {
-      this.handResult = {
-        text: `${result.name}! ${result.emoji}`,
-        participatingIndices: result.participatingCards
-      };
-    }
-    this.lastUpdateTimestamp = now;
-  }
-  /**
-   * Format card with appropriate color (red for ♥♦, gray for ♠♣)
-   */
-  formatCardColor(card) {
-    const _color = isRedSuit(card.suit) ? "red" : "gray";
-    return formatCard(card);
-  }
-  renderWithData(_data, _context) {
-    const holeCardsData = this.holeCards.map((hc, idx) => ({
-      card: hc.card,
-      isParticipating: (this.handResult?.participatingIndices || []).includes(idx)
-    }));
-    const boardCardsData = this.boardCards.map((bc, idx) => ({
-      card: bc.card,
-      isParticipating: (this.handResult?.participatingIndices || []).includes(idx + 2)
-    }));
-    const handResult = this.handResult ? {
-      name: this.getHandName(this.handResult.text),
-      emoji: this.getHandEmoji(this.handResult.text),
-      participatingIndices: this.handResult.participatingIndices
-    } : null;
-    const renderData = {
-      holeCards: holeCardsData,
-      boardCards: boardCardsData,
-      handResult
-    };
-    return this.styleFn(renderData, this.colors.poker);
-  }
-  getHandName(text) {
-    const match = text.match(/^([^!]+)/);
-    return match ? match[1].trim() : "Nothing";
-  }
-  getHandEmoji(text) {
-    const match = text.match(/([🃏♠️♥️♦️♣️🎉✨🌟])/u);
-    return match ? match[1] : "\u{1F0CF}";
-  }
-};
-
-// src/index.ts
 async function readStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) {
@@ -8263,8 +7584,6 @@ async function main() {
         widgetConfig
       );
     }
-    await registry.register(new PokerWidget());
-    await registry.register(new EmptyLineWidget());
     const renderer = new Renderer({
       separator: " \u2502 ",
       onError: (_error, _widget) => {

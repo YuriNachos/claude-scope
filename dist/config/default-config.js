@@ -245,8 +245,8 @@ export function generateCompactLayout(style, themeName) {
 }
 /**
  * Generate Rich layout configuration (3 lines)
- * Line 0: model, context, cost, duration
- * Line 1: git, git-tag, lines, active-tools
+ * Line 0: model, context, cost, lines, duration
+ * Line 1: git, git-tag, active-tools
  * Line 2: cache-metrics, config-count
  */
 export function generateRichLayout(style, themeName) {
@@ -276,6 +276,11 @@ export function generateRichLayout(style, themeName) {
                     colors: { amount: theme.cost.amount, currency: theme.cost.currency },
                 },
                 {
+                    id: "lines",
+                    style: style,
+                    colors: { added: theme.lines.added, removed: theme.lines.removed },
+                },
+                {
                     id: "duration",
                     style: style,
                     colors: { value: theme.duration.value, unit: theme.duration.unit },
@@ -291,11 +296,6 @@ export function generateRichLayout(style, themeName) {
                     id: "git-tag",
                     style: style,
                     colors: { base: theme.base.text },
-                },
-                {
-                    id: "lines",
-                    style: style,
-                    colors: { added: theme.lines.added, removed: theme.lines.removed },
                 },
                 {
                     id: "active-tools",

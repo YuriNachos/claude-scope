@@ -18,12 +18,10 @@ import { ConfigCountWidget } from "./widgets/config-count-widget.js";
 import { ContextWidget } from "./widgets/context-widget.js";
 import { CostWidget } from "./widgets/cost-widget.js";
 import { DurationWidget } from "./widgets/duration-widget.js";
-import { EmptyLineWidget } from "./widgets/empty-line-widget.js";
 import { GitTagWidget } from "./widgets/git/git-tag-widget.js";
 import { GitWidget } from "./widgets/git/git-widget.js";
 import { LinesWidget } from "./widgets/lines-widget.js";
 import { ModelWidget } from "./widgets/model-widget.js";
-import { PokerWidget } from "./widgets/poker-widget.js";
 /**
  * Read stdin as string
  */
@@ -117,9 +115,7 @@ export async function main() {
         if (isWidgetEnabled("activeTools")) {
             await registerWidgetWithConfig(registry, new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider), "active-tools", widgetConfig);
         }
-        // Poker widget is NOT in the config (excluded from quick-config)
-        await registry.register(new PokerWidget());
-        await registry.register(new EmptyLineWidget());
+        // NOTE: PokerWidget and EmptyLineWidget are only registered if present in config
         // Create renderer with error handling configuration
         const renderer = new Renderer({
             separator: " │ ",

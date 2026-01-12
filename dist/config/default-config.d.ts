@@ -28,8 +28,8 @@ export declare function generateBalancedLayout(style: QuickConfigStyle, themeNam
 export declare function generateCompactLayout(style: QuickConfigStyle, themeName: string): ScopeConfig;
 /**
  * Generate Rich layout configuration (3 lines)
- * Line 0: model, context, cost, duration
- * Line 1: git, git-tag, lines, active-tools
+ * Line 0: model, context, cost, lines, duration
+ * Line 1: git, git-tag, active-tools
  * Line 2: cache-metrics, config-count
  */
 export declare function generateRichLayout(style: QuickConfigStyle, themeName: string): ScopeConfig;

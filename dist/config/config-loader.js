@@ -6,6 +6,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { ensureDefaultConfig } from "./default-config-generator.js";
 /**
  * Get config file path
  * @returns Path to ~/.claude-scope/config.json
@@ -20,7 +21,9 @@ function getConfigPath() {
  */
 export async function loadWidgetConfig() {
     const configPath = getConfigPath();
-    // Check if file exists
+    // Ensure default config exists before loading
+    await ensureDefaultConfig();
+    // Check if file exists (should exist now after ensureDefaultConfig)
     if (!existsSync(configPath)) {
         return null;
     }
