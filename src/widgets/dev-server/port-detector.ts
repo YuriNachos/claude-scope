@@ -18,6 +18,23 @@ export interface DetectedServer {
 }
 
 /**
+ * Result of execFile command
+ */
+interface ExecFileResult {
+  stdout: string;
+  stderr?: string;
+}
+
+/**
+ * Function signature for execFile (for dependency injection in tests)
+ */
+export type ExecFileFn = (
+  command: string,
+  args: string[],
+  options?: { timeout?: number }
+) => Promise<ExecFileResult>;
+
+/**
  * Port to server mapping
  */
 const PORT_MAPPING: Record<number, { name: string; icon: string }> = {
@@ -40,6 +57,16 @@ const DEV_PORTS = [5173, 4200, 3000, 8080, 8000, 8888];
  * Uses lsof to check if processes are listening on common dev server ports.
  */
 export class PortDetector {
+  private execFn: ExecFileFn;
+
+  /**
+   * Create a new PortDetector
+   * @param execFn - Optional execFile function for testing (dependency injection)
+   */
+  constructor(execFn?: ExecFileFn) {
+    this.execFn = execFn ?? execFileAsync;
+  }
+
   /**
    * Detect running dev servers by checking listening ports
    * @returns Detected server info or null
@@ -58,7 +85,7 @@ export class PortDetector {
         args.push("-i", `:${port}`);
       }
 
-      const { stdout } = await execFileAsync("lsof", args, {
+      const { stdout } = await this.execFn("lsof", args, {
         timeout: 2000,
       });
 
