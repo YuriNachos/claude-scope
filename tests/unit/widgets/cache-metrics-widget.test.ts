@@ -2,7 +2,7 @@
  * Unit tests for CacheMetricsWidget
  */
 
-import { beforeEach, describe, it } from "node:test";
+import { afterEach, beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
 import { CacheManager } from "../../../src/storage/cache-manager.js";
 import { DEFAULT_THEME } from "../../../src/ui/theme/index.js";
@@ -13,6 +13,12 @@ import { stripAnsi } from "../../helpers/snapshot.js";
 describe("CacheMetricsWidget", () => {
   beforeEach(() => {
     // Clear cache before each test to ensure isolation
+    const cacheManager = new CacheManager();
+    cacheManager.clearCache();
+  });
+
+  afterEach(() => {
+    // Clear cache after each test to ensure isolation
     const cacheManager = new CacheManager();
     cacheManager.clearCache();
   });
