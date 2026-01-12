@@ -25,6 +25,8 @@ Claude Code CLI tool that displays status information in the terminal. Users wor
 - Quick config command with three-stage interactive setup (layout → style → theme)
 - Mock providers (MockGit, MockTranscriptProvider, MockConfigProvider) for preview/demo mode
 - CacheMetricsWidget balanced style (no emoji, just "35.0k cache")
+- DevServerWidget for detecting running development servers
+- DockerWidget for monitoring Docker container status
 
 **Planned features**: Running agents, todo progress, session analytics.
 
@@ -91,6 +93,14 @@ src/
 │       ├── types.ts          # Cache metrics types
 │       ├── styles.ts         # Cache metrics styles
 │       └── cache-metrics-widget.ts
+│   ├── dev-server/           # Dev server status widget
+│   │   ├── types.ts          # Dev server types
+│   │   ├── styles.ts         # Dev server styles
+│   │   └── dev-server-widget.ts
+│   └── docker/               # Docker container widget
+│       ├── types.ts          # Docker types
+│       ├── styles.ts         # Docker styles
+│       └── docker-widget.ts
 ├── ui/
 │   ├── theme/                # Theme system and color configuration
 │   │   ├── index.ts          # Theme exports
@@ -140,6 +150,10 @@ src/
 │   │   └── active-tools-widget.ts
 │   └── cache-metrics/        # ✓ Implemented (cache tokens & savings)
 │       └── cache-metrics-widget.ts
+│   ├── dev-server/           # ✓ Implemented (dev server status detection)
+│   │   └── dev-server-widget.ts
+│   └── docker/               # ✓ Implemented (Docker container count)
+│       └── docker-widget.ts
 │   ├── session-widget.ts     # PLANNED
 │   ├── agents-widget.ts      # PLANNED
 │   ├── todos-widget.ts       # PLANNED
@@ -203,6 +217,8 @@ interface IThemeColors {
   poker: IPokerColors;      // Poker game display
   cache: ICacheColors;      // Cache metrics (hit rate, savings)
   tools: IToolsColors;      // Active tools (running, completed)
+  devServer: IDevServerColors; // Dev server status
+  docker: IDockerColors;    // Docker container status
 }
 ```
 
@@ -239,6 +255,23 @@ interface IToolsColors {
   name: string;     // Color for tool name
   target: string;   // Color for tool target/path
   count: string;    // Color for tool count multiplier
+}
+
+// DevServerWidget colors
+interface IDevServerColors {
+  running: string;  // Color for running status
+  building: string; // Color for building status
+  stopped: string;  // Color for stopped status
+  name: string;     // Color for server name
+  icon: string;     // Color for lightning bolt icon
+}
+
+// DockerWidget colors
+interface IDockerColors {
+  running: string;  // Color for running containers
+  total: string;    // Color for total container count
+  icon: string;     // Color for whale emoji
+  label: string;    // Color for "Docker:" label
 }
 ```
 
@@ -430,6 +463,26 @@ labeled:     Tools: ◐ Read: /src/example.ts | ✓ Edit ×3 | ✓ Read ×2
 indicator:   ● Read: /src/example.ts | ● Edit ×3 | ● Read ×2
 ```
 
+**DevServerWidget** (shows dev server status):
+```
+balanced:    ⚡ Nuxt (running)
+compact:     ⚡ Nuxt 🚀
+playful:     🏃 Nuxt
+verbose:     Dev Server: Nuxt (running)
+labeled:     Server: ⚡ Nuxt 🟢
+indicator:   ● ⚡ Nuxt
+```
+
+**DockerWidget** (shows Docker containers):
+```
+balanced:    Docker: 3/5 🟢
+compact:     🐳 3/5
+playful:     🐳 Docker: 3/5 🟢
+verbose:     Docker: 3 running / 5 total
+labeled:     Docker: 3/5
+indicator:   ● Docker: 3/5
+```
+
 #### Style Implementation
 
 Styles are implemented as functional renderers in each widget's styles file:
@@ -602,6 +655,24 @@ abstract class StdinDataWidget implements IWidget {
   - Supports multiple display styles (balanced, compact, playful, etc.)
   - Limits to last 20 tool entries
   - Theme-integrated colors via `IToolsColors`
+
+#### 13. **DevServerWidget** (`src/widgets/dev-server/dev-server-widget.ts`)
+- **What it displays**: Running dev server status
+- **Status**: ✅ **IMPLEMENTED**
+- **Features**:
+  - Detects common dev servers (Nuxt, Next.js, Vite, Svelte, Astro, Remix)
+  - Shows running/building/stopped status
+  - Uses `ps` command for process detection (macOS/Linux)
+  - Theme-integrated colors via `IDevServerColors`
+
+#### 14. **DockerWidget** (`src/widgets/docker/docker-widget.ts`)
+- **What it displays**: Docker container count and status
+- **Status**: ✅ **IMPLEMENTED**
+- **Features**:
+  - Shows running/total container count
+  - Caches Docker query results for 5 seconds
+  - Gracefully handles Docker unavailable
+  - Theme-integrated colors via `IDockerColors`
 
 ## Bug Fixes
 
@@ -786,6 +857,8 @@ Widget behavior will be configured via JSON (`~/.claude-scope/config.json`):
 - `config-count` - Configuration count widget
 - `cache-metrics` - Cache metrics widget (feature-flagged)
 - `active-tools` - Active tools widget (feature-flagged)
+- `dev-server` - Dev server status widget
+- `docker` - Docker container count widget
 
 ### Presets (PLANNED)
 
