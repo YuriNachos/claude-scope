@@ -82,6 +82,13 @@ export function createThemeColors(params: {
   toolsName: string;
   toolsTarget: string;
   toolsCount: string;
+  devServerName?: string;
+  devServerStatus?: string;
+  devServerLabel?: string;
+  dockerLabel?: string;
+  dockerCount?: string;
+  dockerRunning?: string;
+  dockerStopped?: string;
 }): IThemeColors {
   const base = createBaseColors({
     modelColor: params.model,
@@ -144,6 +151,17 @@ export function createThemeColors(params: {
       name: params.toolsName,
       target: params.toolsTarget,
       count: params.toolsCount,
+    },
+    devServer: {
+      name: params.devServerName ?? params.model,
+      status: params.devServerStatus ?? params.contextLow,
+      label: params.devServerLabel ?? params.duration,
+    },
+    docker: {
+      label: params.dockerLabel ?? params.duration,
+      count: params.dockerCount ?? params.model,
+      running: params.dockerRunning ?? params.contextLow,
+      stopped: params.dockerStopped ?? params.contextHigh,
     },
   };
 }

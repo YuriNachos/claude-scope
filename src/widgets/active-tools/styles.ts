@@ -316,6 +316,17 @@ function getDefaultColors(): IThemeColors {
       target: "\x1b[90m",
       count: "\x1b[35m",
     },
+    devServer: {
+      name: "\x1b[36m",
+      status: "\x1b[32m",
+      label: "\x1b[90m",
+    },
+    docker: {
+      label: "\x1b[90m",
+      count: "\x1b[37m",
+      running: "\x1b[32m",
+      stopped: "\x1b[31m",
+    },
   };
 }
 
