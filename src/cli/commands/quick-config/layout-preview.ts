@@ -16,6 +16,8 @@ import { CacheMetricsWidget } from "../../../widgets/cache-metrics/index.js";
 import { ConfigCountWidget } from "../../../widgets/config-count-widget.js";
 import { ContextWidget } from "../../../widgets/context-widget.js";
 import { CostWidget } from "../../../widgets/cost-widget.js";
+import { DevServerWidget } from "../../../widgets/dev-server/dev-server-widget.js";
+import { DockerWidget } from "../../../widgets/docker/docker-widget.js";
 import { DurationWidget } from "../../../widgets/duration-widget.js";
 import { GitTagWidget } from "../../../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../../../widgets/git/git-widget.js";
@@ -86,6 +88,16 @@ async function registerWidgetsFromConfig(
     },
     "cache-metrics": (s) => {
       const w = new CacheMetricsWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    "dev-server": (s) => {
+      const w = new DevServerWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    docker: (s) => {
+      const w = new DockerWidget(themeColors);
       w.setStyle(s);
       return w;
     },

@@ -151,10 +151,13 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
   },
 
   /**
-   * playful: Emojis (📖✏️✨🔄🔍📁) with tool names
+   * playful: Emojis (📖✏️✨🔄🔍📁) with tool counts (like balanced but more fun)
+   * - Shows running + completed counts like balanced style
+   * - Uses emojis instead of text labels for a more playful look
    */
   playful: (data: ActiveToolsRenderData, colors?: IThemeColors) => {
     const parts: string[] = [];
+    const c = colors ?? getDefaultColors();
     const emojis: Record<string, string> = {
       Read: "📖",
       Write: "✏️",
@@ -162,18 +165,57 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
       Bash: "🔄",
       Grep: "🔍",
       Glob: "📁",
+      Task: "📋",
     };
 
-    for (const tool of data.running.slice(-3)) {
-      const emoji = emojis[tool.name] ?? "🔧";
-      const nameStr = colors ? colorize(tool.name, colors.tools.name) : tool.name;
-      parts.push(`${emoji} ${nameStr}`);
+    // Get all unique tool names (running + top-3 completed)
+    const allToolNames = new Set<string>();
+    for (const tool of data.running) {
+      allToolNames.add(tool.name);
+    }
+    for (const [name] of data.completed.slice(0, 3)) {
+      allToolNames.add(name);
+    }
+
+    // Create a Map from completed array for O(1) lookup
+    const completedMap = new Map(data.completed);
+
+    // Count running tools by name
+    const runningCounts = new Map<string, number>();
+    for (const tool of data.running) {
+      runningCounts.set(tool.name, (runningCounts.get(tool.name) ?? 0) + 1);
+    }
+
+    // Build display for each tool
+    for (const name of allToolNames) {
+      const runningCount = runningCounts.get(name) ?? 0;
+      const completedCount = completedMap.get(name) ?? 0;
+      const emoji = emojis[name] ?? "🔧";
+
+      if (runningCount > 0 && completedCount > 0) {
+        // Both running and completed: "✨ Edit (▶1, ✓3)"
+        const nameStr = colorize(name, c.tools.name);
+        const runningStr = colorize(`▶${runningCount}`, c.tools.running);
+        const doneStr = colorize(`✓${completedCount}`, c.tools.completed);
+        parts.push(`${emoji} ${nameStr} (${runningStr}, ${doneStr})`);
+      } else if (completedCount > 0) {
+        // Only completed: "✨ Edits: 3" (pluralized)
+        const pluralName = pluralizeTool(name);
+        const nameStr = colorize(pluralName, c.tools.name);
+        const countStr = colorize(`${completedCount}`, c.tools.count);
+        parts.push(`${emoji} ${nameStr}: ${countStr}`);
+      } else if (runningCount > 0) {
+        // Only running: "✨ Edit (▶1)"
+        const nameStr = colorize(name, c.tools.name);
+        const runningStr = colorize(`▶${runningCount}`, c.tools.running);
+        parts.push(`${emoji} ${nameStr} (${runningStr})`);
+      }
     }
 
     if (parts.length === 0) {
       return "";
     }
-    return parts.join(", ");
+    return parts.join(" | ");
   },
 
   /**
