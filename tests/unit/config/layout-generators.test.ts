@@ -35,15 +35,15 @@ describe("Layout Generators", () => {
       assert.ok(ids.includes("lines"));
     });
 
-    it("should include git, cache-metrics, config-count, active-tools on line 1", () => {
+    it("should include git, git-tag, cache-metrics, config-count on line 1", () => {
       const config = generateBalancedLayout(defaultStyle, defaultTheme);
       const line1 = config.lines["1"];
 
       const ids = line1.map((w) => w.id);
       assert.ok(ids.includes("git"));
+      assert.ok(ids.includes("git-tag"));
       assert.ok(ids.includes("cache-metrics"));
       assert.ok(ids.includes("config-count"));
-      assert.ok(ids.includes("active-tools"));
     });
 
     it("should have correct version", () => {
@@ -59,6 +59,20 @@ describe("Layout Generators", () => {
     it("should have 4 widgets on line 1", () => {
       const config = generateBalancedLayout(defaultStyle, defaultTheme);
       assert.strictEqual(config.lines["1"].length, 4);
+    });
+
+    it("should have 5 widgets on line 0 in new order", () => {
+      const config = generateBalancedLayout(defaultStyle, defaultTheme);
+      const line0Ids = config.lines["0"].map((w) => w.id);
+
+      assert.deepStrictEqual(line0Ids, ["model", "context", "lines", "cost", "duration"]);
+    });
+
+    it("should have 4 widgets on line 1 in new order", () => {
+      const config = generateBalancedLayout(defaultStyle, defaultTheme);
+      const line1Ids = config.lines["1"].map((w) => w.id);
+
+      assert.deepStrictEqual(line1Ids, ["git", "git-tag", "cache-metrics", "config-count"]);
     });
   });
 
@@ -329,8 +343,24 @@ describe("Layout Generators", () => {
       assert.ok("write" in cacheWidget.colors);
     });
 
-    it("should have correct color structure for active-tools widget", () => {
+    it("should have correct color structure for git-tag widget", () => {
       const config = generateBalancedLayout("balanced", "monokai");
+      const gitTagWidget = config.lines["1"].find((w) => w.id === "git-tag");
+
+      assert.ok(gitTagWidget);
+      assert.ok("base" in gitTagWidget.colors);
+    });
+
+    it("should have correct color structure for config-count widget", () => {
+      const config = generateBalancedLayout("balanced", "monokai");
+      const configCountWidget = config.lines["1"].find((w) => w.id === "config-count");
+
+      assert.ok(configCountWidget);
+      assert.ok("base" in configCountWidget.colors);
+    });
+
+    it("should have correct color structure for active-tools widget", () => {
+      const config = generateRichLayout("balanced", "monokai");
       const activeToolsWidget = config.lines["1"].find((w) => w.id === "active-tools");
 
       assert.ok(activeToolsWidget);
@@ -340,22 +370,6 @@ describe("Layout Generators", () => {
       assert.ok("name" in activeToolsWidget.colors);
       assert.ok("target" in activeToolsWidget.colors);
       assert.ok("count" in activeToolsWidget.colors);
-    });
-
-    it("should have correct color structure for git-tag widget", () => {
-      const config = generateRichLayout("balanced", "monokai");
-      const gitTagWidget = config.lines["1"].find((w) => w.id === "git-tag");
-
-      assert.ok(gitTagWidget);
-      assert.ok("base" in gitTagWidget.colors);
-    });
-
-    it("should have correct color structure for config-count widget", () => {
-      const config = generateRichLayout("balanced", "monokai");
-      const configCountWidget = config.lines["2"].find((w) => w.id === "config-count");
-
-      assert.ok(configCountWidget);
-      assert.ok("base" in configCountWidget.colors);
     });
   });
 });

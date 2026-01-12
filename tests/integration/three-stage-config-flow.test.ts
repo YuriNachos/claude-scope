@@ -87,8 +87,9 @@ describe("Three-Stage Config Flow Integration", () => {
       // Assert: Verify widgets
       const widgetIds = line1.map((w) => w.id);
       assert.ok(widgetIds.includes("git"));
+      assert.ok(widgetIds.includes("git-tag"));
       assert.ok(widgetIds.includes("cache-metrics"));
-      assert.ok(widgetIds.includes("active-tools"));
+      assert.ok(widgetIds.includes("config-count"));
     });
 
     it("should include correct widgets on compact layout", () => {

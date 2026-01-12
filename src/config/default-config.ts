@@ -128,8 +128,8 @@ export function generateConfigWithStyleAndTheme(
 
 /**
  * Generate Balanced layout configuration
- * Line 0: model, context, cost, duration, lines
- * Line 1: git, cache-metrics, config-count, active-tools
+ * Line 0: model, context, lines, cost, duration
+ * Line 1: git, git-tag, cache-metrics, config-count
  */
 export function generateBalancedLayout(style: QuickConfigStyle, themeName: string): ScopeConfig {
   const theme = getThemeByName(themeName).colors;
@@ -154,6 +154,11 @@ export function generateBalancedLayout(style: QuickConfigStyle, themeName: strin
           },
         },
         {
+          id: "lines",
+          style: style,
+          colors: { added: theme.lines.added, removed: theme.lines.removed },
+        },
+        {
           id: "cost",
           style: style,
           colors: { amount: theme.cost.amount, currency: theme.cost.currency },
@@ -163,17 +168,17 @@ export function generateBalancedLayout(style: QuickConfigStyle, themeName: strin
           style: style,
           colors: { value: theme.duration.value, unit: theme.duration.unit },
         },
-        {
-          id: "lines",
-          style: style,
-          colors: { added: theme.lines.added, removed: theme.lines.removed },
-        },
       ],
       "1": [
         {
           id: "git",
           style: style,
           colors: { branch: theme.git.branch, changes: theme.git.changes },
+        },
+        {
+          id: "git-tag",
+          style: style,
+          colors: { base: theme.base.text },
         },
         {
           id: "cache-metrics",
@@ -189,21 +194,7 @@ export function generateBalancedLayout(style: QuickConfigStyle, themeName: strin
         {
           id: "config-count",
           style: style,
-          colors: {
-            base: theme.base.muted,
-          },
-        },
-        {
-          id: "active-tools",
-          style: style,
-          colors: {
-            running: theme.tools.running,
-            completed: theme.tools.completed,
-            error: theme.tools.error,
-            name: theme.tools.name,
-            target: theme.tools.target,
-            count: theme.tools.count,
-          },
+          colors: { base: theme.base.muted },
         },
       ],
     },
