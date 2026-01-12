@@ -1,34 +1,32 @@
 /**
  * Dev Server Widget
  *
- * Detects running development server processes (Vite, Nuxt, Next.js, etc.)
+ * Detects running development server processes using hybrid detection:
+ * 1. Port-based detection (primary) - checks listening ports via lsof
+ * 2. Process-based detection (fallback) - checks process list via ps
  */
-
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
 
 import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
 import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
 import type { IDevServerColors, IThemeColors } from "../../ui/theme/types.js";
+import { PortDetector } from "./port-detector.js";
+import { ProcessDetector } from "./process-detector.js";
 import { devServerStyles } from "./styles.js";
-import type { DevServerRenderData, ProcessPattern } from "./types.js";
+import type { DevServerRenderData } from "./types.js";
 
 /**
  * Dev Server Widget
  *
- * Detects running development server processes by parsing system process list.
- * Supports Vite, Nuxt, Next.js, Svelte, Astro, Remix, and generic npm/yarn/pnpm/bun dev/build commands.
+ * Hybrid detection: port-based (primary) + process-based (fallback)
  */
 export class DevServerWidget implements IWidget {
   readonly id = "dev-server";
   readonly metadata = createWidgetMetadata(
     "Dev Server",
-    "Detects running dev server processes",
-    "1.0.0",
+    "Detects running dev server processes using hybrid port+process detection",
+    "1.1.0",
     "claude-scope",
     0
   );
@@ -39,24 +37,13 @@ export class DevServerWidget implements IWidget {
   private styleFn: StyleRendererFn<DevServerRenderData, IDevServerColors> =
     devServerStyles.balanced!;
   private cwd: string | null = null;
-
-  private readonly processPatterns: ProcessPattern[] = [
-    // Generic server patterns - more specific to avoid shell history false positives
-    { regex: /^[\w\s]+\/npm\s+(exec|run)\s+serve/i, name: "Server", icon: "🌐" },
-    { regex: /^[\w\s]+\/npx\s+serve\s+-/i, name: "Server", icon: "🌐" },
-    { regex: /^[\w\s]+\/(python|python3)\s+-m\s+http\.server/i, name: "HTTP", icon: "🌐" },
-    // Generic dev/build patterns - require full command path
-    { regex: /^[\w\s]+\/(npm|yarn|pnpm|bun)\s+run\s+dev\s*$/i, name: "Dev", icon: "🚀" },
-    { regex: /^[\w\s]+\/(npm|yarn|pnpm|bun)\s+run\s+build\s*$/i, name: "Build", icon: "🔨" },
-    // Framework-specific patterns - require executable path
-    { regex: /\/(nuxt|next|astro|remix|svelte)\s+dev/i, name: "Framework", icon: "⚡" },
-    { regex: /\/node.*\/vite\s*$/i, name: "Vite", icon: "⚡" },
-    // Fallback: simpler patterns but checked last
-    { regex: /\s(nuxt|next|vite)\s+dev\s/i, name: "DevServer", icon: "⚡" },
-  ];
+  private portDetector: PortDetector;
+  private processDetector: ProcessDetector;
 
   constructor(colors?: IThemeColors) {
     this.colors = colors ?? DEFAULT_THEME;
+    this.portDetector = new PortDetector();
+    this.processDetector = new ProcessDetector();
   }
 
   /**
@@ -137,7 +124,11 @@ export class DevServerWidget implements IWidget {
   }
 
   /**
-   * Detect running dev server by parsing system process list
+   * Detect running dev server using hybrid approach
+   *
+   * 1. Try port-based detection first (more reliable)
+   * 2. Fall back to process-based detection
+   *
    * @returns Detected server status or null
    */
   private async detectDevServer(): Promise<{
@@ -146,28 +137,18 @@ export class DevServerWidget implements IWidget {
     isRunning: boolean;
     isBuilding: boolean;
   } | null> {
-    try {
-      const { stdout } = await execFileAsync("ps", ["aux"], {
-        timeout: 1000,
-      });
-
-      for (const pattern of this.processPatterns) {
-        if (pattern.regex.test(stdout)) {
-          // Determine status based on pattern name
-          const isBuilding = pattern.name.toLowerCase().includes("build");
-          const isRunning = !isBuilding; // If not building, it's running
-
-          return {
-            name: pattern.name,
-            icon: pattern.icon,
-            isRunning,
-            isBuilding,
-          };
-        }
-      }
-    } catch {
-      // Process detection failed, return null
+    // 1. Try port-based detection (primary)
+    const portResult = await this.portDetector.detect();
+    if (portResult) {
+      return {
+        name: portResult.name,
+        icon: portResult.icon,
+        isRunning: portResult.isRunning,
+        isBuilding: portResult.isBuilding,
+      };
     }
-    return null;
+
+    // 2. Fall back to process-based detection
+    return await this.processDetector.detect();
   }
 }
