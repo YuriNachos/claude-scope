@@ -2,9 +2,19 @@
 
 ## Version History
 
-### v0.8.14 (2026-01-12) - Current Stable
+### v0.8.15 (2026-01-12) - Current Stable
 
-**Latest version**: v0.8.14
+**Latest version**: v0.8.15
+
+**Recent commits:**
+- Updated quick-config layouts to match preview designs
+  - Balanced: Line 0 (model,context,lines,cost,duration) | Line 1 (git,git-tag,cache-metrics,config-count)
+  - Rich: Line 0 (model,context,lines,cost,duration) | Line 1 (git,git-tag,cache-metrics,config-count) | Line 2 (dev-server,docker,active-tools)
+  - Compact: Unchanged (model,context,cost,git,duration)
+
+---
+
+### v0.8.14 (2026-01-12)
 
 **Recent commits:**
 - Enhanced port+process detection for dev server widget
@@ -17,6 +27,7 @@
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v0.8.15 | 2026-01-12 | Quick-config layout updates |
 | v0.8.13 | 2026-01-12 | Dev server detection improvements |
 | v0.8.12 | 2026-01-12 | Dev server bug fixes |
 | v0.8.11 | 2026-01-12 | DevServerWidget and DockerWidget registration |
@@ -37,7 +48,12 @@
 
 ## All Bug Fixes with Details
 
-### v0.8.14 - Current
+### v0.8.15 - Current
+- Updated balanced layout widget order to match preview design (lines widget after context)
+- Updated rich layout with dev-server, docker, active-tools on line 2
+- Added DevServerColors and DockerColors to config schema
+
+### v0.8.14
 - Enhanced port+process detection for dev server widget
 - Unified shared types for dev server detectors
 - Process detector extraction for better maintainability
@@ -129,6 +145,7 @@ cache_hit_rate = cache_read_tokens / (cache_read_tokens + cache_write_tokens + i
 - **v0.6.7**: Config-driven refactor
 - **v0.6.17**: WidgetFactory for centralized instantiation
 - **v0.8.0**: Quick-config with live preview
+- **v0.8.15**: Layout updates for balanced and rich presets
 
 ---
 
@@ -199,7 +216,8 @@ cache_hit_rate = cache_read_tokens / (cache_read_tokens + cache_write_tokens + i
 ## Git Tags Reference
 
 All versions follow semantic versioning:
-- `v0.8.14` - Current stable (2026-01-12)
+- `v0.8.15` - Current stable (2026-01-12)
+- `v0.8.14` - Dev server detection improvements (2026-01-12)
 - `v0.8.10` - DevServer & Docker widgets (2026-01-12)
 - `v0.8.0` - Quick-config (2026-01-11)
 - `v0.6.17` - ActiveTools sorting (2026-01-09)

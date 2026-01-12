@@ -476,6 +476,24 @@ Note: `poker` widget exists but is NOT in the factory (not in default config).
 
 ---
 
+## Quick-Config Layouts
+
+The `quick-config` command provides three layout presets:
+
+### Balanced Layout (2 lines)
+- **Line 0**: `model`, `context`, `lines`, `cost`, `duration`
+- **Line 1**: `git`, `git-tag`, `cache-metrics`, `config-count`
+
+### Compact Layout (1 line)
+- **Line 0**: `model`, `context`, `cost`, `git`, `duration`
+
+### Rich Layout (3 lines)
+- **Line 0**: `model`, `context`, `lines`, `cost`, `duration`
+- **Line 1**: `git`, `git-tag`, `cache-metrics`, `config-count`
+- **Line 2**: `dev-server`, `docker`, `active-tools`
+
+---
+
 ## Special Features and Behaviors
 
 ### Caching Features
