@@ -1,0 +1,73 @@
+import { TranscriptProvider } from "../providers/transcript-provider.js";
+import { DEFAULT_THEME } from "../ui/theme/index.js";
+import { ActiveToolsWidget } from "../widgets/active-tools/index.js";
+import { CacheMetricsWidget } from "../widgets/cache-metrics/index.js";
+import { ConfigCountWidget } from "../widgets/config-count-widget.js";
+import { ContextWidget } from "../widgets/context-widget.js";
+import { CostWidget } from "../widgets/cost-widget.js";
+import { DurationWidget } from "../widgets/duration-widget.js";
+import { GitTagWidget } from "../widgets/git/git-tag-widget.js";
+import { GitWidget } from "../widgets/git/git-widget.js";
+import { LinesWidget } from "../widgets/lines-widget.js";
+import { ModelWidget } from "../widgets/model-widget.js";
+/**
+ * Widget factory - creates widget instances by ID
+ *
+ * This factory centralizes widget instantiation logic and provides
+ * a single point to manage all available widget types.
+ */
+export class WidgetFactory {
+    transcriptProvider;
+    constructor() {
+        this.transcriptProvider = new TranscriptProvider();
+    }
+    /**
+     * Create a widget instance by ID
+     * @param widgetId - Widget identifier (e.g., "model", "git", "context")
+     * @returns Widget instance or null if widget ID is unknown
+     */
+    createWidget(widgetId) {
+        switch (widgetId) {
+            case "model":
+                return new ModelWidget();
+            case "context":
+                return new ContextWidget();
+            case "cost":
+                return new CostWidget();
+            case "lines":
+                return new LinesWidget();
+            case "duration":
+                return new DurationWidget();
+            case "git":
+                return new GitWidget();
+            case "git-tag":
+                return new GitTagWidget();
+            case "config-count":
+                return new ConfigCountWidget();
+            case "cache-metrics":
+                return new CacheMetricsWidget(DEFAULT_THEME);
+            case "active-tools":
+                return new ActiveToolsWidget(DEFAULT_THEME, this.transcriptProvider);
+            default:
+                return null; // Unknown widget ID
+        }
+    }
+    /**
+     * Get list of all supported widget IDs
+     */
+    getSupportedWidgetIds() {
+        return [
+            "model",
+            "context",
+            "cost",
+            "lines",
+            "duration",
+            "git",
+            "git-tag",
+            "config-count",
+            "cache-metrics",
+            "active-tools",
+        ];
+    }
+}
+//# sourceMappingURL=widget-factory.js.map

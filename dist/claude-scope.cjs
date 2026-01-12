@@ -6693,7 +6693,7 @@ function selectWithPreviewImpl(config, done) {
   if (status === "done") {
     return [`${config.message} ${activeChoice.name}`, ""];
   }
-  const line = "\x1B[1;37m" + "\u2500".repeat(60) + "\x1B[0m";
+  const line = `\x1B[1;37m${"\u2500".repeat(60)}\x1B[0m`;
   const previewBox = `${line}
 \x1B[1;37mLive Preview\x1B[0m
 
@@ -7315,18 +7315,78 @@ async function loadWidgetConfig() {
   }
 }
 
-// src/config/widget-flags.ts
-var WIDGET_FLAGS = {
-  activeTools: true,
-  cacheMetrics: true
-};
-function isWidgetEnabled(name) {
-  return WIDGET_FLAGS[name] ?? true;
-}
-
 // src/index.ts
 init_renderer();
 init_style_types();
+
+// src/core/widget-factory.ts
+init_theme();
+init_active_tools();
+init_cache_metrics();
+init_config_count_widget();
+init_context_widget();
+init_cost_widget();
+init_duration_widget();
+init_git_tag_widget();
+init_git_widget();
+init_lines_widget();
+init_model_widget();
+var WidgetFactory = class {
+  transcriptProvider;
+  constructor() {
+    this.transcriptProvider = new TranscriptProvider();
+  }
+  /**
+   * Create a widget instance by ID
+   * @param widgetId - Widget identifier (e.g., "model", "git", "context")
+   * @returns Widget instance or null if widget ID is unknown
+   */
+  createWidget(widgetId) {
+    switch (widgetId) {
+      case "model":
+        return new ModelWidget();
+      case "context":
+        return new ContextWidget();
+      case "cost":
+        return new CostWidget();
+      case "lines":
+        return new LinesWidget();
+      case "duration":
+        return new DurationWidget();
+      case "git":
+        return new GitWidget();
+      case "git-tag":
+        return new GitTagWidget();
+      case "config-count":
+        return new ConfigCountWidget();
+      case "cache-metrics":
+        return new CacheMetricsWidget(DEFAULT_THEME);
+      case "active-tools":
+        return new ActiveToolsWidget(DEFAULT_THEME, this.transcriptProvider);
+      default:
+        return null;
+    }
+  }
+  /**
+   * Get list of all supported widget IDs
+   */
+  getSupportedWidgetIds() {
+    return [
+      "model",
+      "context",
+      "cost",
+      "lines",
+      "duration",
+      "git",
+      "git-tag",
+      "config-count",
+      "cache-metrics",
+      "active-tools"
+    ];
+  }
+};
+
+// src/index.ts
 init_widget_registry();
 
 // src/validation/result.ts
@@ -7505,17 +7565,6 @@ var StdinProvider = class {
 };
 
 // src/index.ts
-init_theme();
-init_active_tools();
-init_cache_metrics();
-init_config_count_widget();
-init_context_widget();
-init_cost_widget();
-init_duration_widget();
-init_git_tag_widget();
-init_git_widget();
-init_lines_widget();
-init_model_widget();
 async function readStdin() {
   const chunks = [];
   for await (const chunk of process.stdin) {
@@ -7537,12 +7586,6 @@ function applyWidgetConfig(widget, widgetId, config) {
     }
   }
 }
-async function registerWidgetWithConfig(registry, widget, widgetId, config) {
-  if (config) {
-    applyWidgetConfig(widget, widgetId, config);
-  }
-  await registry.register(widget);
-}
 async function main() {
   try {
     const command = parseCommand();
@@ -7558,31 +7601,26 @@ async function main() {
     const provider = new StdinProvider();
     const stdinData = await provider.parse(stdin);
     const registry = new WidgetRegistry();
-    const transcriptProvider = new TranscriptProvider();
     const widgetConfig = await loadWidgetConfig();
-    await registerWidgetWithConfig(registry, new ModelWidget(), "model", widgetConfig);
-    await registerWidgetWithConfig(registry, new ContextWidget(), "context", widgetConfig);
-    await registerWidgetWithConfig(registry, new CostWidget(), "cost", widgetConfig);
-    await registerWidgetWithConfig(registry, new LinesWidget(), "lines", widgetConfig);
-    await registerWidgetWithConfig(registry, new DurationWidget(), "duration", widgetConfig);
-    await registerWidgetWithConfig(registry, new GitWidget(), "git", widgetConfig);
-    await registerWidgetWithConfig(registry, new GitTagWidget(), "git-tag", widgetConfig);
-    await registerWidgetWithConfig(registry, new ConfigCountWidget(), "config-count", widgetConfig);
-    if (isWidgetEnabled("cacheMetrics")) {
-      await registerWidgetWithConfig(
-        registry,
-        new CacheMetricsWidget(DEFAULT_THEME),
-        "cache-metrics",
-        widgetConfig
-      );
-    }
-    if (isWidgetEnabled("activeTools")) {
-      await registerWidgetWithConfig(
-        registry,
-        new ActiveToolsWidget(DEFAULT_THEME, transcriptProvider),
-        "active-tools",
-        widgetConfig
-      );
+    const factory = new WidgetFactory();
+    if (widgetConfig) {
+      for (const [_lineNum, widgets] of Object.entries(widgetConfig.lines)) {
+        for (const widgetConfigItem of widgets) {
+          const widget = factory.createWidget(widgetConfigItem.id);
+          if (widget) {
+            applyWidgetConfig(widget, widgetConfigItem.id, widgetConfig);
+            await registry.register(widget);
+          }
+        }
+      }
+    } else {
+      const defaultWidgets = ["model", "git", "context"];
+      for (const widgetId of defaultWidgets) {
+        const widget = factory.createWidget(widgetId);
+        if (widget) {
+          await registry.register(widget);
+        }
+      }
     }
     const renderer = new Renderer({
       separator: " \u2502 ",
@@ -7606,7 +7644,11 @@ async function main() {
 async function tryGitFallback() {
   try {
     const cwd = process.cwd();
-    const widget = new GitWidget();
+    const factory = new WidgetFactory();
+    const widget = factory.createWidget("git");
+    if (!widget) {
+      return "";
+    }
     await widget.initialize({ config: {} });
     await widget.update({ cwd, session_id: "fallback" });
     const result = await widget.render({ width: 80, timestamp: Date.now() });
