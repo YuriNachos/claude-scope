@@ -1,1 +1,0 @@
-{ "mcpServers": { "mcp2": { "command": "python", "args": ["server.py"] } } }

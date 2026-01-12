@@ -1,4 +1,0 @@
-{
-  "mcpServers": { "mcp1": { "command": "node", "args": ["server.js"] } },
-  "hooks": { "pre-commit": "echo \"pre-commit\"" }
-}

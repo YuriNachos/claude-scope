@@ -32,9 +32,13 @@ export interface LoadedConfig {
 
 /**
  * Get config file path
- * @returns Path to ~/.claude-scope/config.json
+ * @returns Path to ~/.claude-scope/config.json, or CLAUDE_SCOPE_CONFIG env var if set
  */
 function getConfigPath(): string {
+  // Allow overriding config path via environment variable for testing
+  if (process.env.CLAUDE_SCOPE_CONFIG) {
+    return process.env.CLAUDE_SCOPE_CONFIG;
+  }
   return join(homedir(), ".claude-scope", "config.json");
 }
 

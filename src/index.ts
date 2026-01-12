@@ -34,30 +34,20 @@ type StyleableWidget = { setStyle?(style: WidgetStyle): void };
 /**
  * Apply widget configuration from loaded config to a widget instance
  * @param widget - Widget instance to configure
- * @param widgetId - Widget identifier (e.g., "model", "git", "context")
- * @param config - Loaded configuration object
+ * @param widgetConfig - Widget configuration item (id, style, colors, line)
  */
 function applyWidgetConfig(
   widget: StyleableWidget & { setLine?(line: number): void },
-  widgetId: string,
-  config: LoadedConfig
+  widgetConfig: { id: string; style: string; colors?: Record<string, string>; line?: number }
 ): void {
-  // Find widget config by scanning lines
-  for (const [lineNum, widgets] of Object.entries(config.lines)) {
-    const widgetConfig = widgets.find((w) => w.id === widgetId);
-    if (widgetConfig) {
-      // Apply style
-      if (typeof widget.setStyle === "function" && isValidWidgetStyle(widgetConfig.style)) {
-        widget.setStyle(widgetConfig.style);
-      }
+  // Apply style
+  if (typeof widget.setStyle === "function" && isValidWidgetStyle(widgetConfig.style)) {
+    widget.setStyle(widgetConfig.style);
+  }
 
-      // Apply line override
-      if (typeof widget.setLine === "function") {
-        widget.setLine(parseInt(lineNum, 10));
-      }
-
-      break;
-    }
+  // Apply line override if provided
+  if (typeof widget.setLine === "function" && typeof widgetConfig.line === "number") {
+    widget.setLine(widgetConfig.line);
   }
 }
 
@@ -98,13 +88,16 @@ export async function main(): Promise<string> {
 
     // Register widgets from config - config is the SINGLE SOURCE OF TRUTH
     if (widgetConfig) {
-      for (const [_lineNum, widgets] of Object.entries(widgetConfig.lines)) {
+      for (const [lineNum, widgets] of Object.entries(widgetConfig.lines)) {
         for (const widgetConfigItem of widgets) {
           const widget = factory.createWidget(widgetConfigItem.id);
 
           if (widget) {
             // Apply style and line from config
-            applyWidgetConfig(widget, widgetConfigItem.id, widgetConfig);
+            applyWidgetConfig(widget, {
+              ...widgetConfigItem,
+              line: parseInt(lineNum, 10),
+            });
             await registry.register(widget);
           }
           // If widget is null (unknown ID), skip it silently

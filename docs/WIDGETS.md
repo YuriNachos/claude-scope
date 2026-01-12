@@ -30,7 +30,7 @@ All widgets must implement the `IWidget` interface:
 ```typescript
 interface IWidget {
   // Properties
-  readonly id: string;                    // Unique widget identifier
+  readonly id: string;                    // Widget identifier (multiple instances can share the same id)
   readonly metadata: IWidgetMetadata;     // Widget metadata
 
   // Required methods
