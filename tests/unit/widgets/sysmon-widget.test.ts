@@ -32,7 +32,7 @@ describe("SysmonWidget", () => {
   });
 
   describe("initialize", () => {
-    it("should start background updates on initialize", async () => {
+    it("should initialize widget without background updates", async () => {
       const mockMetrics: SysmonRenderData = {
         cpu: { percent: 50 },
         memory: { used: 8, total: 16, percent: 50 },
@@ -44,7 +44,7 @@ describe("SysmonWidget", () => {
 
       await widget.initialize({});
 
-      // Widget should now have metrics
+      // Widget should be ready to render (metrics fetched on first render)
       const result = await widget.render({ width: 80, timestamp: Date.now() });
       assert.ok(result);
     });
@@ -113,6 +113,69 @@ describe("SysmonWidget", () => {
 
       widget.setLine(3);
       assert.strictEqual(widget.getLine(), 3);
+    });
+
+    it("should fetch fresh metrics on each render", async () => {
+      let callCount = 0;
+      const mockMetrics: SysmonRenderData = {
+        cpu: { percent: 45 },
+        memory: { used: 8.2, total: 16, percent: 51 },
+        disk: { used: 120, total: 200, percent: 60 },
+        network: { rxSec: 2.1, txSec: 0.5 },
+      };
+
+      const provider: ISystemProvider = {
+        getMetrics: async () => {
+          callCount++;
+          return mockMetrics;
+        },
+        startUpdate: () => {},
+        stopUpdate: () => {},
+      };
+
+      const widget = new SysmonWidget(DEFAULT_THEME, provider);
+      await widget.initialize({});
+
+      // First render
+      await widget.render({ width: 80, timestamp: Date.now() });
+      assert.strictEqual(callCount, 1);
+
+      // Wait for cache to expire
+      await new Promise((resolve) => setTimeout(resolve, 1100));
+
+      // Second render - should fetch again
+      await widget.render({ width: 80, timestamp: Date.now() });
+      assert.strictEqual(callCount, 2);
+    });
+
+    it("should use cached metrics within TTL", async () => {
+      let callCount = 0;
+      const mockMetrics: SysmonRenderData = {
+        cpu: { percent: 45 },
+        memory: { used: 8.2, total: 16, percent: 51 },
+        disk: { used: 120, total: 200, percent: 60 },
+        network: { rxSec: 2.1, txSec: 0.5 },
+      };
+
+      const provider: ISystemProvider = {
+        getMetrics: async () => {
+          callCount++;
+          return mockMetrics;
+        },
+        startUpdate: () => {},
+        stopUpdate: () => {},
+      };
+
+      const widget = new SysmonWidget(DEFAULT_THEME, provider);
+      await widget.initialize({});
+
+      // First render
+      await widget.render({ width: 80, timestamp: Date.now() });
+      assert.strictEqual(callCount, 1);
+
+      // Second render within TTL - should use cache
+      await widget.render({ width: 80, timestamp: Date.now() });
+      assert.strictEqual(callCount, 1); // Still 1, used cache
     });
   });
 

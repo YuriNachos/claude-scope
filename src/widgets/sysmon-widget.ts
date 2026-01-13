@@ -2,12 +2,13 @@
  * SysmonWidget - System monitoring widget
  *
  * Displays real-time system metrics (CPU, RAM, Disk, Network)
- * Independent of stdin - polls system directly via SystemProvider
+ * Fetches metrics on each render with short cache to avoid excessive calls
  */
 
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import type { IWidget, RenderContext, WidgetContext } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
+import { MetricsCache } from "../providers/metrics-cache.js";
 import type { ISystemProvider } from "../providers/system-provider.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
 import type { IThemeColors } from "../ui/theme/types.js";
@@ -29,43 +30,39 @@ export class SysmonWidget implements IWidget {
   private _lineOverride?: number;
   private styleFn: StyleRendererFn<SysmonRenderData, IThemeColors["sysmon"]> =
     sysmonStyles.balanced!;
-  private currentMetrics: SysmonRenderData | null = null;
-  private updateIntervalMs = 2500; // 2.5 seconds
+  private cache: MetricsCache;
+  private cacheTtlMs = 1000; // 1 second cache
   private enabled = true;
 
   constructor(colors?: IThemeColors, provider?: ISystemProvider | null) {
     this.colors = colors ?? DEFAULT_THEME;
     this.provider = provider ?? null;
+    this.cache = new MetricsCache(this.cacheTtlMs);
   }
 
   async initialize(context: WidgetContext): Promise<void> {
     // Respect config.enabled setting (default true if not specified)
     this.enabled = context.config?.enabled !== false;
-
-    if (!this.provider || !this.enabled) {
-      return;
-    }
-
-    // Get initial metrics
-    this.currentMetrics = await this.provider.getMetrics();
-
-    // Start background updates
-    this.provider.startUpdate(this.updateIntervalMs, (metrics) => {
-      this.currentMetrics = metrics;
-    });
   }
 
   async render(_context: RenderContext): Promise<string | null> {
-    if (!this.currentMetrics || !this.isEnabled()) {
+    if (!this.provider || !this.isEnabled()) {
       return null;
     }
 
-    return this.styleFn(this.currentMetrics, this.colors.sysmon);
+    // Fetch metrics (uses cache if within TTL)
+    const metrics = await this.cache.get(() => this.provider!.getMetrics());
+
+    if (!metrics) {
+      return null;
+    }
+
+    return this.styleFn(metrics, this.colors.sysmon);
   }
 
   async update(_data: unknown): Promise<void> {
     // No-op - SysmonWidget doesn't use stdin data
-    // Updates come via background callback
+    // Metrics are fetched on-demand in render()
   }
 
   isEnabled(): boolean {
@@ -73,7 +70,7 @@ export class SysmonWidget implements IWidget {
   }
 
   async cleanup(): Promise<void> {
-    this.provider?.stopUpdate();
+    this.cache.clear();
   }
 
   setStyle(style: WidgetStyle = "balanced"): void {
