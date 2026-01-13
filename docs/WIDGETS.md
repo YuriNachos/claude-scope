@@ -353,26 +353,37 @@ Only shows if at least one count > 0.
 
 ### SysmonWidget (`sysmon`)
 
-**What it displays**: Real-time system metrics (CPU, RAM, disk, network)
+**ID:** `sysmon`
 
-**Line**: 3
+**Description:** System monitoring: CPU, RAM, Disk, Network metrics
 
-**Base class**: Implements `IWidget` directly
+**Default Line:** 2
 
-**Special features**:
-- Background updates every 2.5 seconds
-- Caches system information to reduce overhead
-- Gracefully handles missing `systeminformation` package
+**Styles:** `balanced`, `compact`, `playful`, `verbose`
 
-**Styles**:
-| Style | Example |
-|-------|---------|
-| balanced | `CPU 45% | RAM 8.2GB | Disk 60% | Net ↓2.1MB/s` |
-| compact | `CPU45% RAM8.2GB D60% ↓2.1MB/s` |
-| playful | `🖥️ 45% | 💾 8.2GB | 💿 60% | 🌐 ↓2.1MB/s` |
-| verbose | `CPU: 45% | RAM: 8.2GB/16GB | Disk: 120GB/200GB | Net: ↓2.1MB/s ↑0.5MB/s` |
+**Data Source:** SystemProvider (systeminformation library)
 
-**File**: `src/widgets/sysmon-widget.ts`
+**Update Behavior:** Metrics are fetched on each `render()` call with 1s cache TTL.
+This ensures fresh data is displayed on every CLI hook event without
+excessive system API calls.
+
+**Example Output (balanced):**
+```
+CPU 17% | RAM 13.7GB | Disk 3% | Net ↓0KB/s
+```
+
+**Example Output (playful):**
+```
+🖥️ 17% | 💾 13.7GB | 💿 3% | 🌐 ↓0KB/s
+```
+
+**Configuration:**
+```json
+{
+  "id": "sysmon",
+  "style": "balanced"
+}
+```
 
 
 
