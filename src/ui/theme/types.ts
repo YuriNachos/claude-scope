@@ -143,6 +143,22 @@ export interface IDockerColors {
 }
 
 /**
+ * Sysmon widget colors
+ */
+export interface ISysmonColors {
+  /** Color for CPU usage */
+  cpu: string;
+  /** Color for RAM usage */
+  ram: string;
+  /** Color for disk usage */
+  disk: string;
+  /** Color for network usage */
+  network: string;
+  /** Color for separator between metrics */
+  separator: string;
+}
+
+/**
  * Unified theme colors interface
  * All widget colors in one place for consistent theming
  */
@@ -160,6 +176,7 @@ export interface IThemeColors {
   tools: IToolsColors;
   devServer: IDevServerColors;
   docker: IDockerColors;
+  sysmon: ISysmonColors;
 }
 
 /**
