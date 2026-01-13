@@ -1,3 +1,4 @@
+import { SystemProvider } from "../providers/system-provider.js";
 import { TranscriptProvider } from "../providers/transcript-provider.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
 import { ActiveToolsWidget } from "../widgets/active-tools/index.js";
@@ -25,9 +26,11 @@ import type { IWidget } from "./types.js";
  */
 export class WidgetFactory {
   private transcriptProvider: TranscriptProvider;
+  private systemProvider: SystemProvider;
 
   constructor() {
     this.transcriptProvider = new TranscriptProvider();
+    this.systemProvider = new SystemProvider();
   }
 
   /**
@@ -77,7 +80,7 @@ export class WidgetFactory {
         return new PokerWidget(DEFAULT_THEME);
 
       case "sysmon":
-        return new SysmonWidget(DEFAULT_THEME);
+        return new SysmonWidget(DEFAULT_THEME, this.systemProvider);
 
       case "empty-line":
         return new EmptyLineWidget();
