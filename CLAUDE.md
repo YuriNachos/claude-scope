@@ -37,7 +37,7 @@ Or manually edit `~/.claude-scope/config.json`.
 ## Tech Stack
 
 - **Language**: TypeScript (Node.js)
-- **Zero runtime dependencies** - native Node.js modules only
+- **Minimal runtime dependencies** - systeminformation for system monitoring
 - **Formatter**: [Biome](https://biomejs.dev/) for linting and formatting
 - **Package manager**: npm
 
