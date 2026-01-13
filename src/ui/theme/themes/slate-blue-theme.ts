@@ -41,5 +41,10 @@ export const SLATE_BLUE_THEME: ITheme = {
     dockerCount: rgb(148, 163, 184), // Neutral slate
     dockerRunning: rgb(148, 163, 184), // Subtle slate-blue
     dockerStopped: rgb(175, 188, 201), // Light slate
+    sysmonCpu: rgb(175, 188, 201), // Light slate (alert)
+    sysmonRam: rgb(100, 116, 139), // Cool slate (info)
+    sysmonDisk: rgb(160, 174, 192), // Medium slate (warning)
+    sysmonNetwork: rgb(148, 163, 184), // Subtle slate-blue (success)
+    sysmonSeparator: rgb(71, 85, 105), // Dark slate
   }),
 };

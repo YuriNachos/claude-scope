@@ -41,5 +41,10 @@ export const GITHUB_DARK_DIMMED_THEME: ITheme = {
     dockerCount: rgb(163, 113, 247), // Purple
     dockerRunning: rgb(35, 134, 54), // GitHub green
     dockerStopped: rgb(248, 81, 73), // GitHub red
+    sysmonCpu: rgb(248, 81, 73), // GitHub red (alert)
+    sysmonRam: rgb(88, 166, 255), // GitHub blue (info)
+    sysmonDisk: rgb(210, 153, 34), // GitHub orange (warning)
+    sysmonNetwork: rgb(35, 134, 54), // GitHub green (success)
+    sysmonSeparator: rgb(73, 79, 91), // Dark gray
   }),
 };

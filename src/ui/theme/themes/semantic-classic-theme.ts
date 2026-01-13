@@ -41,5 +41,10 @@ export const SEMANTIC_CLASSIC_THEME: ITheme = {
     dockerCount: rgb(99, 102, 241), // Indigo
     dockerRunning: rgb(34, 197, 94), // Green
     dockerStopped: rgb(239, 68, 68), // Red
+    sysmonCpu: rgb(239, 68, 68), // Red (alert)
+    sysmonRam: rgb(59, 130, 246), // Blue (info)
+    sysmonDisk: rgb(234, 179, 8), // Yellow (warning)
+    sysmonNetwork: rgb(34, 197, 94), // Green (success)
+    sysmonSeparator: rgb(75, 85, 99), // Dark gray
   }),
 };

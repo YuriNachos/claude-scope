@@ -41,5 +41,10 @@ export const ROSE_PINE_THEME: ITheme = {
     dockerCount: rgb(226, 185, 218), // Pine pink
     dockerRunning: rgb(156, 207, 216), // Pine cyan
     dockerStopped: rgb(235, 111, 146), // Pine red
+    sysmonCpu: rgb(235, 111, 146), // Pine red (alert)
+    sysmonRam: rgb(156, 207, 216), // Pine cyan (info)
+    sysmonDisk: rgb(233, 201, 176), // Pine beige (warning)
+    sysmonNetwork: rgb(156, 207, 216), // Pine cyan (success)
+    sysmonSeparator: rgb(112, 88, 105), // Pine dark
   }),
 };

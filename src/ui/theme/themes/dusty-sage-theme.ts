@@ -41,5 +41,10 @@ export const DUSTY_SAGE_THEME: ITheme = {
     dockerCount: rgb(148, 163, 184), // Gray
     dockerRunning: rgb(135, 145, 140), // Subtle sage
     dockerStopped: rgb(165, 175, 160), // Light sage
+    sysmonCpu: rgb(165, 175, 160), // Light sage (alert)
+    sysmonRam: rgb(120, 140, 130), // Dusty green (info)
+    sysmonDisk: rgb(150, 160, 145), // Medium sage (warning)
+    sysmonNetwork: rgb(135, 145, 140), // Subtle sage (success)
+    sysmonSeparator: rgb(90, 100, 110), // Dark gray
   }),
 };

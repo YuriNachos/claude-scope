@@ -42,5 +42,10 @@ export const VSCODE_DARK_PLUS_THEME: ITheme = {
     dockerCount: rgb(96, 165, 250), // Blue
     dockerRunning: rgb(74, 222, 128), // Green
     dockerStopped: rgb(171, 178, 191), // Gray
+    sysmonCpu: rgb(248, 113, 113), // Red (alert)
+    sysmonRam: rgb(96, 165, 250), // Blue (info)
+    sysmonDisk: rgb(251, 191, 36), // Yellow (warning)
+    sysmonNetwork: rgb(74, 222, 128), // Green (success)
+    sysmonSeparator: rgb(86, 92, 104), // Dark gray
   }),
 };

@@ -41,5 +41,10 @@ export const MONOKAI_THEME: ITheme = {
     dockerCount: rgb(174, 129, 255), // Purple
     dockerRunning: rgb(166, 226, 46), // Green
     dockerStopped: rgb(174, 129, 255), // Purple
+    sysmonCpu: rgb(249, 26, 114), // Pink (alert)
+    sysmonRam: rgb(102, 217, 239), // Cyan (info)
+    sysmonDisk: rgb(253, 151, 31), // Orange (warning)
+    sysmonNetwork: rgb(166, 226, 46), // Green (success)
+    sysmonSeparator: rgb(98, 114, 164), // Dark gray
   }),
 };

@@ -41,5 +41,10 @@ export const DRACULA_THEME: ITheme = {
     dockerCount: rgb(189, 147, 249), // Purple
     dockerRunning: rgb(80, 250, 123), // Green
     dockerStopped: rgb(255, 85, 85), // Red
+    sysmonCpu: rgb(255, 85, 85), // Red (alert)
+    sysmonRam: rgb(139, 233, 253), // Cyan (info)
+    sysmonDisk: rgb(255, 184, 108), // Orange (warning)
+    sysmonNetwork: rgb(80, 250, 123), // Green (success)
+    sysmonSeparator: rgb(68, 71, 90), // Dark gray
   }),
 };

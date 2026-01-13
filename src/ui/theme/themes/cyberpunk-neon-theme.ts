@@ -41,5 +41,10 @@ export const CYBERPUNK_NEON_THEME: ITheme = {
     dockerCount: rgb(140, 27, 255), // Purple neon
     dockerRunning: rgb(0, 255, 122), // Green neon
     dockerStopped: rgb(255, 0, 122), // Magenta neon
+    sysmonCpu: rgb(255, 0, 122), // Magenta neon (alert)
+    sysmonRam: rgb(0, 191, 255), // Cyan neon (info)
+    sysmonDisk: rgb(255, 214, 0), // Yellow neon (warning)
+    sysmonNetwork: rgb(0, 255, 122), // Green neon (success)
+    sysmonSeparator: rgb(68, 0, 102), // Dark purple
   }),
 };

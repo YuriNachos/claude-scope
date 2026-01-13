@@ -41,5 +41,10 @@ export const NORD_THEME: ITheme = {
     dockerCount: rgb(216, 222, 233), // Nordic white
     dockerRunning: rgb(163, 190, 140), // Nordic green
     dockerStopped: rgb(191, 97, 106), // Nordic red
+    sysmonCpu: rgb(191, 97, 106), // Nordic red (alert)
+    sysmonRam: rgb(136, 192, 208), // Nordic cyan (info)
+    sysmonDisk: rgb(235, 203, 139), // Nordic yellow (warning)
+    sysmonNetwork: rgb(163, 190, 140), // Nordic green (success)
+    sysmonSeparator: rgb(76, 86, 106), // Nordic dark gray
   }),
 };

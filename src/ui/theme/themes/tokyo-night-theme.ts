@@ -41,5 +41,10 @@ export const TOKYO_NIGHT_THEME: ITheme = {
     dockerCount: rgb(158, 206, 209), // Teal
     dockerRunning: rgb(146, 180, 203), // Cyan
     dockerStopped: rgb(249, 86, 119), // Red
+    sysmonCpu: rgb(249, 86, 119), // Red (alert)
+    sysmonRam: rgb(122, 132, 173), // Blue (info)
+    sysmonDisk: rgb(232, 166, 162), // Pink-red (warning)
+    sysmonNetwork: rgb(146, 180, 203), // Cyan (success)
+    sysmonSeparator: rgb(77, 82, 120), // Dark blue-gray
   }),
 };

@@ -41,5 +41,10 @@ export const GRAY_THEME: ITheme = {
     dockerCount: gray,
     dockerRunning: gray,
     dockerStopped: gray,
+    sysmonCpu: gray,
+    sysmonRam: gray,
+    sysmonDisk: gray,
+    sysmonNetwork: gray,
+    sysmonSeparator: gray,
   }),
 };

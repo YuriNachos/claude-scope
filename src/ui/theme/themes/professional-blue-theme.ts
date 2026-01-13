@@ -41,5 +41,10 @@ export const PROFESSIONAL_BLUE_THEME: ITheme = {
     dockerCount: rgb(167, 139, 250), // Purple
     dockerRunning: rgb(74, 222, 128), // Green
     dockerStopped: rgb(248, 113, 113), // Red
+    sysmonCpu: rgb(248, 113, 113), // Red (alert)
+    sysmonRam: rgb(96, 165, 250), // Light blue (info)
+    sysmonDisk: rgb(251, 191, 36), // Amber (warning)
+    sysmonNetwork: rgb(74, 222, 128), // Green (success)
+    sysmonSeparator: rgb(100, 116, 139), // Dark slate
   }),
 };

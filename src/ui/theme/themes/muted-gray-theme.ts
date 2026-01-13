@@ -41,5 +41,10 @@ export const MUTED_GRAY_THEME: ITheme = {
     dockerCount: rgb(148, 163, 184), // Lighter slate
     dockerRunning: rgb(148, 163, 184), // Subtle gray
     dockerStopped: rgb(175, 188, 201), // Light gray
+    sysmonCpu: rgb(175, 188, 201), // Light gray (alert)
+    sysmonRam: rgb(156, 163, 175), // Slate gray (info)
+    sysmonDisk: rgb(160, 174, 192), // Medium gray (warning)
+    sysmonNetwork: rgb(148, 163, 184), // Subtle gray (success)
+    sysmonSeparator: rgb(75, 85, 99), // Dark gray
   }),
 };

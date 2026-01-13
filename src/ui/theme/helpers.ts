@@ -89,6 +89,12 @@ export function createThemeColors(params: {
   dockerCount?: string;
   dockerRunning?: string;
   dockerStopped?: string;
+  // Sysmon widget colors
+  sysmonCpu: string;
+  sysmonRam: string;
+  sysmonDisk: string;
+  sysmonNetwork: string;
+  sysmonSeparator: string;
 }): IThemeColors {
   const base = createBaseColors({
     modelColor: params.model,
@@ -162,6 +168,13 @@ export function createThemeColors(params: {
       count: params.dockerCount ?? params.model,
       running: params.dockerRunning ?? params.contextLow,
       stopped: params.dockerStopped ?? params.contextHigh,
+    },
+    sysmon: {
+      cpu: params.sysmonCpu,
+      ram: params.sysmonRam,
+      disk: params.sysmonDisk,
+      network: params.sysmonNetwork,
+      separator: params.sysmonSeparator,
     },
   };
 }

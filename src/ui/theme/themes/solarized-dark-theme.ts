@@ -41,5 +41,10 @@ export const SOLARIZED_DARK_THEME: ITheme = {
     dockerCount: rgb(203, 75, 22), // Orange
     dockerRunning: rgb(133, 153, 0), // Olive
     dockerStopped: rgb(220, 50, 47), // Red
+    sysmonCpu: rgb(220, 50, 47), // Red (alert)
+    sysmonRam: rgb(38, 139, 210), // Blue (info)
+    sysmonDisk: rgb(181, 137, 0), // Yellow (warning)
+    sysmonNetwork: rgb(133, 153, 0), // Olive (success)
+    sysmonSeparator: rgb(7, 54, 66), // Base02
   }),
 };

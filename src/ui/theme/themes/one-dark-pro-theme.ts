@@ -41,5 +41,10 @@ export const ONE_DARK_PRO_THEME: ITheme = {
     dockerCount: rgb(209, 154, 102), // Orange
     dockerRunning: rgb(152, 195, 121), // Green
     dockerStopped: rgb(224, 108, 117), // Red
+    sysmonCpu: rgb(224, 108, 117), // Red (alert)
+    sysmonRam: rgb(97, 175, 239), // Blue (info)
+    sysmonDisk: rgb(229, 192, 123), // Yellow (warning)
+    sysmonNetwork: rgb(152, 195, 121), // Green (success)
+    sysmonSeparator: rgb(91, 98, 113), // Dark gray
   }),
 };

@@ -41,5 +41,10 @@ export const CATPPUCCIN_MOCHA_THEME: ITheme = {
     dockerCount: rgb(203, 166, 247), // Mauve
     dockerRunning: rgb(166, 227, 161), // Green
     dockerStopped: rgb(243, 139, 168), // Red
+    sysmonCpu: rgb(243, 139, 168), // Red (alert)
+    sysmonRam: rgb(137, 180, 250), // Blue (info)
+    sysmonDisk: rgb(238, 212, 159), // Yellow (warning)
+    sysmonNetwork: rgb(166, 227, 161), // Green (success)
+    sysmonSeparator: rgb(88, 91, 112), // Dark gray
   }),
 };
