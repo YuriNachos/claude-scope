@@ -31,6 +31,7 @@ export class SysmonWidget implements IWidget {
     sysmonStyles.balanced!;
   private currentMetrics: SysmonRenderData | null = null;
   private updateIntervalMs = 2500; // 2.5 seconds
+  private enabled = true;
 
   constructor(colors?: IThemeColors, provider?: ISystemProvider | null) {
     this.colors = colors ?? DEFAULT_THEME;
@@ -38,7 +39,10 @@ export class SysmonWidget implements IWidget {
   }
 
   async initialize(context: WidgetContext): Promise<void> {
-    if (!this.provider) {
+    // Respect config.enabled setting (default true if not specified)
+    this.enabled = context.config?.enabled !== false;
+
+    if (!this.provider || !this.enabled) {
       return;
     }
 
@@ -65,7 +69,7 @@ export class SysmonWidget implements IWidget {
   }
 
   isEnabled(): boolean {
-    return this.provider !== null;
+    return this.enabled && this.provider !== null;
   }
 
   async cleanup(): Promise<void> {
