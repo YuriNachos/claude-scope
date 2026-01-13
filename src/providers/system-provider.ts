@@ -43,20 +43,14 @@ async function loadSystemInformation(): Promise<void> {
 
   try {
     // Try dynamic import first (works in bundled code)
-    console.error("[DEBUG SystemProvider] Trying dynamic import...");
     si = await import("systeminformation");
-    console.error("[DEBUG SystemProvider] Dynamic import SUCCESS");
-  } catch (importError) {
-    console.error("[DEBUG SystemProvider] Dynamic import failed:", importError);
+  } catch {
     try {
       // Fallback to require if import fails (non-bundled)
-      console.error("[DEBUG SystemProvider] Trying require fallback...");
       const module = await import("node:module");
       const require = module.createRequire(import.meta.url);
       si = require("systeminformation");
-      console.error("[DEBUG SystemProvider] Require fallback SUCCESS");
-    } catch (requireError) {
-      console.error("[DEBUG SystemProvider] Require fallback failed:", requireError);
+    } catch {
       // systeminformation not installed - si remains null
     }
   }

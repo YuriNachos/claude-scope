@@ -98,9 +98,7 @@ export async function main(): Promise<string> {
               ...widgetConfigItem,
               line: parseInt(lineNum, 10),
             });
-            console.error("[DEBUG] Registering widget:", widget.id);
             await registry.register(widget, { config: { ...widgetConfigItem } });
-            console.error("[DEBUG] Widget registered:", widget.id, "enabled:", widget.isEnabled());
           }
           // If widget is null (unknown ID), skip it silently
         }
@@ -141,10 +139,7 @@ export async function main(): Promise<string> {
 
     // Join with newline
     return lines.join("\n");
-  } catch (error) {
-    // Debug: log error to stderr
-    console.error("[claude-scope ERROR]", error);
-
+  } catch (_error) {
     // Try to show at least git info on error
     const fallback = await tryGitFallback();
     return fallback;
