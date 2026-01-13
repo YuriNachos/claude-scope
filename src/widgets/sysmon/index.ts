@@ -1,6 +1,8 @@
 /**
  * SysmonWidget - Displays system resource usage
  */
+
+export { sysmonStyles } from "./styles.js";
 export type {
   CpuMetrics,
   DiskMetrics,

@@ -4,8 +4,8 @@
 
 import { describe, it } from "node:test";
 import { expect } from "chai";
-import { sysmonStyles } from "../../src/widgets/sysmon/styles.js";
-import type { SysmonRenderData } from "../../src/widgets/sysmon/types.js";
+import { sysmonStyles } from "../../../src/widgets/sysmon/styles.js";
+import type { SysmonRenderData } from "../../../src/widgets/sysmon/types.js";
 
 const mockMetrics: SysmonRenderData = {
   cpu: { percent: 45 },
