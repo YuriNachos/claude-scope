@@ -12,17 +12,17 @@ function formatGB(gb: number): string {
     return `${Math.round(gb * 1024)}MB`;
   }
   const formatted = gb.toFixed(1);
-  return formatted.endsWith(".0") ? formatted.slice(0, -2) + "GB" : formatted + "GB";
+  return formatted.endsWith(".0") ? `${formatted.slice(0, -2)}GB` : `${formatted}GB`;
 }
 
 function formatMB(mb: number): string {
   if (mb < 0.1) {
     const kb = mb * 1024;
     const formatted = kb.toFixed(1);
-    return formatted.endsWith(".0") ? formatted.slice(0, -2) + "KB" : formatted + "KB";
+    return formatted.endsWith(".0") ? `${formatted.slice(0, -2)}KB` : `${formatted}KB`;
   }
   const formatted = mb.toFixed(1);
-  return formatted.endsWith(".0") ? formatted.slice(0, -2) + "MB" : formatted + "MB";
+  return formatted.endsWith(".0") ? `${formatted.slice(0, -2)}MB` : `${formatted}MB`;
 }
 
 export const sysmonStyles: StyleMap<SysmonRenderData, ISysmonColors> = {
