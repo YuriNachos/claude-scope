@@ -17,9 +17,9 @@
 | `dev-server` | DevServer Widget | ✅ Implemented | 0 | Detects and displays running dev server status |
 | `docker` | Docker Widget | ✅ Implemented | 0 | Shows Docker container count and status |
 | `poker` | Poker Widget | ✅ Implemented | 4 | Displays random Texas Hold'em hands |
+| `sysmon` | Sysmon Widget | ✅ Implemented | 3 | Displays real-time system metrics |
 | `empty-line` | Empty Line Widget | ✅ Implemented | 5 | Creates blank separator line |
 
----
 
 ## Widget Interface Documentation
 
@@ -77,7 +77,6 @@ abstract class StdinDataWidget implements IWidget {
 }
 ```
 
----
 
 ## Individual Widget Documentation
 
@@ -102,7 +101,6 @@ abstract class StdinDataWidget implements IWidget {
 
 **File**: `src/widgets/model-widget.ts`
 
----
 
 ### ContextWidget (`context`)
 
@@ -129,7 +127,6 @@ abstract class StdinDataWidget implements IWidget {
 
 **File**: `src/widgets/context-widget.ts`
 
----
 
 ### CostWidget (`cost`)
 
@@ -149,7 +146,6 @@ abstract class StdinDataWidget implements IWidget {
 
 **File**: `src/widgets/cost-widget.ts`
 
----
 
 ### DurationWidget (`duration`)
 
@@ -171,7 +167,6 @@ abstract class StdinDataWidget implements IWidget {
 
 **File**: `src/widgets/duration-widget.ts`
 
----
 
 ### LinesWidget (`lines`)
 
@@ -193,7 +188,6 @@ abstract class StdinDataWidget implements IWidget {
 
 **File**: `src/widgets/lines-widget.ts`
 
----
 
 ### GitWidget (`git`)
 
@@ -221,7 +215,6 @@ abstract class StdinDataWidget implements IWidget {
 
 **File**: `src/widgets/git/git-widget.ts`
 
----
 
 ### GitTagWidget (`git-tag`)
 
@@ -242,7 +235,6 @@ abstract class StdinDataWidget implements IWidget {
 
 **File**: `src/widgets/git/git-tag-widget.ts`
 
----
 
 ### ConfigCountWidget (`config-count`)
 
@@ -256,7 +248,6 @@ Only shows if at least one count > 0.
 
 **File**: `src/widgets/config-count-widget.ts`
 
----
 
 ### ActiveToolsWidget (`active-tools`)
 
@@ -286,7 +277,6 @@ Only shows if at least one count > 0.
 
 **File**: `src/widgets/active-tools/active-tools-widget.ts`
 
----
 
 ### CacheMetricsWidget (`cache-metrics`)
 
@@ -312,7 +302,6 @@ Only shows if at least one count > 0.
 
 **File**: `src/widgets/cache-metrics/cache-metrics-widget.ts`
 
----
 
 ### DevServerWidget (`dev-server`)
 
@@ -336,7 +325,6 @@ Only shows if at least one count > 0.
 
 **File**: `src/widgets/dev-server/dev-server-widget.ts`
 
----
 
 ### DockerWidget (`docker`)
 
@@ -359,13 +347,40 @@ Only shows if at least one count > 0.
 
 **File**: `src/widgets/docker/docker-widget.ts`
 
----
 
 ### PokerWidget (`poker`)
+
+
+### SysmonWidget (`sysmon`)
+
+**What it displays**: Real-time system metrics (CPU, RAM, disk, network)
+
+**Line**: 3
+
+**Base class**: Implements `IWidget` directly
+
+**Special features**:
+- Background updates every 2.5 seconds
+- Caches system information to reduce overhead
+- Gracefully handles missing `systeminformation` package
+
+**Styles**:
+| Style | Example |
+|-------|---------|
+| balanced | `CPU 45% | RAM 8.2GB | Disk 60% | Net ↓2.1MB/s` |
+| compact | `CPU45% RAM8.2GB D60% ↓2.1MB/s` |
+| playful | `🖥️ 45% | 💾 8.2GB | 💿 60% | 🌐 ↓2.1MB/s` |
+| verbose | `CPU: 45% | RAM: 8.2GB/16GB | Disk: 120GB/200GB | Net: ↓2.1MB/s ↑0.5MB/s` |
+
+**File**: `src/widgets/sysmon-widget.ts`
+
+
 
 **What it displays**: Random Texas Hold'em hands
 
 **Line**: 4
+
+### PokerWidget (`poker`)
 
 **Base class**: `StdinDataWidget`
 
@@ -384,7 +399,8 @@ Only shows if at least one count > 0.
 
 **File**: `src/widgets/poker-widget.ts`
 
----
+
+
 
 ### EmptyLineWidget (`empty-line`)
 
@@ -398,7 +414,6 @@ Only shows if at least one count > 0.
 
 **File**: `src/widgets/empty-line-widget.ts`
 
----
 
 ## Style System Deep Dive
 
@@ -435,7 +450,6 @@ export const modelStyles: StyleMap<ModelRenderData, IModelColors> = {
 11. `compact-verbose` - Compact with abbreviations
 12. `breakdown` - Multi-line breakdown (CacheMetricsWidget only)
 
----
 
 ## Widget Creation and Registration
 
@@ -456,11 +470,10 @@ export class WidgetFactory {
 
 ### Supported Widget IDs
 
-`model`, `context`, `cost`, `lines`, `duration`, `git`, `git-tag`, `config-count`, `cache-metrics`, `active-tools`, `dev-server`, `docker`
+`model`, `context`, `cost`, `lines`, `duration`, `git`, `git-tag`, `config-count`, `cache-metrics`, `active-tools`, `dev-server`, `docker`, `sysmon`
 
-Note: `poker` widget exists but is NOT in the factory (not in default config).
+Note: `poker` and `sysmon` widgets require external packages (`poker` is not in default config, `sysmon` requires `systeminformation`).
 
----
 
 ## Line Distribution
 
@@ -470,11 +483,14 @@ Note: `poker` widget exists but is NOT in the factory (not in default config).
 
 **Line 2**: ActiveToolsWidget, CacheMetricsWidget
 
-**Line 4**: PokerWidget
+**Line 3**: SysmonWidget, PokerWidget
+
+**Line 4**: EmptyLineWidget
+
+**Line 5**: (reserved for future use)
 
 **Line 5**: EmptyLineWidget
 
----
 
 ## Quick-Config Layouts
 
@@ -492,7 +508,6 @@ The `quick-config` command provides three layout presets:
 - **Line 1**: `git`, `git-tag`, `cache-metrics`, `config-count`
 - **Line 2**: `dev-server`, `docker`, `active-tools`
 
----
 
 ## Special Features and Behaviors
 

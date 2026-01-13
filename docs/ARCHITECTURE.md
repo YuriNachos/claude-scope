@@ -116,6 +116,7 @@ export class WidgetFactory {
       case "model": return new ModelWidget();
       case "git": return new GitWidget();
       case "context": return new ContextWidget();
+      case "sysmon": return new SysmonWidget();
       default: return null;
     }
   }
@@ -397,7 +398,11 @@ export async function loadWidgetConfig(): Promise<LoadedConfig | null> {
 - ActiveToolsWidget, CacheMetricsWidget, DevServerWidget, DockerWidget
 
 **3. Entertainment Widgets**:
+**3. Entertainment Widgets**:
 - PokerWidget, EmptyLineWidget
+
+**4. System Widgets**:
+- SysmonWidget
 
 ### Widget Base Classes
 
@@ -415,8 +420,6 @@ export abstract class StdinDataWidget implements IWidget {
   protected abstract renderWithData(data: StdinData, context: RenderContext): string | null;
 }
 ```
-
-## Theme System
 
 The theme system provides consistent color management across all widgets with 17 built-in themes.
 
