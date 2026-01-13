@@ -241,11 +241,12 @@ describe("Renderer", () => {
       const renderer = new Renderer();
       const nullWidget = {
         id: "null",
-        metadata: { name: "Null", description: "Test", version: "1.0.0", author: "Test" },
+        metadata: { name: "Null", description: "Test", version: "1.0.0", author: "Test", line: 0 },
         initialize: async () => {},
         render: async () => null,
         update: async () => {},
         isEnabled: () => true,
+        getLine: () => 0,
       };
 
       const lines = await renderer.render([nullWidget as any], {
@@ -253,7 +254,8 @@ describe("Renderer", () => {
         timestamp: Date.now(),
       });
 
-      expect(lines).to.deep.equal([]);
+      // Empty lines are preserved to maintain line numbering
+      expect(lines).to.deep.equal([""]);
     });
   });
 });

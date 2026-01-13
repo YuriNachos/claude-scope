@@ -135,6 +135,10 @@ export class SystemProvider implements ISystemProvider {
           this.logError(error);
         });
     }, intervalMs);
+    // Allow process to exit even if interval is active
+    if (this.intervalId && typeof this.intervalId.unref === "function") {
+      this.intervalId.unref();
+    }
   }
 
   stopUpdate(): void {

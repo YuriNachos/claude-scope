@@ -43,6 +43,8 @@ export class Renderer {
    * on separate lines. Widgets that throw errors are logged (via onError
    * callback) and skipped, allowing other widgets to continue rendering.
    *
+   * Empty lines are preserved to maintain correct line positioning.
+   *
    * @param widgets - Array of widgets to render
    * @param context - Render context with width and timestamp
    * @returns Array of rendered lines (one per line number)
@@ -63,11 +65,11 @@ export class Renderer {
       lineMap.get(line)?.push(widget);
     }
 
-    // Render each line
-    const lines: string[] = [];
+    // Render each line - use Map to preserve line numbers
+    const lineOutputs = new Map<number, string>();
     const sortedLines = Array.from(lineMap.entries()).sort((a, b) => a[0] - b[0]);
 
-    for (const [, widgetsForLine] of sortedLines) {
+    for (const [lineNum, widgetsForLine] of sortedLines) {
       const outputs: string[] = [];
 
       for (const widget of widgetsForLine) {
@@ -86,11 +88,14 @@ export class Renderer {
       }
 
       const line = outputs.join(this.separator);
-      // Include line if there are outputs (even if empty string for separator widgets)
-      if (outputs.length > 0) {
-        lines.push(line);
-      }
+      // Always store line output (even if empty) to preserve line numbering
+      lineOutputs.set(lineNum, line);
     }
+
+    // Convert Map to sorted array - this preserves line numbers
+    // Empty lines are included to maintain correct positioning
+    const sortedEntries = Array.from(lineOutputs.entries()).sort((a, b) => a[0] - b[0]);
+    const lines = sortedEntries.map(([, output]) => output);
 
     return lines;
   }

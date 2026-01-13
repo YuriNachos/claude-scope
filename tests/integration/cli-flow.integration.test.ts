@@ -239,8 +239,8 @@ describe("CLI Flow Integration", () => {
 
       const lines = await renderer.render(registry.getEnabledWidgets(), renderContext);
 
-      // Assert: Empty output when widget returns null
-      expect(lines).to.deep.equal([]);
+      // Assert: Empty line is preserved to maintain line numbering
+      expect(lines).to.deep.equal([""]);
     });
   });
 
