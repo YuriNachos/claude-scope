@@ -2,7 +2,6 @@
  * System provider interface for fetching system metrics
  */
 
-import { createRequire } from "node:module";
 import type { SysmonRenderData } from "../widgets/sysmon/types.js";
 
 export interface ISystemProvider {
@@ -29,14 +28,32 @@ export interface ISystemProvider {
  * System provider implementation using systeminformation
  */
 
-const require = createRequire(import.meta.url);
 let si: any = null;
+let siLoadAttempted = false;
 
-// Dynamic import for systeminformation (optional dependency)
-try {
-  si = require("systeminformation");
-} catch {
-  // systeminformation not installed - si remains null
+/**
+ * Lazy load systeminformation module
+ * Works in both bundled and non-bundled environments
+ */
+async function loadSystemInformation(): Promise<void> {
+  if (siLoadAttempted) {
+    return;
+  }
+  siLoadAttempted = true;
+
+  try {
+    // Try dynamic import first (works in bundled code)
+    si = await import("systeminformation");
+  } catch {
+    try {
+      // Fallback to require if import fails (non-bundled)
+      const module = await import("node:module");
+      const require = module.createRequire(import.meta.url);
+      si = require("systeminformation");
+    } catch {
+      // systeminformation not installed - si remains null
+    }
+  }
 }
 
 export class SystemProvider implements ISystemProvider {
@@ -44,8 +61,18 @@ export class SystemProvider implements ISystemProvider {
   private lastNetworkStats = new Map<string, { rx: number; tx: number }>();
   private lastErrorTime = 0;
   private readonly ERROR_LOG_INTERVAL = 60000; // 1 minute
+  private initialized = false;
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await loadSystemInformation();
+      this.initialized = true;
+    }
+  }
 
   async getMetrics(): Promise<SysmonRenderData | null> {
+    await this.ensureInitialized();
+
     if (!si) {
       return null;
     }
