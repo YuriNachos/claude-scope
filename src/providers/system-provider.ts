@@ -13,6 +13,7 @@ export interface ISystemProvider {
 
   /**
    * Start background updates with callback
+   * @deprecated SysmonWidget now uses on-demand fetching via getMetrics()
    * @param intervalMs - Update interval in milliseconds
    * @param callback - Called with new metrics on each update
    */
@@ -20,6 +21,7 @@ export interface ISystemProvider {
 
   /**
    * Stop background updates
+   * @deprecated SysmonWidget now uses on-demand fetching via getMetrics()
    */
   stopUpdate(): void;
 }
