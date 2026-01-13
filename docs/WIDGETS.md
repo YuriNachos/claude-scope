@@ -17,7 +17,7 @@
 | `dev-server` | DevServer Widget | ✅ Implemented | 0 | Detects and displays running dev server status |
 | `docker` | Docker Widget | ✅ Implemented | 0 | Shows Docker container count and status |
 | `poker` | Poker Widget | ✅ Implemented | 4 | Displays random Texas Hold'em hands |
-| `sysmon` | Sysmon Widget | ✅ Implemented | 3 | Displays real-time system metrics |
+| `sysmon` | Sysmon Widget | ✅ Implemented | 2 | Displays real-time system metrics |
 | `empty-line` | Empty Line Widget | ✅ Implemented | 5 | Creates blank separator line |
 
 
@@ -348,9 +348,6 @@ Only shows if at least one count > 0.
 **File**: `src/widgets/docker/docker-widget.ts`
 
 
-### PokerWidget (`poker`)
-
-
 ### SysmonWidget (`sysmon`)
 
 **ID:** `sysmon`
@@ -387,11 +384,11 @@ CPU 17% | RAM 13.7GB | Disk 3% | Net ↓0KB/s
 
 
 
+### PokerWidget (`poker`)
+
 **What it displays**: Random Texas Hold'em hands
 
 **Line**: 4
-
-### PokerWidget (`poker`)
 
 **Base class**: `StdinDataWidget`
 
@@ -492,15 +489,13 @@ Note: `poker` and `sysmon` widgets require external packages (`poker` is not in 
 
 **Line 1**: GitTagWidget, ConfigCountWidget
 
-**Line 2**: ActiveToolsWidget, CacheMetricsWidget
+**Line 2**: ActiveToolsWidget, CacheMetricsWidget, SysmonWidget
 
-**Line 3**: SysmonWidget, PokerWidget
+**Line 3**: PokerWidget
 
 **Line 4**: EmptyLineWidget
 
 **Line 5**: (reserved for future use)
-
-**Line 5**: EmptyLineWidget
 
 
 ## Quick-Config Layouts
