@@ -2,7 +2,8 @@
  * Tests for SysmonWidget
  */
 
-import { beforeEach, describe, expect, it } from "node:test";
+import assert from "node:assert";
+import { describe, it } from "node:test";
 import type { ISystemProvider } from "../../../src/providers/system-provider.js";
 import { DEFAULT_THEME } from "../../../src/ui/theme/index.js";
 import type { SysmonRenderData } from "../../../src/widgets/sysmon/types.js";
@@ -20,13 +21,13 @@ describe("SysmonWidget", () => {
   describe("metadata", () => {
     it("should have correct id", () => {
       const widget = new SysmonWidget(DEFAULT_THEME, createMockProvider(null));
-      expect(widget.id).to.equal("sysmon");
+      assert.strictEqual(widget.id, "sysmon");
     });
 
     it("should have correct metadata", () => {
       const widget = new SysmonWidget(DEFAULT_THEME, createMockProvider(null));
-      expect(widget.metadata.name).to.equal("Sysmon");
-      expect(widget.metadata.description).to.include("system");
+      assert.strictEqual(widget.metadata.name, "Sysmon");
+      assert.ok(widget.metadata.description.toLowerCase().includes("system"));
     });
   });
 
@@ -45,7 +46,7 @@ describe("SysmonWidget", () => {
 
       // Widget should now have metrics
       const result = await widget.render({ width: 80, timestamp: Date.now() });
-      expect(result).to.be.ok;
+      assert.ok(result);
     });
   });
 
@@ -64,9 +65,9 @@ describe("SysmonWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: Date.now() });
 
-      expect(result).to.include("CPU 45%");
-      expect(result).to.include("RAM 8.2GB");
-      expect(result).to.include("Disk 60%");
+      assert.ok(result.includes("CPU 45%"));
+      assert.ok(result.includes("RAM 8.2GB"));
+      assert.ok(result.includes("Disk 60%"));
     });
 
     it("should return null when provider returns null", async () => {
@@ -77,7 +78,7 @@ describe("SysmonWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: Date.now() });
 
-      expect(result).to.be.null;
+      assert.strictEqual(result, null);
     });
 
     it("should respect style changes", async () => {
@@ -94,11 +95,11 @@ describe("SysmonWidget", () => {
 
       widget.setStyle("compact");
       let result = await widget.render({ width: 80, timestamp: Date.now() });
-      expect(result).to.not.include("|");
+      assert.ok(!result.includes("|"));
 
       widget.setStyle("playful");
       result = await widget.render({ width: 80, timestamp: Date.now() });
-      expect(result).to.include("🖥️");
+      assert.ok(result.includes("🖥️"));
     });
 
     it("should support line override", async () => {
@@ -111,7 +112,7 @@ describe("SysmonWidget", () => {
       const widget = new SysmonWidget(DEFAULT_THEME, provider);
 
       widget.setLine(3);
-      expect(widget.getLine()).to.equal(3);
+      assert.strictEqual(widget.getLine(), 3);
     });
   });
 
@@ -124,12 +125,12 @@ describe("SysmonWidget", () => {
         network: { rxSec: 1, txSec: 0.5 },
       });
       const widget = new SysmonWidget(DEFAULT_THEME, provider);
-      expect(widget.isEnabled()).to.be.true;
+      assert.strictEqual(widget.isEnabled(), true);
     });
 
     it("should return false when provider is null", () => {
       const widget = new SysmonWidget(DEFAULT_THEME, null as any);
-      expect(widget.isEnabled()).to.be.false;
+      assert.strictEqual(widget.isEnabled(), false);
     });
   });
 
@@ -146,7 +147,8 @@ describe("SysmonWidget", () => {
       await widget.initialize({});
 
       // Cleanup should not throw
-      expect(async () => await widget.cleanup()).to.not.throw();
+      await widget.cleanup();
+      assert.ok(true);
     });
   });
 });
