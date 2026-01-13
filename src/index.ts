@@ -98,7 +98,7 @@ export async function main(): Promise<string> {
               ...widgetConfigItem,
               line: parseInt(lineNum, 10),
             });
-            await registry.register(widget);
+            await registry.register(widget, { config: { ...widgetConfigItem } });
           }
           // If widget is null (unknown ID), skip it silently
         }
@@ -109,7 +109,7 @@ export async function main(): Promise<string> {
       for (const widgetId of defaultWidgets) {
         const widget = factory.createWidget(widgetId);
         if (widget) {
-          await registry.register(widget);
+          await registry.register(widget, { config: {} });
         }
       }
     }
