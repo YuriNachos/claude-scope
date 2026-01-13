@@ -14,6 +14,7 @@ import { GitWidget } from "../widgets/git/git-widget.js";
 import { LinesWidget } from "../widgets/lines-widget.js";
 import { ModelWidget } from "../widgets/model-widget.js";
 import { PokerWidget } from "../widgets/poker-widget.js";
+import { SysmonWidget } from "../widgets/sysmon-widget.js";
 import type { IWidget } from "./types.js";
 
 /**
@@ -75,6 +76,9 @@ export class WidgetFactory {
       case "poker":
         return new PokerWidget(DEFAULT_THEME);
 
+      case "sysmon":
+        return new SysmonWidget(DEFAULT_THEME);
+
       case "empty-line":
         return new EmptyLineWidget();
 
@@ -101,6 +105,7 @@ export class WidgetFactory {
       "dev-server",
       "docker",
       "poker",
+      "sysmon",
       "empty-line",
     ];
   }
