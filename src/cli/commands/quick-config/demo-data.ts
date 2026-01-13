@@ -4,7 +4,9 @@
  */
 
 import { DEMO_DATA } from "../../../constants.js";
+import type { ISystemProvider } from "../../../providers/system-provider.js";
 import type { StdinData } from "../../../types.js";
+import type { SysmonRenderData } from "../../../widgets/sysmon/types.js";
 
 /**
  * Generate demo StdinData with realistic values
@@ -45,5 +47,23 @@ export function createDemoData(): StdinData {
         cache_read_input_tokens: DEMO_DATA.CACHE_READ_TOKENS,
       },
     },
+  };
+}
+
+/**
+ * Create mock system provider with demo metrics
+ */
+export function createMockSystemProvider(): ISystemProvider {
+  const demoMetrics: SysmonRenderData = {
+    cpu: { percent: 42 },
+    memory: { used: 8.2, total: 16, percent: 51 },
+    disk: { used: 120, total: 256, percent: 47 },
+    network: { rxSec: 2.4, txSec: 0.8 },
+  };
+
+  return {
+    getMetrics: async () => demoMetrics,
+    startUpdate: () => {},
+    stopUpdate: () => {},
   };
 }

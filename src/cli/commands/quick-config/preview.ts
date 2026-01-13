@@ -17,8 +17,9 @@ import { GitTagWidget } from "../../../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../../../widgets/git/git-widget.js";
 import { LinesWidget } from "../../../widgets/lines-widget.js";
 import { ModelWidget } from "../../../widgets/model-widget.js";
+import { SysmonWidget } from "../../../widgets/sysmon-widget.js";
 import type { QuickConfigStyle } from "./config-schema.js";
-import { createDemoData } from "./demo-data.js";
+import { createDemoData, createMockSystemProvider } from "./demo-data.js";
 
 /**
  * Render preview with given style and theme
@@ -74,6 +75,10 @@ export async function renderPreview(style: QuickConfigStyle, themeName: string):
   const cacheMetricsWidget = new CacheMetricsWidget(theme.colors);
   cacheMetricsWidget.setStyle(style);
   await registry.register(cacheMetricsWidget);
+
+  const sysmonWidget = new SysmonWidget(theme.colors, createMockSystemProvider());
+  sysmonWidget.setStyle(style);
+  await registry.register(sysmonWidget);
 
   // Create renderer
   const renderer = new Renderer({
