@@ -23,4 +23,4 @@ export { GitWidget } from "./git/git-widget.js";
 export { LinesWidget } from "./lines-widget.js";
 export { ModelWidget } from "./model-widget.js";
 export { PokerWidget } from "./poker-widget.js";
-export { SysmonWidget } from "./sysmon/index.js";
+export { SysmonWidget } from "./sysmon-widget.js";
