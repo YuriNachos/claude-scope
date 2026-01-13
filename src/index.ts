@@ -6,7 +6,7 @@
  */
 
 import { parseCommand, routeCommand } from "./cli/index.js";
-import { type LoadedConfig, loadWidgetConfig } from "./config/config-loader.js";
+import { loadWidgetConfig } from "./config/config-loader.js";
 import { Renderer } from "./core/renderer.js";
 import { isValidWidgetStyle, type WidgetStyle } from "./core/style-types.js";
 import { WidgetFactory } from "./core/widget-factory.js";

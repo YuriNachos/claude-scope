@@ -6,9 +6,9 @@
  */
 
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
+import type { IWidget, RenderContext, WidgetContext } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { ISystemProvider } from "../providers/system-provider.js";
-import type { IWidget, RenderContext, WidgetContext } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
 import type { IThemeColors } from "../ui/theme/types.js";
 import { sysmonStyles } from "./sysmon/styles.js";
@@ -55,7 +55,7 @@ export class SysmonWidget implements IWidget {
     });
   }
 
-  async render(context: RenderContext): Promise<string | null> {
+  async render(_context: RenderContext): Promise<string | null> {
     if (!this.currentMetrics || !this.isEnabled()) {
       return null;
     }
