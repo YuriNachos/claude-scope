@@ -2,7 +2,7 @@
  * System provider interface for fetching system metrics
  */
 
-import { createRequire } from "module";
+import { createRequire } from "node:module";
 import type { SysmonRenderData } from "../widgets/sysmon/types.js";
 
 export interface ISystemProvider {
