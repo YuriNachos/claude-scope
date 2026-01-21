@@ -46,3 +46,6 @@ temp/
 tmp/
 
 # Documentation (local working files)
+
+# Ralph TUI
+.ralph-tui/
