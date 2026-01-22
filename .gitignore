@@ -49,3 +49,6 @@ tmp/
 
 # Ralph TUI
 .ralph-tui/
+
+# Git worktrees
+.worktrees/
