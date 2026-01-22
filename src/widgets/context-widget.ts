@@ -104,7 +104,15 @@ export class ContextWidget extends StdinDataWidget {
       }
     }
 
-    if (!usage) return null;
+    // If no usage data available, show zeros by default (widget should always be visible)
+    if (!usage) {
+      const renderData = {
+        used: 0,
+        contextWindowSize: context_window_size,
+        percent: 0,
+      };
+      return this.styleFn(renderData, this.colors.context);
+    }
 
     // Calculate actual context usage:
     // - input_tokens: new tokens added to context

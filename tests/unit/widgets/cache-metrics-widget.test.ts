@@ -59,7 +59,7 @@ describe("CacheMetricsWidget", () => {
       expect(result).to.include("cache");
     });
 
-    it("should return null when no context usage data available", async () => {
+    it("should show 0 cache when no context usage data available (widget always visible)", async () => {
       const widget = new CacheMetricsWidget();
       await widget.update(
         createMockStdinData({
@@ -74,7 +74,7 @@ describe("CacheMetricsWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      expect(result).to.be.null;
+      expect(result).to.include("0 cache");
     });
 
     it("should support compact style", async () => {
@@ -340,7 +340,7 @@ describe("CacheMetricsWidget", () => {
       expect(widget.isEnabled()).to.be.true;
     });
 
-    it("should return false when no renderData", async () => {
+    it("should return true when widget is always enabled (even with zero data)", async () => {
       const widget = new CacheMetricsWidget();
       await widget.update(
         createMockStdinData({
@@ -353,7 +353,7 @@ describe("CacheMetricsWidget", () => {
         })
       );
 
-      expect(widget.isEnabled()).to.be.false;
+      expect(widget.isEnabled()).to.be.true;
     });
   });
 
@@ -506,7 +506,7 @@ describe("CacheMetricsWidget", () => {
       expect(result2).to.include("1.0k");
     });
 
-    it("should return null when no cache and current_usage is null", async () => {
+    it("should show 0 cache when no cache and current_usage is null (widget always visible)", async () => {
       const widget = new CacheMetricsWidget();
 
       await widget.update(
@@ -522,7 +522,7 @@ describe("CacheMetricsWidget", () => {
       );
 
       const result = await widget.render({ width: 80, timestamp: 0 });
-      expect(result).to.be.null;
+      expect(result).to.include("0 cache");
     });
 
     it("should not overwrite cache with zero values", async () => {
@@ -648,9 +648,9 @@ describe("CacheMetricsWidget", () => {
       );
 
       const result3 = await widget.render({ width: 80, timestamp: 0 });
-      // BUG: Should return null but shows "50k cache" because old data was cached
-      // under "session-beta" in step 2
-      expect(result3).to.be.null; // This will fail - showing the bug
+      // FIXED: Session change detection prevents old session data from being cached
+      // under the new session_id. Now widget shows 0 cache instead of null when no data.
+      expect(result3).to.include("0 cache");
     });
   });
 });

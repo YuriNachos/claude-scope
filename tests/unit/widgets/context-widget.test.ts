@@ -23,7 +23,7 @@ describe("ContextWidget", () => {
     expect(widget.metadata.name).to.equal("Context");
   });
 
-  it("should return null when current_usage is null", async () => {
+  it("should show 0% when current_usage is null (widget always visible)", async () => {
     const widget = new ContextWidget();
     await widget.update(
       createMockStdinData({
@@ -38,7 +38,7 @@ describe("ContextWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.be.null;
+    expect(result).to.include("0%");
   });
 
   it("should calculate usage with cache tokens", async () => {
@@ -538,7 +538,7 @@ describe("ContextWidget", () => {
       expect(clean1).to.equal(clean2);
     });
 
-    it("should return null when no cache and current_usage is null", async () => {
+    it("should show 0% when no cache and current_usage is null (widget always visible)", async () => {
       const widget = new ContextWidget();
 
       // Update with null current_usage (no cache available for new session)
@@ -555,7 +555,7 @@ describe("ContextWidget", () => {
       );
 
       const result = await widget.render({ width: 80, timestamp: 0 });
-      expect(result).to.be.null;
+      expect(result).to.include("0%");
     });
 
     it("should not overwrite cache with zero values", async () => {
@@ -685,9 +685,9 @@ describe("ContextWidget", () => {
       );
 
       const result3 = await widget.render({ width: 80, timestamp: 0 });
-      // FIXED: Now correctly returns null because session change detection
-      // prevents old session data from being cached under the new session_id
-      expect(result3).to.be.null;
+      // FIXED: Session change detection prevents old session data from being cached
+      // under the new session_id. Now widget shows 0% instead of null when no data.
+      expect(result3).to.include("0%");
     });
   });
 });

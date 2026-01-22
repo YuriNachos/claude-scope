@@ -54,7 +54,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
 
   /**
    * Calculate cache metrics from context usage data
-   * Returns null if no usage data is available (current or cached)
+   * Returns zero metrics if no usage data is available (widget should always be visible)
    */
   private calculateMetrics(data: StdinData): CacheMetricsRenderData | null {
     let usage = data.context_window?.current_usage;
@@ -67,8 +67,15 @@ export class CacheMetricsWidget extends StdinDataWidget {
       }
     }
 
+    // If no usage data available, return zero metrics (widget should always be visible)
     if (!usage) {
-      return null;
+      return {
+        cacheRead: 0,
+        cacheWrite: 0,
+        totalTokens: 0,
+        hitRate: 0,
+        savings: 0,
+      };
     }
 
     const cacheRead = usage.cache_read_input_tokens ?? 0;
@@ -153,9 +160,9 @@ export class CacheMetricsWidget extends StdinDataWidget {
   }
 
   /**
-   * Widget is enabled when we have cache metrics data
+   * Widget is always enabled (shows zeros when no data)
    */
   isEnabled(): boolean {
-    return this.renderData !== undefined;
+    return true;
   }
 }
