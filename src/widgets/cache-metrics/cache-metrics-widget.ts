@@ -127,17 +127,26 @@ export class CacheMetricsWidget extends StdinDataWidget {
     this.lastSessionId = data.session_id;
 
     // Store valid current_usage in cache
-    // Only cache if there are meaningful values (input_tokens > 0)
-    // This prevents zero values from overwriting valid cache data
+    // Only cache if ANY token value > 0. This prevents zero values from
+    // overwriting valid cache data. CacheMetricsWidget should cache when
+    // there are cache_read or cache_creation tokens even if input_tokens is 0.
     // Also skip caching when session just changed (to avoid caching old session's data)
     const usage = data.context_window?.current_usage;
-    if (usage && usage.input_tokens > 0 && !sessionChanged) {
-      this.cacheManager.setCachedUsage(data.session_id, {
-        input_tokens: usage.input_tokens,
-        output_tokens: usage.output_tokens,
-        cache_creation_input_tokens: usage.cache_creation_input_tokens,
-        cache_read_input_tokens: usage.cache_read_input_tokens,
-      });
+    if (usage && !sessionChanged) {
+      const hasAnyTokens =
+        (usage.input_tokens ?? 0) > 0 ||
+        (usage.output_tokens ?? 0) > 0 ||
+        (usage.cache_creation_input_tokens ?? 0) > 0 ||
+        (usage.cache_read_input_tokens ?? 0) > 0;
+
+      if (hasAnyTokens) {
+        this.cacheManager.setCachedUsage(data.session_id, {
+          input_tokens: usage.input_tokens,
+          output_tokens: usage.output_tokens,
+          cache_creation_input_tokens: usage.cache_creation_input_tokens,
+          cache_read_input_tokens: usage.cache_read_input_tokens,
+        });
+      }
     }
 
     const metrics = this.calculateMetrics(data);
