@@ -57,6 +57,8 @@ export class LinesWidget extends StdinDataWidget {
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     const added = data.cost?.total_lines_added ?? 0;
     const removed = data.cost?.total_lines_removed ?? 0;
+    // Hide widget when both added and removed are zero
+    if (added === 0 && removed === 0) return null;
 
     const renderData: LinesRenderData = { added, removed };
     return this.styleFn(renderData, this.colors.lines);

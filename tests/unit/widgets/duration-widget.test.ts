@@ -72,7 +72,7 @@ describe("DurationWidget", () => {
     expect(stripAnsi(result || "")).to.equal("1h 1m 5s");
   });
 
-  it("should handle zero duration", async () => {
+  it("should hide when duration is zero", async () => {
     const widget = new DurationWidget();
     await widget.update(
       createMockStdinData({
@@ -88,7 +88,7 @@ describe("DurationWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(stripAnsi(result || "")).to.equal("0s");
+    expect(result).to.be.null;
   });
 
   describe("style renderers", () => {

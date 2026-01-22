@@ -36,18 +36,16 @@ describe("LinesWidget", () => {
     expect(result).to.include("/");
   });
 
-  it("should show zeros when cost data is missing", async () => {
+  it("should hide when cost data is missing (both values are zero)", async () => {
     const widget = new LinesWidget();
     await widget.update(createMockStdinData({ cost: undefined }));
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("+0");
-    expect(result).to.include("-0");
-    expect(result).to.include("/");
+    expect(result).to.be.null;
   });
 
-  it("should show zeros when cost exists but lines are undefined", async () => {
+  it("should hide when cost exists but lines are undefined (both values are zero)", async () => {
     const widget = new LinesWidget();
     await widget.update(
       createMockStdinData({
@@ -61,8 +59,7 @@ describe("LinesWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("+0");
-    expect(result).to.include("-0");
+    expect(result).to.be.null;
   });
 
   it("should handle large numbers without abbreviation", async () => {
@@ -85,7 +82,7 @@ describe("LinesWidget", () => {
     expect(result).to.include("-987654");
   });
 
-  it("should handle zero values", async () => {
+  it("should hide when both values are zero", async () => {
     const widget = new LinesWidget();
     await widget.update(
       createMockStdinData({
@@ -101,8 +98,7 @@ describe("LinesWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(result).to.include("+0");
-    expect(result).to.include("-0");
+    expect(result).to.be.null;
   });
 
   it("should handle only additions (no deletions)", async () => {

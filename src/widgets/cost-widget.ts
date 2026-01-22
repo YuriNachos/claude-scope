@@ -49,6 +49,8 @@ export class CostWidget extends StdinDataWidget {
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     if (!data.cost || data.cost.total_cost_usd === undefined) return null;
+    // Hide widget when cost is zero
+    if (data.cost.total_cost_usd === 0) return null;
 
     const renderData: CostRenderData = {
       costUsd: data.cost.total_cost_usd,

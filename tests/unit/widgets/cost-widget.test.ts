@@ -72,7 +72,7 @@ describe("CostWidget", () => {
     expect(stripAnsi(result || "")).to.equal("$123.45");
   });
 
-  it("should handle zero cost", async () => {
+  it("should hide when cost is zero", async () => {
     const widget = new CostWidget();
     await widget.update(
       createMockStdinData({
@@ -88,7 +88,7 @@ describe("CostWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    expect(stripAnsi(result || "")).to.equal("$0.00");
+    expect(result).to.be.null;
   });
 
   describe("style renderers", () => {

@@ -49,6 +49,8 @@ export class DurationWidget extends StdinDataWidget {
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     if (!data.cost || data.cost.total_duration_ms === undefined) return null;
+    // Hide widget when duration is zero
+    if (data.cost.total_duration_ms === 0) return null;
 
     const renderData: DurationRenderData = {
       durationMs: data.cost.total_duration_ms,
