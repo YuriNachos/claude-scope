@@ -22,7 +22,7 @@ export class UsageParser {
    * @param transcriptPath - Path to the JSONL transcript file
    * @returns ContextUsage or null if not found
    */
-  parseLastUsage(transcriptPath: string): ContextUsage | null {
+  async parseLastUsage(transcriptPath: string): Promise<ContextUsage | null> {
     // Fast fail if file doesn't exist
     if (!existsSync(transcriptPath)) {
       return null;
@@ -30,7 +30,7 @@ export class UsageParser {
 
     try {
       // Read all lines into memory (transcripts are typically small)
-      const lines = this.readAllLines(transcriptPath);
+      const lines = await this.readAllLines(transcriptPath);
 
       // Iterate in reverse to find the last assistant message with usage
       for (let i = lines.length - 1; i >= 0; i--) {
@@ -52,7 +52,7 @@ export class UsageParser {
   /**
    * Read all lines from transcript file
    */
-  private readAllLines(transcriptPath: string): string[] {
+  private async readAllLines(transcriptPath: string): Promise<string[]> {
     const lines: string[] = [];
 
     try {
