@@ -2,11 +2,13 @@
  * Context Widget
  *
  * Displays context window usage with progress bar
- * Uses cached values when current_usage is null to prevent flickering
+ * Uses UsageParser to read usage from transcript files when current_usage is null
  */
 
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
+import { UsageParser } from "../providers/usage-parser.js";
+import type { ContextUsage } from "../schemas/stdin-schema.js";
 import { CacheManager } from "../storage/cache-manager.js";
 import type { RenderContext, StdinData } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
@@ -29,12 +31,15 @@ export class ContextWidget extends StdinDataWidget {
   private _lineOverride?: number;
   private styleFn: StyleRendererFn<ContextRenderData, IContextColors> = contextStyles.balanced!;
   private cacheManager: CacheManager;
+  private usageParser: UsageParser;
   private lastSessionId?: string;
+  private cachedUsage?: ContextUsage | null; // Cache parsed usage within render cycle
 
   constructor(colors?: IThemeColors) {
     super();
     this.colors = colors ?? DEFAULT_THEME;
     this.cacheManager = new CacheManager();
+    this.usageParser = new UsageParser();
   }
 
   setStyle(style: WidgetStyle = "balanced"): void {
@@ -90,13 +95,30 @@ export class ContextWidget extends StdinDataWidget {
         });
       }
     }
+
+    // Parse usage from transcript for use in render (done once per update)
+    // Priority 1: current_usage (checked in renderWithData)
+    // Priority 2: transcript file (persists during tool execution)
+    // Priority 3: cache manager (5-min cache)
+    if (!current_usage) {
+      this.cachedUsage = await this.usageParser.parseLastUsage(data.transcript_path);
+    } else {
+      this.cachedUsage = undefined;
+    }
   }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
     const { current_usage, context_window_size } = data.context_window;
 
-    // Try to get usage data: prefer current, fall back to cache
+    // Priority 1: current_usage from stdin (fastest, most recent)
     let usage = current_usage;
+
+    // Priority 2: usage parsed from transcript (persists during tool execution)
+    if (!usage && this.cachedUsage) {
+      usage = this.cachedUsage;
+    }
+
+    // Priority 3: cache manager (5-min cache)
     if (!usage) {
       const cached = this.cacheManager.getCachedUsage(data.session_id);
       if (cached) {
