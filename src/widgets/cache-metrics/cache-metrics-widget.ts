@@ -2,10 +2,12 @@
  * Cache Metrics Widget
  *
  * Displays cache hit rate and savings from context usage data
- * Uses cached values when current_usage is null to prevent flickering
+ * Uses UsageParser to read usage from transcript files when current_usage is null
  */
 
 import { createWidgetMetadata } from "../../core/widget-types.js";
+import { UsageParser } from "../../providers/usage-parser.js";
+import type { ContextUsage } from "../../schemas/stdin-schema.js";
 import { CacheManager } from "../../storage/cache-manager.js";
 import type { RenderContext, StdinData } from "../../types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
@@ -29,12 +31,15 @@ export class CacheMetricsWidget extends StdinDataWidget {
   private style: CacheMetricsStyle = "balanced";
   private renderData?: CacheMetricsRenderData;
   private cacheManager: CacheManager;
+  private usageParser: UsageParser;
   private lastSessionId?: string;
+  private cachedUsage?: ContextUsage | null; // Cache parsed usage within render cycle
 
   constructor(theme?: IThemeColors) {
     super();
     this.theme = theme ?? DEFAULT_THEME;
     this.cacheManager = new CacheManager();
+    this.usageParser = new UsageParser();
   }
 
   /**
@@ -56,17 +61,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
    * Calculate cache metrics from context usage data
    * Returns zero metrics if no usage data is available (widget should always be visible)
    */
-  private calculateMetrics(data: StdinData): CacheMetricsRenderData | null {
-    let usage = data.context_window?.current_usage;
-
-    // Fall back to cache if current_usage is null
-    if (!usage) {
-      const cached = this.cacheManager.getCachedUsage(data.session_id);
-      if (cached) {
-        usage = cached.usage;
-      }
-    }
-
+  private calculateMetrics(usage: ContextUsage | null): CacheMetricsRenderData | null {
     // If no usage data available, return zero metrics (widget should always be visible)
     if (!usage) {
       return {
@@ -149,17 +144,43 @@ export class CacheMetricsWidget extends StdinDataWidget {
       }
     }
 
-    const metrics = this.calculateMetrics(data);
-    this.renderData = metrics ?? undefined;
+    // Parse usage from transcript for use in render (done once per update)
+    // Priority 1: current_usage (checked in renderWithData)
+    // Priority 2: transcript file (persists during tool execution)
+    // Priority 3: cache manager (5-min cache)
+    if (!usage) {
+      this.cachedUsage = await this.usageParser.parseLastUsage(data.transcript_path);
+    } else {
+      this.cachedUsage = undefined;
+    }
   }
 
   /**
    * Render the cache metrics display
    */
-  protected renderWithData(_data: StdinData, _context: RenderContext): string | null {
-    if (!this.renderData) {
+  protected renderWithData(data: StdinData, _context: RenderContext): string | null {
+    // Priority 1: current_usage from stdin (fastest, most recent)
+    let usage = data.context_window?.current_usage;
+
+    // Priority 2: usage parsed from transcript (persists during tool execution)
+    if (!usage && this.cachedUsage) {
+      usage = this.cachedUsage;
+    }
+
+    // Priority 3: cache manager (5-min cache)
+    if (!usage) {
+      const cached = this.cacheManager.getCachedUsage(data.session_id);
+      if (cached) {
+        usage = cached.usage;
+      }
+    }
+
+    const metrics = this.calculateMetrics(usage);
+    if (!metrics) {
       return null;
     }
+
+    this.renderData = metrics;
 
     const styleFn = cacheMetricsStyles[this.style] ?? cacheMetricsStyles.balanced;
     if (!styleFn) {
