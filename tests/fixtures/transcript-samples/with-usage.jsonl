@@ -1,0 +1,4 @@
+{"type":"user","message":{"role":"user","content":[{"type":"text","text":"Hello, help me with something"}]},"uuid":"user-1"}
+{"type":"assistant","message":{"id":"msg-1","role":"assistant","usage":{"input_tokens":100,"output_tokens":50,"cache_read_input_tokens":20000,"cache_creation_input_tokens":5000},"content":[{"type":"text","text":"I'll help you with that"}]},"uuid":"assistant-1"}
+{"type":"user","message":{"role":"user","content":[{"type":"tool_result","tool_use_id":"call-1","content":"Result"}]},"uuid":"user-2"}
+{"type":"assistant","message":{"id":"msg-2","role":"assistant","usage":{"input_tokens":150,"output_tokens":75,"cache_read_input_tokens":25000,"cache_creation_input_tokens":3000},"content":[{"type":"text","text":"Let me check that"}]},"uuid":"assistant-2"}
