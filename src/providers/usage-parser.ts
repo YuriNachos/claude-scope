@@ -6,8 +6,9 @@
  * (during tool execution or in new sessions).
  */
 
-import { createReadStream, existsSync } from "node:fs";
-import { createInterface } from "node:readline";
+// Use require for existsSync to ensure it works in bundled code
+import { createReadStream, existsSync } from "fs";
+import { createInterface } from "readline";
 import type { ContextUsage } from "../schemas/stdin-schema.js";
 import type { TranscriptLine, TranscriptUsage } from "./usage-types.js";
 
@@ -32,21 +33,42 @@ export class UsageParser {
       // Read all lines into memory (transcripts are typically small)
       const lines = await this.readAllLines(transcriptPath);
 
-      // Iterate in reverse to find the last assistant message with usage
-      for (let i = lines.length - 1; i >= 0; i--) {
-        const usage = this.parseLineForUsage(lines[i]);
-        if (usage) {
-          return usage;
+      // Find the MOST RECENT assistant message with usage data (by timestamp)
+      let mostRecentUsage: ContextUsage | null = null;
+      let mostRecentTimestamp: Date | null = null;
+
+      for (const line of lines) {
+        const entry = this.parseLineForUsage(line);
+        if (entry) {
+          const entryTime = this.parseTimestamp(line);
+          if (entryTime && (!mostRecentTimestamp || entryTime > mostRecentTimestamp)) {
+            mostRecentUsage = entry;
+            mostRecentTimestamp = entryTime;
+          }
         }
       }
 
-      // No assistant message with usage found
-      return null;
+      return mostRecentUsage;
     } catch {
       // Any error (read, parse, etc.) returns null
       // Let the fallback chain handle it
       return null;
     }
+  }
+
+  /**
+   * Parse timestamp from a transcript line
+   */
+  private parseTimestamp(line: string): Date | null {
+    try {
+      const entry = JSON.parse(line);
+      if (entry.timestamp) {
+        return new Date(entry.timestamp);
+      }
+    } catch {
+      // Ignore parse errors
+    }
+    return null;
   }
 
   /**
@@ -93,12 +115,9 @@ export class UsageParser {
         return null;
       }
 
-      // Validate required fields exist
-      if (
-        typeof usage.input_tokens !== "number" ||
-        typeof usage.output_tokens !== "number" ||
-        typeof usage.cache_read_input_tokens !== "number"
-      ) {
+      // Validate required fields: input_tokens and output_tokens must exist
+      // cache_read_input_tokens is optional (may not be present in all messages)
+      if (typeof usage.input_tokens !== "number" || typeof usage.output_tokens !== "number") {
         return null;
       }
 
@@ -107,7 +126,7 @@ export class UsageParser {
         input_tokens: usage.input_tokens,
         output_tokens: usage.output_tokens,
         cache_creation_input_tokens: usage.cache_creation_input_tokens ?? 0,
-        cache_read_input_tokens: usage.cache_read_input_tokens,
+        cache_read_input_tokens: usage.cache_read_input_tokens ?? 0, // Default to 0 if missing
       };
     } catch {
       // Invalid JSON or unexpected structure

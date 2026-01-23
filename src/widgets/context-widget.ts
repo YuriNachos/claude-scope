@@ -100,9 +100,18 @@ export class ContextWidget extends StdinDataWidget {
     // Priority 1: current_usage (checked in renderWithData)
     // Priority 2: transcript file (persists during tool execution)
     // Priority 3: cache manager (5-min cache)
-    if (!current_usage) {
+    const hasRealUsage =
+      current_usage &&
+      ((current_usage.input_tokens ?? 0) > 0 ||
+        (current_usage.output_tokens ?? 0) > 0 ||
+        (current_usage.cache_read_input_tokens ?? 0) > 0 ||
+        (current_usage.cache_creation_input_tokens ?? 0) > 0);
+
+    if (!current_usage || !hasRealUsage) {
+      // current_usage is null or all zeros - try transcript
       this.cachedUsage = await this.usageParser.parseLastUsage(data.transcript_path);
     } else {
+      // current_usage has real data - clear cached transcript usage
       this.cachedUsage = undefined;
     }
   }
@@ -113,8 +122,17 @@ export class ContextWidget extends StdinDataWidget {
     // Priority 1: current_usage from stdin (fastest, most recent)
     let usage = current_usage;
 
+    // Check if current_usage has real data (not all zeros)
+    const hasRealUsage =
+      usage &&
+      ((usage.input_tokens ?? 0) > 0 ||
+        (usage.output_tokens ?? 0) > 0 ||
+        (usage.cache_read_input_tokens ?? 0) > 0 ||
+        (usage.cache_creation_input_tokens ?? 0) > 0);
+
     // Priority 2: usage parsed from transcript (persists during tool execution)
-    if (!usage && this.cachedUsage) {
+    // Use transcript if current_usage is null or has no real data
+    if ((!usage || !hasRealUsage) && this.cachedUsage) {
       usage = this.cachedUsage;
     }
 
