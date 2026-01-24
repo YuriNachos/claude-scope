@@ -111,7 +111,10 @@ export class UsageParser {
 
   /**
    * Parse cumulative cache tokens from all assistant messages in transcript
-   * Sums ALL cache_read and cache_creation tokens across the entire session
+   *
+   * Handles two transcript formats:
+   * 1. Per-message format: cache_read varies per message (e.g., 2048, 4096) → sum all
+   * 2. Cumulative format: cache_read is already cumulative (e.g., 165376) → use last
    *
    * @param transcriptPath - Path to the JSONL transcript file
    * @returns Object with cumulative cacheRead and cacheCreation, or null if not found
@@ -126,15 +129,52 @@ export class UsageParser {
     try {
       const lines = await this.readAllLines(transcriptPath);
 
-      let cumulativeCacheRead = 0;
-      let cumulativeCacheCreation = 0;
+      // Collect all cache entries with timestamps
+      const cacheEntries: { cacheRead: number; cacheCreation: number; timestamp: string }[] = [];
 
       for (const line of lines) {
         const entry = this.parseLineForCache(line);
         if (entry) {
-          cumulativeCacheRead += entry.cacheRead;
-          cumulativeCacheCreation += entry.cacheCreation;
+          const timestamp = this.parseTimestamp(line);
+          cacheEntries.push({
+            cacheRead: entry.cacheRead,
+            cacheCreation: entry.cacheCreation,
+            timestamp: timestamp?.toISOString() || "",
+          });
         }
+      }
+
+      if (cacheEntries.length === 0) {
+        return null;
+      }
+
+      // Detect format: check if cache_read is monotonically increasing (cumulative format)
+      // If values grow or stay same → cumulative, use last value
+      // If values fluctuate → per-message, sum all
+      let isCumulativeFormat = false;
+      if (cacheEntries.length > 1) {
+        let nonDecreasingCount = 0;
+        for (let i = 1; i < cacheEntries.length; i++) {
+          if (cacheEntries[i].cacheRead >= cacheEntries[i - 1].cacheRead) {
+            nonDecreasingCount++;
+          }
+        }
+        // If 80%+ are non-decreasing, assume cumulative format
+        isCumulativeFormat = nonDecreasingCount / (cacheEntries.length - 1) >= 0.8;
+      }
+
+      let cumulativeCacheRead: number;
+      let cumulativeCacheCreation: number;
+
+      if (isCumulativeFormat) {
+        // Cumulative format: use the last (most recent) value
+        const lastEntry = cacheEntries[cacheEntries.length - 1];
+        cumulativeCacheRead = lastEntry.cacheRead;
+        cumulativeCacheCreation = lastEntry.cacheCreation;
+      } else {
+        // Per-message format: sum all values
+        cumulativeCacheRead = cacheEntries.reduce((sum, e) => sum + e.cacheRead, 0);
+        cumulativeCacheCreation = cacheEntries.reduce((sum, e) => sum + e.cacheCreation, 0);
       }
 
       // Return null if no cache data found at all
