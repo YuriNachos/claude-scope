@@ -259,6 +259,12 @@ export class UsageParser {
         return null;
       }
 
+      // Skip messages with zero tokens - they don't represent real context usage
+      // This prevents synthetic 0-token messages from overwriting real data
+      if (usage.input_tokens === 0 && usage.output_tokens === 0) {
+        return null;
+      }
+
       // Build ContextUsage with defaults for optional fields
       return {
         input_tokens: usage.input_tokens,
