@@ -61,9 +61,9 @@ describe("ContextWidget", () => {
 
     const result = await widget.render({ width: 80, timestamp: 0 });
 
-    // Calculation: (30000 + 10000 + 5000 + 15000) / 100000 = 60%
-    // cache_read_input_tokens (15000) IS counted - they occupy context space
-    expect(result).to.include("60%");
+    // ccstatusline formula: input + cache_read + cache_creation (no output_tokens)
+    // Calculation: (30000 + 15000 + 5000) / 100000 = 50%
+    expect(result).to.include("50%");
     expect(result).to.include("[");
     expect(result).to.include("]");
   });
@@ -307,7 +307,7 @@ describe("ContextWidget", () => {
 
   describe("style renderers", () => {
     const createContextData = (percent: number) => {
-      // Calculate tokens to achieve desired percent
+      // ccstatusline formula: input + cache_read + cache_creation (no output_tokens)
       const contextWindowSize = 200000;
       const used = Math.round((percent / 100) * contextWindowSize);
       return {
@@ -316,10 +316,11 @@ describe("ContextWidget", () => {
           total_output_tokens: 500,
           context_window_size: contextWindowSize,
           current_usage: {
-            input_tokens: Math.round(used * 0.6),
-            output_tokens: Math.round(used * 0.2),
-            cache_creation_input_tokens: Math.round(used * 0.1),
-            cache_read_input_tokens: Math.round(used * 0.1),
+            // Distribute used tokens: 70% input, 15% cache_read, 15% cache_creation
+            input_tokens: Math.round(used * 0.7),
+            output_tokens: Math.round(used * 0.15), // Not counted in context, but present in data
+            cache_creation_input_tokens: Math.round(used * 0.15),
+            cache_read_input_tokens: Math.round(used * 0.15),
           },
         },
       };
@@ -441,8 +442,9 @@ describe("ContextWidget", () => {
         await widget.update(createMockStdinData(smallContextData));
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        // 500 tokens / 10000 = 5%
-        expect(stripAnsi(result || "")).to.equal("5% (500/10K)");
+        // ccstatusline: input(300) + cache_creation(50) + cache_read(50) = 400 tokens
+        // 400 tokens / 10000 = 4%
+        expect(stripAnsi(result || "")).to.equal("4% (400/10K)");
       });
     });
 
@@ -582,7 +584,7 @@ describe("ContextWidget", () => {
       const result1 = await widget.render({ width: 80, timestamp: 0 });
       assert.ok(result1);
       const clean1 = stripAnsi(result1 || "");
-      expect(clean1).to.include("45%"); // (75000 + 10000 + 5000) / 200000 = 45%
+      expect(clean1).to.include("40%"); // (75000 + 5000) / 200000 = 40% (ccstatusline: no output_tokens)
 
       // Second update with zero values - should NOT overwrite cache
       await widget.update(
@@ -616,11 +618,11 @@ describe("ContextWidget", () => {
       );
 
       const result3 = await widget.render({ width: 80, timestamp: 0 });
-      // Should still show 45% from the first update, NOT 0%
+      // Should still show 40% from the first update, NOT 0%
       assert.ok(result3);
       const clean3 = stripAnsi(result3 || "");
-      expect(clean3).to.include("45%");
-      expect(clean3).to.not.include("0%");
+      expect(clean3).to.include("40%");
+      // Note: removed "to.not.include('0%')" check because "40%" contains "0"
     });
   });
 
@@ -649,7 +651,7 @@ describe("ContextWidget", () => {
       const result1 = await widget.render({ width: 80, timestamp: 0 });
       assert.ok(result1);
       const clean1 = stripAnsi(result1 || "");
-      expect(clean1).to.include("45%"); // (75000 + 10000 + 5000) / 200000 = 45%
+      expect(clean1).to.include("40%"); // (75000 + 5000) / 200000 = 40% (ccstatusline: no output_tokens)
 
       // Second update with different session_id BUT OLD data
       // This simulates what happens when /new is pressed - Claude Code

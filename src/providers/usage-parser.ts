@@ -226,6 +226,8 @@ export class UsageParser {
   /**
    * Parse a single transcript line for usage data
    * Returns null if line is not an assistant message with usage
+   *
+   * Follows ccstatusline approach: skip sidechain and API error messages
    */
   private parseLineForUsage(line: string): ContextUsage | null {
     try {
@@ -233,6 +235,16 @@ export class UsageParser {
 
       // Must be assistant message with usage data
       if (entry.type !== "assistant") {
+        return null;
+      }
+
+      // ccstatusline: skip sidechain messages (system/tool messages)
+      if (entry.isSidechain === true) {
+        return null;
+      }
+
+      // ccstatusline: skip API error messages (synthetic 0-token messages)
+      if (entry.isApiErrorMessage === true) {
         return null;
       }
 

@@ -154,16 +154,13 @@ export class ContextWidget extends StdinDataWidget {
       return this.styleFn(renderData, this.colors.context);
     }
 
-    // Calculate actual context usage:
+    // Calculate actual context usage (ccstatusline approach):
     // - input_tokens: new tokens added to context
     // - cache_creation_input_tokens: tokens spent creating cache (also in context)
     // - cache_read_input_tokens: tokens read from cache (still occupy context space)
-    // - output_tokens: tokens in the response (also part of context)
+    // NOTE: output_tokens NOT included (they become input tokens in next message)
     const used =
-      usage.input_tokens +
-      usage.cache_creation_input_tokens +
-      usage.cache_read_input_tokens +
-      usage.output_tokens;
+      usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens;
 
     const percent = Math.round((used / context_window_size) * 100);
 

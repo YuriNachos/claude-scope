@@ -404,7 +404,8 @@ describe("CLI Flow Integration", () => {
       });
 
       // Should show context and cache
-      expect(output1.join("\n")).to.include("43%"); // (50000+5000+30000)/200000 = 42.5% -> rounds to 43%
+      // ccstatusline formula: input + cache_read + cache_creation (no output_tokens)
+      expect(output1.join("\n")).to.include("40%"); // (50000+30000)/200000 = 40%
       expect(output1.join("\n")).to.include("30k");
 
       // Second session with null current_usage
