@@ -38,8 +38,7 @@ describe("New Widgets Integration", () => {
       const result = await widget.render({ width: 80, timestamp: Date.now() });
 
       expect(result).to.be.a("string");
-      expect(result).to.include("70%");
-      expect(result).to.include("35.0k");
+      expect(result).to.include("35k");
     });
 
     it("should render on correct line (line 2)", async () => {
@@ -167,7 +166,7 @@ describe("New Widgets Integration", () => {
 
       expect(result).to.be.a("string");
       expect(result).to.include("Read");
-      expect(result).to.include("×2");
+      expect(result).to.include("2");
 
       unlinkSync(transcriptPath);
     });

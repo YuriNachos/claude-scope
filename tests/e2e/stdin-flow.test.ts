@@ -119,8 +119,8 @@ describe("E2E: CLI stdin → stdout flow", () => {
       cwd: process.cwd(),
     });
 
-    // Calculation: (40000 + 10000 + 5000 + 15000) / 100000 = 70%
-    // cache_read_input_tokens (15000) IS counted - they occupy context space
-    expect(stripAnsi(stdout)).to.include("70%");
+    // ccstatusline formula: input + cache_read + cache_creation (no output_tokens)
+    // Calculation: (40000 + 15000 + 5000) / 100000 = 60%
+    expect(stripAnsi(stdout)).to.include("60%");
   });
 });
