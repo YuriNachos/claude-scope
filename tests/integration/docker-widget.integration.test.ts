@@ -40,7 +40,7 @@ class TestDockerWidget implements Pick<DockerWidget, keyof DockerWidget> {
     this.callCount = 0;
   }
 
-  setStyle(style: string = "balanced"): void {
+  setStyle(_style: string = "balanced"): void {
     // Style changes would be reflected in render
     // For simplicity, we assume balanced style
   }

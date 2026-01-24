@@ -10,11 +10,11 @@ import { DockerWidget } from "../../../../src/widgets/docker/docker-widget.js";
 
 describe("DockerWidget", () => {
   let widget: DockerWidget;
-  let mockStdinData: StdinData;
+  let __mockStdinData: StdinData;
 
   beforeEach(() => {
     widget = new DockerWidget(DEFAULT_THEME);
-    mockStdinData = {
+    _mockStdinData = {
       session_id: "test-session",
       cwd: "/Users/test/project",
       model: { id: "claude-opus-4-5-20251101", display_name: "Claude Opus 4.5" },
