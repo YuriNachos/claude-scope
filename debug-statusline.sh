@@ -1,21 +1,12 @@
 #!/bin/bash
-# Debug statusline - logs what Claude Code sends
-
 INPUT=$(cat)
 
-# Log to file
-echo "=== $(date) ===" >> /tmp/claude-statusline-debug.log
-echo "$INPUT" | jq '.' >> /tmp/claude-statusline-debug.log 2>&1
-echo "" >> /tmp/claude-statusline-debug.log
-
-# Extract key info
-TRANSCRIPT_PATH=$(echo "$INPUT" | jq -r '.transcript_path')
-SESSION_ID=$(echo "$INPUT" | jq -r '.session_id')
-CURRENT_USAGE=$(echo "$INPUT" | jq '.context_window.current_usage')
-
-echo "transcript_path: $TRANSCRIPT_PATH" >> /tmp/claude-statusline-debug.log
-echo "session_id: $SESSION_ID" >> /tmp/claude-statusline-debug.log
-echo "current_usage: $CURRENT_USAGE" >> /tmp/claude-statusline-debug.log
+# Log full input to file (with timestamp)
+echo "=== $(date -u +"%Y-%m-%d %H:%M:%S UTC") ===" >> /tmp/claude-statusline-debug.log
+echo "TRANSCRIPT_PATH: $(echo "$INPUT" | jq -r '.transcript_path // "null"')" >> /tmp/claude-statusline-debug.log
+echo "SESSION_ID: $(echo "$INPUT" | jq -r '.session_id // "null"')" >> /tmp/claude-statusline-debug.log
+echo "CONTEXT_WINDOW:" >> /tmp/claude-statusline-debug.log
+echo "$INPUT" | jq -r '.context_window | {current_usage, total_input_tokens, total_output_tokens, context_window_size}' >> /tmp/claude-statusline-debug.log
 echo "" >> /tmp/claude-statusline-debug.log
 
 # Run actual statusline

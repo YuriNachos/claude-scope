@@ -33,17 +33,29 @@ export class UsageParser {
       // Read all lines into memory (transcripts are typically small)
       const lines = await this.readAllLines(transcriptPath);
 
-      // Find the MOST RECENT assistant message with usage data (by timestamp)
+      // Find the MOST RECENT assistant message with usage data
+      // Strategy:
+      // 1. If timestamps are available, use the most recent by timestamp
+      // 2. If no timestamps, use the last occurrence in the file (reverse iteration)
       let mostRecentUsage: ContextUsage | null = null;
       let mostRecentTimestamp: Date | null = null;
+      let hasAnyTimestamp = false;
 
       for (const line of lines) {
         const entry = this.parseLineForUsage(line);
         if (entry) {
           const entryTime = this.parseTimestamp(line);
-          if (entryTime && (!mostRecentTimestamp || entryTime > mostRecentTimestamp)) {
+          if (entryTime) {
+            // Has timestamp - use timestamp-based comparison
+            hasAnyTimestamp = true;
+            if (!mostRecentTimestamp || entryTime > mostRecentTimestamp) {
+              mostRecentUsage = entry;
+              mostRecentTimestamp = entryTime;
+            }
+          } else if (!hasAnyTimestamp) {
+            // No timestamp yet - use this as fallback (will be overwritten if we find a timestamp)
+            // Since we iterate forward, the last valid entry without timestamp will be kept
             mostRecentUsage = entry;
-            mostRecentTimestamp = entryTime;
           }
         }
       }
@@ -95,6 +107,80 @@ export class UsageParser {
     }
 
     return lines;
+  }
+
+  /**
+   * Parse cumulative cache tokens from all assistant messages in transcript
+   * Sums ALL cache_read and cache_creation tokens across the entire session
+   *
+   * @param transcriptPath - Path to the JSONL transcript file
+   * @returns Object with cumulative cacheRead and cacheCreation, or null if not found
+   */
+  async parseCumulativeCache(
+    transcriptPath: string
+  ): Promise<{ cacheRead: number; cacheCreation: number } | null> {
+    if (!existsSync(transcriptPath)) {
+      return null;
+    }
+
+    try {
+      const lines = await this.readAllLines(transcriptPath);
+
+      let cumulativeCacheRead = 0;
+      let cumulativeCacheCreation = 0;
+
+      for (const line of lines) {
+        const entry = this.parseLineForCache(line);
+        if (entry) {
+          cumulativeCacheRead += entry.cacheRead;
+          cumulativeCacheCreation += entry.cacheCreation;
+        }
+      }
+
+      // Return null if no cache data found at all
+      if (cumulativeCacheRead === 0 && cumulativeCacheCreation === 0) {
+        return null;
+      }
+
+      return {
+        cacheRead: cumulativeCacheRead,
+        cacheCreation: cumulativeCacheCreation,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Parse a single transcript line for cache data
+   * Returns null if line is not an assistant message with usage
+   */
+  private parseLineForCache(line: string): { cacheRead: number; cacheCreation: number } | null {
+    try {
+      const entry = JSON.parse(line) as TranscriptLine;
+
+      if (entry.type !== "assistant") {
+        return null;
+      }
+
+      const usage = entry.message?.usage;
+      if (!usage) {
+        return null;
+      }
+
+      // cache_read_input_tokens and cache_creation_input_tokens are optional
+      const cacheRead = usage.cache_read_input_tokens ?? 0;
+      const cacheCreation = usage.cache_creation_input_tokens ?? 0;
+
+      // Return null if no cache data in this message
+      if (cacheRead === 0 && cacheCreation === 0) {
+        return null;
+      }
+
+      return { cacheRead, cacheCreation };
+    } catch {
+      return null;
+    }
   }
 
   /**

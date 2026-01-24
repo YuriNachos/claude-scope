@@ -34,6 +34,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
   private usageParser: UsageParser;
   private lastSessionId?: string;
   private cachedUsage?: ContextUsage | null; // Cache parsed usage within render cycle
+  private cachedCumulativeCache?: { cacheRead: number; cacheCreation: number } | null; // Cumulative cache for session
 
   constructor(theme?: IThemeColors) {
     super();
@@ -60,10 +61,21 @@ export class CacheMetricsWidget extends StdinDataWidget {
   /**
    * Calculate cache metrics from context usage data
    * Returns zero metrics if no usage data is available (widget should always be visible)
+   *
+   * @param usage - Current usage data (for total tokens calculation)
+   * @param cumulativeCache - Cumulative cache data for the session (optional)
    */
-  private calculateMetrics(usage: ContextUsage | null): CacheMetricsRenderData | null {
-    // If no usage data available, return zero metrics (widget should always be visible)
-    if (!usage) {
+  private calculateMetrics(
+    usage: ContextUsage | null,
+    cumulativeCache?: { cacheRead: number; cacheCreation: number } | null
+  ): CacheMetricsRenderData | null {
+    // Use cumulative cache if available (from transcript), otherwise use current usage
+    // Cumulative cache shows total cache savings for the entire session
+    const cacheRead = cumulativeCache?.cacheRead ?? usage?.cache_read_input_tokens ?? 0;
+    const cacheWrite = cumulativeCache?.cacheCreation ?? usage?.cache_creation_input_tokens ?? 0;
+
+    // If no usage data available at all, return zero metrics (widget should always be visible)
+    if (!usage && !cumulativeCache) {
       return {
         cacheRead: 0,
         cacheWrite: 0,
@@ -73,10 +85,8 @@ export class CacheMetricsWidget extends StdinDataWidget {
       };
     }
 
-    const cacheRead = usage.cache_read_input_tokens ?? 0;
-    const cacheWrite = usage.cache_creation_input_tokens ?? 0;
-    const inputTokens = usage.input_tokens ?? 0;
-    const outputTokens = usage.output_tokens ?? 0;
+    const inputTokens = usage?.input_tokens ?? 0;
+    const outputTokens = usage?.output_tokens ?? 0;
 
     // FIX: Total input tokens = cache read + cache write + new input tokens
     // The input_tokens field only contains NEW (non-cached) tokens
@@ -148,6 +158,8 @@ export class CacheMetricsWidget extends StdinDataWidget {
     // Priority 1: current_usage (checked in renderWithData)
     // Priority 2: transcript file (persists during tool execution)
     // Priority 3: cache manager (5-min cache)
+
+    // For current usage (most recent message): used when current_usage is null/empty
     const hasRealUsage =
       usage &&
       ((usage.input_tokens ?? 0) > 0 ||
@@ -162,6 +174,10 @@ export class CacheMetricsWidget extends StdinDataWidget {
       // current_usage has real data - clear cached transcript usage
       this.cachedUsage = undefined;
     }
+
+    // For cumulative cache (session total): always parse from transcript
+    // This shows total cache savings for the entire session
+    this.cachedCumulativeCache = await this.usageParser.parseCumulativeCache(data.transcript_path);
   }
 
   /**
@@ -193,7 +209,12 @@ export class CacheMetricsWidget extends StdinDataWidget {
       }
     }
 
-    const metrics = this.calculateMetrics(usage);
+    // Use cumulative cache from transcript for cache metrics (shows session total)
+    // When current_usage has real data, we still use cumulative cache for cache metrics
+    // because it shows the total savings for the entire session
+    const cumulativeCacheToUse = this.cachedCumulativeCache;
+
+    const metrics = this.calculateMetrics(usage, cumulativeCacheToUse);
     if (!metrics) {
       return null;
     }
