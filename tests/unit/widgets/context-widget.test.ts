@@ -692,4 +692,136 @@ describe("ContextWidget", () => {
       expect(result3).to.include("0%");
     });
   });
+
+  describe("used_percentage fallback behavior", () => {
+    it("should use used_percentage when > 0 (Priority 0)", async () => {
+      const widget = new ContextWidget();
+      await widget.update(
+        createMockStdinData({
+          context_window: {
+            used_percentage: 75,
+            current_usage: {
+              input_tokens: 1000,
+              output_tokens: 100,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+            },
+            context_window_size: 200000,
+          },
+        })
+      );
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      const clean = stripAnsi(result || "");
+      // Should use used_percentage directly, not calculate from current_usage
+      expect(clean).to.include("75%");
+    });
+
+    it("should fallback to current_usage when used_percentage=0 (Priority 1)", async () => {
+      const widget = new ContextWidget();
+      await widget.update(
+        createMockStdinData({
+          context_window: {
+            used_percentage: 0, // Zero triggers fallback
+            current_usage: {
+              input_tokens: 100000,
+              output_tokens: 5000,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+            },
+            context_window_size: 200000,
+          },
+        })
+      );
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      const clean = stripAnsi(result || "");
+      // Should calculate from current_usage, not use used_percentage=0
+      // Calculation: 100000 / 200000 = 50%
+      expect(clean).to.include("50%");
+    });
+
+    it("should fallback to transcript when used_percentage=0 and current_usage=null", async () => {
+      const widget = new ContextWidget();
+
+      // First, populate cache with valid data
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-fallback-session",
+          transcript_path: "/test/transcript.jsonl",
+          context_window: {
+            current_usage: {
+              input_tokens: 150000,
+              output_tokens: 5000,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+            },
+            context_window_size: 200000,
+          },
+        })
+      );
+
+      // Then, simulate used_percentage=0 with null current_usage
+      await widget.update(
+        createMockStdinData({
+          session_id: "test-fallback-session",
+          transcript_path: "/test/transcript.jsonl",
+          context_window: {
+            used_percentage: 0,
+            current_usage: null,
+            context_window_size: 200000,
+          },
+        })
+      );
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      const clean = stripAnsi(result || "");
+      // Should show cached/transcript value, not 0%
+      expect(clean).to.include("75%");
+    });
+
+    it("should fallback when used_percentage is undefined", async () => {
+      const widget = new ContextWidget();
+      await widget.update(
+        createMockStdinData({
+          context_window: {
+            // used_percentage not provided (undefined)
+            current_usage: {
+              input_tokens: 60000,
+              output_tokens: 3000,
+              cache_creation_input_tokens: 0,
+              cache_read_input_tokens: 0,
+            },
+            context_window_size: 200000,
+          },
+        })
+      );
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      const clean = stripAnsi(result || "");
+      // Should calculate from current_usage
+      // Calculation: 60000 / 200000 = 30%
+      expect(clean).to.include("30%");
+    });
+
+    it("should show 0% when all sources are empty", async () => {
+      const widget = new ContextWidget();
+      await widget.update(
+        createMockStdinData({
+          session_id: "brand-new-empty-session",
+          transcript_path: "/nonexistent/transcript.jsonl",
+          context_window: {
+            used_percentage: 0,
+            current_usage: null,
+            context_window_size: 200000,
+          },
+        })
+      );
+
+      const result = await widget.render({ width: 80, timestamp: 0 });
+      const clean = stripAnsi(result || "");
+      // No data available anywhere - show 0%
+      expect(clean).to.include("0%");
+    });
+  });
 });

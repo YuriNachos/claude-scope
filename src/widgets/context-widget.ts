@@ -130,9 +130,11 @@ export class ContextWidget extends StdinDataWidget {
     const current_usage = contextWindow.current_usage;
     const context_window_size = contextWindow.context_window_size;
 
-    // Priority 0: Use Claude Code's pre-calculated percentage if available
+    // Priority 0: Use Claude Code's pre-calculated percentage if available AND valid
+    // used_percentage of 0 means "not calculated by Claude Code" - fall through to other sources
+    // used_percentage of undefined also means not available
     const used_percentage = contextWindow.used_percentage;
-    if (used_percentage !== undefined) {
+    if (used_percentage !== undefined && used_percentage > 0) {
       const renderData = {
         used: 0, // Will be calculated from percentage
         contextWindowSize: context_window_size || 200000,
