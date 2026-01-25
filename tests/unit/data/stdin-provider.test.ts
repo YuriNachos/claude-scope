@@ -165,31 +165,31 @@ describe("StdinProvider", () => {
       expect(error?.message).to.include("Invalid JSON");
     });
 
-    it("should throw StdinValidationError on missing required fields", async () => {
+    it("should accept minimal valid data with only optional fields", async () => {
+      // After making all fields optional, we can parse minimal data
       const provider = new StdinProvider();
       const input = JSON.stringify({
         session_id: "test-123",
-        // Missing: hook_event_name, cwd, model, etc.
+        // All other fields are optional now
       });
 
-      let error: Error | null = null;
-      try {
-        await provider.parse(input);
-      } catch (e) {
-        error = e as Error;
-      }
+      const result = await provider.parse(input);
 
-      expect(error).to.be.instanceOf(StdinValidationError);
-      expect(error?.message).to.include("Validation failed");
+      expect(result).to.not.be.null;
+      expect(result.session_id).to.equal("test-123");
+      expect(result.hook_event_name).to.be.undefined;
+      expect(result.cwd).to.be.undefined;
+      expect(result.model).to.be.undefined;
     });
 
-    it("should throw StdinValidationError with detailed path on missing field", async () => {
+    it("should accept data with missing optional cwd field", async () => {
+      // cwd is now optional, so this should validate successfully
       const provider = new StdinProvider();
       const input = JSON.stringify({
         hook_event_name: "Status",
         session_id: "test-123",
         transcript_path: "/test/transcript.json",
-        // Missing: cwd
+        // cwd is missing - this is OK since it's optional now
         model: { id: "claude-opus-4-5", display_name: "Opus 4.5" },
         workspace: { current_dir: "/test/project", project_dir: "/test/project" },
         version: "1.0.0",
@@ -202,15 +202,11 @@ describe("StdinProvider", () => {
         },
       });
 
-      let error: Error | null = null;
-      try {
-        await provider.parse(input);
-      } catch (e) {
-        error = e as Error;
-      }
+      const result = await provider.parse(input);
 
-      expect(error).to.be.instanceOf(StdinValidationError);
-      expect(error?.message).to.include("cwd");
+      expect(result).to.not.be.null;
+      expect(result.session_id).to.equal("test-123");
+      expect(result.cwd).to.be.undefined; // cwd is optional, so undefined is OK
     });
 
     it("should throw StdinValidationError on wrong hook_event_name literal", async () => {
