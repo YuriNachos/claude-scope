@@ -46,6 +46,8 @@ export function createDemoData(): StdinData {
         cache_creation_input_tokens: DEMO_DATA.CACHE_CREATION_TOKENS,
         cache_read_input_tokens: DEMO_DATA.CACHE_READ_TOKENS,
       },
+      used_percentage: 37.5,
+      remaining_percentage: 62.5,
     },
   };
 }

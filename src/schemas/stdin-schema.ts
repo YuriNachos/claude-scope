@@ -13,19 +13,22 @@ export const ContextUsageSchema = object({
   cache_read_input_tokens: number(),
 });
 
+export const ContextWindowSchema = object({
+  total_input_tokens: optional(number()),
+  total_output_tokens: optional(number()),
+  context_window_size: optional(number()),
+  current_usage: nullable(ContextUsageSchema),
+  // Pre-calculated percentages from Claude Code (available in newer versions)
+  used_percentage: optional(number()),
+  remaining_percentage: optional(number()),
+});
+
 export const CostInfoSchema = object({
   total_cost_usd: optional(number()),
   total_duration_ms: optional(number()),
   total_api_duration_ms: optional(number()),
   total_lines_added: optional(number()),
   total_lines_removed: optional(number()),
-});
-
-export const ContextWindowSchema = object({
-  total_input_tokens: number(),
-  total_output_tokens: number(),
-  context_window_size: number(),
-  current_usage: nullable(ContextUsageSchema),
 });
 
 export const ModelInfoSchema = object({
@@ -44,15 +47,15 @@ export const OutputStyleSchema = object({
 
 export const StdinDataSchema = object({
   hook_event_name: optional(literal("Status")),
-  session_id: string(),
-  transcript_path: string(),
-  cwd: string(),
-  model: ModelInfoSchema,
-  workspace: WorkspaceSchema,
-  version: string(),
-  output_style: OutputStyleSchema,
+  session_id: optional(string()),
+  transcript_path: optional(string()),
+  cwd: optional(string()),
+  model: optional(ModelInfoSchema),
+  workspace: optional(WorkspaceSchema),
+  version: optional(string()),
+  output_style: optional(OutputStyleSchema),
   cost: optional(CostInfoSchema),
-  context_window: ContextWindowSchema,
+  context_window: optional(ContextWindowSchema),
 });
 
 export type StdinData = InferValidator<typeof StdinDataSchema>;

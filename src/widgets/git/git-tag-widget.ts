@@ -91,7 +91,7 @@ export class GitTagWidget implements IWidget {
 
   async update(data: StdinData): Promise<void> {
     // Re-initialize git if cwd changed
-    if (data.cwd !== this.cwd) {
+    if (data.cwd && data.cwd !== this.cwd) {
       this.cwd = data.cwd;
       this.git = this.gitFactory(data.cwd);
     }

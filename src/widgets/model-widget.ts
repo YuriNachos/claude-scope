@@ -48,6 +48,10 @@ export class ModelWidget extends StdinDataWidget {
   }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
+    if (!data.model) {
+      return null;
+    }
+
     const renderData: ModelRenderData = {
       displayName: data.model.display_name,
       id: data.model.id,

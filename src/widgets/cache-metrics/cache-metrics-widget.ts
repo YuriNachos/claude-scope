@@ -119,7 +119,8 @@ export class CacheMetricsWidget extends StdinDataWidget {
   async update(data: StdinData): Promise<void> {
     await super.update(data);
 
-    const sessionChanged = this.lastSessionId && this.lastSessionId !== data.session_id;
+    const sessionId = data.session_id;
+    const sessionChanged = this.lastSessionId && this.lastSessionId !== sessionId;
 
     // Detect session change: if session_id changed, reset widget state
     // This ensures that when user presses /new, the widget doesn't show old session's data
@@ -129,7 +130,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
       // by checking !sessionChanged below
       this.renderData = undefined;
     }
-    this.lastSessionId = data.session_id;
+    this.lastSessionId = sessionId;
 
     // Store valid current_usage in cache
     // Only cache if ANY token value > 0. This prevents zero values from
@@ -137,7 +138,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     // there are cache_read or cache_creation tokens even if input_tokens is 0.
     // Also skip caching when session just changed (to avoid caching old session's data)
     const usage = data.context_window?.current_usage;
-    if (usage && !sessionChanged) {
+    if (usage && !sessionChanged && sessionId) {
       const hasAnyTokens =
         (usage.input_tokens ?? 0) > 0 ||
         (usage.output_tokens ?? 0) > 0 ||
@@ -145,7 +146,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
         (usage.cache_read_input_tokens ?? 0) > 0;
 
       if (hasAnyTokens) {
-        this.cacheManager.setCachedUsage(data.session_id, {
+        this.cacheManager.setCachedUsage(sessionId, {
           input_tokens: usage.input_tokens,
           output_tokens: usage.output_tokens,
           cache_creation_input_tokens: usage.cache_creation_input_tokens,
@@ -167,9 +168,12 @@ export class CacheMetricsWidget extends StdinDataWidget {
         (usage.cache_read_input_tokens ?? 0) > 0 ||
         (usage.cache_creation_input_tokens ?? 0) > 0);
 
+    const transcriptPath = data.transcript_path;
     if (!usage || !hasRealUsage) {
       // current_usage is null or all zeros - try transcript
-      this.cachedUsage = await this.usageParser.parseLastUsage(data.transcript_path);
+      if (transcriptPath) {
+        this.cachedUsage = await this.usageParser.parseLastUsage(transcriptPath);
+      }
     } else {
       // current_usage has real data - clear cached transcript usage
       this.cachedUsage = undefined;
@@ -177,7 +181,9 @@ export class CacheMetricsWidget extends StdinDataWidget {
 
     // For cumulative cache (session total): always parse from transcript
     // This shows total cache savings for the entire session
-    this.cachedCumulativeCache = await this.usageParser.parseCumulativeCache(data.transcript_path);
+    if (transcriptPath) {
+      this.cachedCumulativeCache = await this.usageParser.parseCumulativeCache(transcriptPath);
+    }
   }
 
   /**
@@ -202,7 +208,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     }
 
     // Priority 3: cache manager (5-min cache)
-    if (!usage) {
+    if (!usage && data.session_id) {
       const cached = this.cacheManager.getCachedUsage(data.session_id);
       if (cached) {
         usage = cached.usage;
@@ -214,7 +220,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     // because it shows the total savings for the entire session
     const cumulativeCacheToUse = this.cachedCumulativeCache;
 
-    const metrics = this.calculateMetrics(usage, cumulativeCacheToUse);
+    const metrics = this.calculateMetrics(usage || null, cumulativeCacheToUse || null);
     if (!metrics) {
       return null;
     }

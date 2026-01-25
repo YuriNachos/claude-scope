@@ -86,7 +86,7 @@ export class DevServerWidget implements IWidget {
    * @param data - Stdin data from Claude Code
    */
   async update(data: StdinData): Promise<void> {
-    this.cwd = data.cwd;
+    this.cwd = data.cwd || null;
   }
 
   /**

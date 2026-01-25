@@ -63,12 +63,18 @@ export class ContextWidget extends StdinDataWidget {
   async update(data: StdinData): Promise<void> {
     await super.update(data);
 
+    const contextWindow = data.context_window;
+    if (!contextWindow) {
+      return;
+    }
+
     // Detect session change: if session_id changed, we're in a new session
     // This ensures that when user presses /new, the widget doesn't cache old session's data
-    const sessionChanged = this.lastSessionId && this.lastSessionId !== data.session_id;
-    this.lastSessionId = data.session_id;
+    const sessionId = data.session_id;
+    const sessionChanged = this.lastSessionId && this.lastSessionId !== sessionId;
+    this.lastSessionId = sessionId;
 
-    const { current_usage } = data.context_window;
+    const { current_usage } = contextWindow;
 
     // If we have valid current_usage, cache it
     // Only cache if ANY token value > 0. This prevents zero values from
@@ -79,7 +85,7 @@ export class ContextWidget extends StdinDataWidget {
     // IMPORTANT: Skip caching if we just detected a session change. This prevents
     // old session data (which may come with the new session_id) from being cached
     // under the new session ID.
-    if (current_usage && !sessionChanged) {
+    if (current_usage && !sessionChanged && sessionId) {
       const hasAnyTokens =
         (current_usage.input_tokens ?? 0) > 0 ||
         (current_usage.output_tokens ?? 0) > 0 ||
@@ -87,7 +93,7 @@ export class ContextWidget extends StdinDataWidget {
         (current_usage.cache_read_input_tokens ?? 0) > 0;
 
       if (hasAnyTokens) {
-        this.cacheManager.setCachedUsage(data.session_id, {
+        this.cacheManager.setCachedUsage(sessionId, {
           input_tokens: current_usage.input_tokens,
           output_tokens: current_usage.output_tokens,
           cache_creation_input_tokens: current_usage.cache_creation_input_tokens,
@@ -109,7 +115,10 @@ export class ContextWidget extends StdinDataWidget {
 
     if (!current_usage || !hasRealUsage) {
       // current_usage is null or all zeros - try transcript
-      this.cachedUsage = await this.usageParser.parseLastUsage(data.transcript_path);
+      const transcriptPath = data.transcript_path;
+      if (transcriptPath) {
+        this.cachedUsage = await this.usageParser.parseLastUsage(transcriptPath);
+      }
     } else {
       // current_usage has real data - clear cached transcript usage
       this.cachedUsage = undefined;
@@ -117,7 +126,20 @@ export class ContextWidget extends StdinDataWidget {
   }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {
-    const { current_usage, context_window_size } = data.context_window;
+    const contextWindow = data.context_window || ({} as any);
+    const current_usage = contextWindow.current_usage;
+    const context_window_size = contextWindow.context_window_size;
+
+    // Priority 0: Use Claude Code's pre-calculated percentage if available
+    const used_percentage = contextWindow.used_percentage;
+    if (used_percentage !== undefined) {
+      const renderData = {
+        used: 0, // Will be calculated from percentage
+        contextWindowSize: context_window_size || 200000,
+        percent: Math.round(used_percentage),
+      };
+      return this.styleFn(renderData, this.colors.context);
+    }
 
     // Priority 1: current_usage from stdin (fastest, most recent)
     let usage = current_usage;
@@ -137,18 +159,21 @@ export class ContextWidget extends StdinDataWidget {
     }
 
     // Priority 3: cache manager (5-min cache)
-    if (!usage) {
+    if (!usage && data.session_id) {
       const cached = this.cacheManager.getCachedUsage(data.session_id);
       if (cached) {
         usage = cached.usage;
       }
     }
 
+    // Default context window size if not provided
+    const ctxSize = context_window_size || 200000;
+
     // If no usage data available, show zeros by default (widget should always be visible)
     if (!usage) {
       const renderData = {
         used: 0,
-        contextWindowSize: context_window_size,
+        contextWindowSize: ctxSize,
         percent: 0,
       };
       return this.styleFn(renderData, this.colors.context);
@@ -160,13 +185,15 @@ export class ContextWidget extends StdinDataWidget {
     // - cache_read_input_tokens: tokens read from cache (still occupy context space)
     // NOTE: output_tokens NOT included (they become input tokens in next message)
     const used =
-      usage.input_tokens + usage.cache_creation_input_tokens + usage.cache_read_input_tokens;
+      (usage.input_tokens || 0) +
+      (usage.cache_creation_input_tokens || 0) +
+      (usage.cache_read_input_tokens || 0);
 
-    const percent = Math.round((used / context_window_size) * 100);
+    const percent = Math.round((used / ctxSize) * 100);
 
     const renderData = {
       used,
-      contextWindowSize: context_window_size,
+      contextWindowSize: ctxSize,
       percent,
     };
 
