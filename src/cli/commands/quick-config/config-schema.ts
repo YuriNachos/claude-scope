@@ -130,6 +130,17 @@ export interface DockerColors {
 }
 
 /**
+ * Sysmon widget colors (System Monitor)
+ */
+export interface SysmonColors {
+  cpu: ColorCode;
+  ram: ColorCode;
+  disk: ColorCode;
+  network: ColorCode;
+  separator: ColorCode;
+}
+
+/**
  * Widget-specific color configuration
  * Different widgets have different color requirements
  */
@@ -144,6 +155,7 @@ export type WidgetColors =
   | ToolsColors
   | DevServerColors
   | DockerColors
+  | SysmonColors
   | PokerColors
   | BaseColors
   | SemanticColors
@@ -155,10 +167,10 @@ export type WidgetColors =
 export interface WidgetConfig {
   /** Widget identifier (e.g., "model", "git", "context") */
   id: string;
-  /** Display style (balanced, playful, compact, etc.) */
-  style: string;
-  /** Widget-specific colors (ANSI escape sequences) */
-  colors: WidgetColors;
+  /** Display style (balanced, playful, compact, etc.) - optional for widgets like empty-line */
+  style?: string;
+  /** Widget-specific colors (ANSI escape sequences) - optional for widgets like empty-line */
+  colors?: WidgetColors;
 }
 
 /**
