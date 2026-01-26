@@ -108,6 +108,10 @@ describe("Quick Config Integration", () => {
       for (const lineKey of Object.keys(loaded.lines)) {
         const widgets = loaded.lines[lineKey];
         for (const widget of widgets) {
+          // empty-line widget doesn't have style property
+          if (widget.id === "empty-line") {
+            continue;
+          }
           assert.strictEqual(
             widget.style,
             "balanced",

@@ -132,13 +132,15 @@ describe("Layout Generators", () => {
   });
 
   describe("generateRichLayout", () => {
-    it("should generate config with 3 lines", () => {
+    it("should generate config with 5 lines", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
 
-      assert.strictEqual(Object.keys(config.lines).length, 3);
+      assert.strictEqual(Object.keys(config.lines).length, 5);
       assert.ok(config.lines["0"]);
       assert.ok(config.lines["1"]);
       assert.ok(config.lines["2"]);
+      assert.ok(config.lines["3"]);
+      assert.ok(config.lines["4"]);
     });
 
     it("should include model, context, cost, lines, duration on line 0", () => {
@@ -214,6 +216,32 @@ describe("Layout Generators", () => {
 
       assert.deepStrictEqual(line2Ids, ["dev-server", "docker", "active-tools"]);
     });
+
+    it("should have sysmon widget on line 3", () => {
+      const config = generateRichLayout(defaultStyle, defaultTheme);
+      const line3Ids = config.lines["3"].map((w) => w.id);
+
+      assert.deepStrictEqual(line3Ids, ["sysmon"]);
+    });
+
+    it("should have sysmon widget with correct color keys", () => {
+      const config = generateRichLayout(defaultStyle, defaultTheme);
+      const sysmonWidget = config.lines["3"].find((w) => w.id === "sysmon");
+
+      assert.ok(sysmonWidget);
+      assert.ok("cpu" in sysmonWidget.colors);
+      assert.ok("ram" in sysmonWidget.colors);
+      assert.ok("disk" in sysmonWidget.colors);
+      assert.ok("network" in sysmonWidget.colors);
+      assert.ok("separator" in sysmonWidget.colors);
+    });
+
+    it("should have empty-line widget on line 4", () => {
+      const config = generateRichLayout(defaultStyle, defaultTheme);
+      const line4Ids = config.lines["4"].map((w) => w.id);
+
+      assert.deepStrictEqual(line4Ids, ["empty-line"]);
+    });
   });
 
   describe("Style application", () => {
@@ -222,6 +250,10 @@ describe("Layout Generators", () => {
 
       for (const line of Object.values(config.lines)) {
         for (const widget of line) {
+          // empty-line widget doesn't have style property
+          if (widget.id === "empty-line") {
+            continue;
+          }
           assert.strictEqual(
             widget.style,
             "balanced",
@@ -236,6 +268,10 @@ describe("Layout Generators", () => {
 
       for (const line of Object.values(config.lines)) {
         for (const widget of line) {
+          // empty-line widget doesn't have style property
+          if (widget.id === "empty-line") {
+            continue;
+          }
           assert.strictEqual(
             widget.style,
             "playful",
@@ -250,6 +286,10 @@ describe("Layout Generators", () => {
 
       for (const line of Object.values(config.lines)) {
         for (const widget of line) {
+          // empty-line widget doesn't have style property
+          if (widget.id === "empty-line") {
+            continue;
+          }
           assert.strictEqual(
             widget.style,
             "compact",
@@ -297,6 +337,10 @@ describe("Layout Generators", () => {
       // Check that colors are defined (not empty)
       for (const line of Object.values(config.lines)) {
         for (const widget of line) {
+          // empty-line widget doesn't have colors property
+          if (widget.id === "empty-line") {
+            continue;
+          }
           assert.ok(widget.colors, `Widget ${widget.id} should have colors defined`);
           assert.ok(
             Object.keys(widget.colors).length > 0,
@@ -312,6 +356,10 @@ describe("Layout Generators", () => {
       // Check that colors start with ANSI escape sequence
       for (const line of Object.values(config.lines)) {
         for (const widget of line) {
+          // empty-line widget doesn't have colors property
+          if (widget.id === "empty-line") {
+            continue;
+          }
           for (const colorKey in widget.colors) {
             const colorValue = (widget.colors as Record<string, string>)[colorKey];
             assert.ok(

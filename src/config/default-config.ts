@@ -123,6 +123,24 @@ export function generateConfigWithStyleAndTheme(
           },
         },
       ],
+      "3": [
+        {
+          id: "sysmon",
+          style: style,
+          colors: {
+            cpu: theme.sysmon.cpu,
+            ram: theme.sysmon.ram,
+            disk: theme.sysmon.disk,
+            network: theme.sysmon.network,
+            separator: theme.sysmon.separator,
+          },
+        },
+      ],
+      "4": [
+        {
+          id: "empty-line",
+        },
+      ],
     },
   };
 }
@@ -251,10 +269,12 @@ export function generateCompactLayout(style: QuickConfigStyle, themeName: string
 }
 
 /**
- * Generate Rich layout configuration (3 lines)
+ * Generate Rich layout configuration (5 lines)
  * Line 0: model, context, lines, cost, duration
  * Line 1: git, git-tag, cache-metrics, config-count
  * Line 2: dev-server, docker, active-tools
+ * Line 3: sysmon (CPU, RAM, Disk, Network)
+ * Line 4: empty-line
  */
 export function generateRichLayout(style: QuickConfigStyle, themeName: string): ScopeConfig {
   const theme = getThemeByName(themeName).colors;
@@ -354,6 +374,24 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
             target: theme.tools.target,
             count: theme.tools.count,
           },
+        },
+      ],
+      "3": [
+        {
+          id: "sysmon",
+          style: style,
+          colors: {
+            cpu: theme.sysmon.cpu,
+            ram: theme.sysmon.ram,
+            disk: theme.sysmon.disk,
+            network: theme.sysmon.network,
+            separator: theme.sysmon.separator,
+          },
+        },
+      ],
+      "4": [
+        {
+          id: "empty-line",
         },
       ],
     },

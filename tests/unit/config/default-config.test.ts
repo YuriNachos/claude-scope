@@ -12,11 +12,12 @@ describe("DefaultConfig", () => {
     assert.ok(config.lines["2"]);
   });
 
-  it("should not include poker widget", () => {
+  it("should have empty-line widget on line 4", () => {
     const config = generateDefaultConfig();
-
-    // Poker widget would be on line 4
-    assert.strictEqual(config.lines["4"], undefined);
+    assert.ok(config.lines["4"]);
+    assert.strictEqual(config.lines["4"].length, 1);
+    const emptyLineWidget = config.lines["4"][0];
+    assert.strictEqual(emptyLineWidget.id, "empty-line");
   });
 
   it("should have model widget with balanced style", () => {
@@ -70,6 +71,10 @@ describe("DefaultConfig", () => {
 
     for (const lineKey in config.lines) {
       for (const widget of config.lines[lineKey]) {
+        // empty-line widget doesn't have style property
+        if (widget.id === "empty-line") {
+          continue;
+        }
         assert.strictEqual(
           widget.style,
           "balanced",
@@ -122,5 +127,21 @@ describe("DefaultConfig", () => {
   it("should have 2 widgets on line 2", () => {
     const config = generateDefaultConfig();
     assert.strictEqual(config.lines["2"].length, 2);
+  });
+
+  it("should have sysmon widget on line 3", () => {
+    const config = generateDefaultConfig();
+    assert.ok(config.lines["3"]);
+    assert.strictEqual(config.lines["3"].length, 1);
+    const sysmonWidget = config.lines["3"][0];
+    assert.strictEqual(sysmonWidget.id, "sysmon");
+  });
+
+  it("should have empty-line widget on line 4", () => {
+    const config = generateDefaultConfig();
+    assert.ok(config.lines["4"]);
+    assert.strictEqual(config.lines["4"].length, 1);
+    const emptyLineWidget = config.lines["4"][0];
+    assert.strictEqual(emptyLineWidget.id, "empty-line");
   });
 });

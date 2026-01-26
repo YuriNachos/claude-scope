@@ -59,10 +59,12 @@ describe("Three-Stage Config Flow Integration", () => {
       // Assert: Verify structure
       assert.strictEqual(config.version, "1.0.0");
       assert.ok(config.lines);
-      assert.strictEqual(Object.keys(config.lines).length, 3);
+      assert.strictEqual(Object.keys(config.lines).length, 5);
       assert.ok(config.lines["0"]);
       assert.ok(config.lines["1"]);
       assert.ok(config.lines["2"]);
+      assert.ok(config.lines["3"]);
+      assert.ok(config.lines["4"]);
     });
 
     it("should include correct widgets on balanced layout line 0", () => {
