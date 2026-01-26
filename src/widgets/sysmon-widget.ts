@@ -2,13 +2,12 @@
  * SysmonWidget - System monitoring widget
  *
  * Displays real-time system metrics (CPU, RAM, Disk, Network)
- * Fetches metrics on each render with short cache to avoid excessive calls
+ * Fetches metrics on each render for accurate data
  */
 
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import type { IWidget, RenderContext, WidgetContext } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
-import { MetricsCache } from "../providers/metrics-cache.js";
 import type { ISystemProvider } from "../providers/system-provider.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
 import type { IThemeColors } from "../ui/theme/types.js";
@@ -30,14 +29,11 @@ export class SysmonWidget implements IWidget {
   private _lineOverride?: number;
   private styleFn: StyleRendererFn<SysmonRenderData, IThemeColors["sysmon"]> =
     sysmonStyles.balanced!;
-  private cache: MetricsCache;
-  private cacheTtlMs = 1000; // 1 second cache
   private enabled = true;
 
   constructor(colors?: IThemeColors, provider?: ISystemProvider | null) {
     this.colors = colors ?? DEFAULT_THEME;
     this.provider = provider ?? null;
-    this.cache = new MetricsCache(this.cacheTtlMs);
   }
 
   async initialize(context: WidgetContext): Promise<void> {
@@ -50,8 +46,8 @@ export class SysmonWidget implements IWidget {
       return null;
     }
 
-    // Fetch metrics (uses cache if within TTL)
-    const metrics = await this.cache.get(() => this.provider!.getMetrics());
+    // Fetch fresh metrics on each render
+    const metrics = await this.provider.getMetrics();
 
     if (!metrics) {
       return null;
@@ -70,7 +66,7 @@ export class SysmonWidget implements IWidget {
   }
 
   async cleanup(): Promise<void> {
-    this.cache.clear();
+    // No-op - nothing to clean up
   }
 
   setStyle(style: WidgetStyle = "balanced"): void {

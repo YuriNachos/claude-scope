@@ -58,12 +58,78 @@ async function loadSystemInformation(): Promise<void> {
   }
 }
 
+// Persistent storage for network stats between process restarts
+const NETWORK_STATS_FILE = "/tmp/claude-scope-network-stats.json";
+
+interface NetworkStatsEntry {
+  rx: number;
+  tx: number;
+  time: number;
+}
+
+interface NetworkStatsData {
+  stats: Record<string, NetworkStatsEntry>;
+  lastUpdate: number;
+}
+
+/**
+ * Load network stats from persistent storage (synchronous for Node.js)
+ */
+function loadNetworkStatsSync(): Map<string, { rx: number; tx: number; time: number }> {
+  try {
+    const fs = require("node:fs");
+    if (!fs.existsSync(NETWORK_STATS_FILE)) {
+      return new Map();
+    }
+
+    const text = fs.readFileSync(NETWORK_STATS_FILE, "utf-8");
+    const data = JSON.parse(text) as NetworkStatsData;
+
+    // Clear stats if older than 5 minutes (process was restarted long ago)
+    if (Date.now() - data.lastUpdate > 5 * 60 * 1000) {
+      return new Map();
+    }
+
+    return new Map(
+      Object.entries(data.stats).map(([key, value]) => [
+        key,
+        { rx: value.rx, tx: value.tx, time: value.time },
+      ])
+    );
+  } catch {
+    return new Map();
+  }
+}
+
+/**
+ * Save network stats to persistent storage (synchronous)
+ */
+function saveNetworkStatsSync(stats: Map<string, { rx: number; tx: number; time: number }>): void {
+  try {
+    const fs = require("node:fs");
+    const data: NetworkStatsData = {
+      stats: Object.fromEntries(stats),
+      lastUpdate: Date.now(),
+    };
+    fs.writeFileSync(NETWORK_STATS_FILE, JSON.stringify(data), "utf-8");
+  } catch {
+    // Silently fail - we'll just start fresh next time
+  }
+}
+
 export class SystemProvider implements ISystemProvider {
   private intervalId?: NodeJS.Timeout;
-  private lastNetworkStats = new Map<string, { rx: number; tx: number }>();
+  private lastNetworkStats: Map<string, { rx: number; tx: number; time: number }>;
   private lastErrorTime = 0;
   private readonly ERROR_LOG_INTERVAL = 60000; // 1 minute
   private initialized = false;
+  private statsLoaded = false;
+
+  constructor() {
+    // Load persistent stats on construction (synchronous)
+    this.lastNetworkStats = loadNetworkStatsSync();
+    this.statsLoaded = true;
+  }
 
   private async ensureInitialized(): Promise<void> {
     if (!this.initialized) {
@@ -157,22 +223,36 @@ export class SystemProvider implements ISystemProvider {
 
     const ifaceKey = iface.iface;
     const last = this.lastNetworkStats.get(ifaceKey);
+    const now = Date.now();
 
     if (!last) {
-      // First poll - store current values, return 0
-      this.lastNetworkStats.set(ifaceKey, { rx: iface.rx_bytes, tx: iface.tx_bytes });
+      // First poll - store current values with timestamp, return 0
+      this.lastNetworkStats.set(ifaceKey, {
+        rx: iface.rx_bytes,
+        tx: iface.tx_bytes,
+        time: now,
+      });
+      // Save to persistent storage
+      saveNetworkStatsSync(this.lastNetworkStats);
       return { rxSec: 0, txSec: 0 };
     }
 
-    // Calculate speed assuming ~2 second interval
-    const timeDiff = 2;
+    // Calculate actual time difference in seconds
+    const timeDiff = Math.max(0.1, (now - last.time) / 1000); // Minimum 100ms to avoid division issues
     const rxDiff = iface.rx_bytes - last.rx;
     const txDiff = iface.tx_bytes - last.tx;
 
     const rx_sec = rxDiff / timeDiff / 1024 / 1024; // MB/s
     const tx_sec = txDiff / timeDiff / 1024 / 1024; // MB/s
 
-    this.lastNetworkStats.set(ifaceKey, { rx: iface.rx_bytes, tx: iface.tx_bytes });
+    this.lastNetworkStats.set(ifaceKey, {
+      rx: iface.rx_bytes,
+      tx: iface.tx_bytes,
+      time: now,
+    });
+
+    // Save to persistent storage for next process
+    saveNetworkStatsSync(this.lastNetworkStats);
 
     return {
       rxSec: Math.max(0, Number(rx_sec.toFixed(2))),
