@@ -153,8 +153,13 @@ export class SystemProvider implements ISystemProvider {
         si.networkStats(),
       ]);
 
-      // CPU - current load
-      const cpuPercent = Math.round(cpuLoad.currentLoad ?? 0);
+      // CPU - use max core load (matches 'top' behavior better on macOS)
+      // 'top' shows peak load, not average, which is more useful for monitoring
+      const cpuPercent = Math.round(
+        cpuLoad.cpus && cpuLoad.cpus.length > 0
+          ? Math.max(...cpuLoad.cpus.map((cpu: any) => cpu.load))
+          : (cpuLoad.currentLoad ?? 0)
+      );
 
       // Memory
       const memUsedGB = mem.active / 1024 / 1024 / 1024;
