@@ -25,16 +25,6 @@ export const lightGray = "\x1b[37m"; // Light gray for labels
 export const bold = "\x1b[1m";
 
 /**
- * Context usage colors
- * Used for context progress bar based on usage percentage
- */
-export const contextColors = {
-  low: green, // <50% usage
-  medium: yellow, // 50-79% usage
-  high: red, // >=80% usage
-} as const;
-
-/**
  * Wrap text in ANSI color
  * @param text - Text to colorize
  * @param color - ANSI color code

@@ -10,6 +10,7 @@ The Claude Scope project implements a sophisticated, unified theme system that p
 - **17 built-in themes**: From community favorites (Nord, Dracula) to custom designs
 - **Helper functions**: For creating and managing theme colors
 - **Widget integration**: Style functions accept optional color parameters
+- **WidgetFactory support**: Custom themes can be passed to WidgetFactory
 
 ---
 
@@ -19,19 +20,21 @@ The central interface that organizes all widget colors:
 
 ```typescript
 interface IThemeColors {
-  base: IBaseColors;        // Base text, muted text, accent, border
-  semantic: ISemanticColors; // Success, warning, error, info
-  git: IGitColors;          // Git branch and changes
-  context: IContextColors;  // Context usage progress
-  lines: ILinesColors;      // Lines added/removed
-  cost: ICostColors;        // Cost display
-  duration: IDurationColors;// Session duration
-  model: IModelColors;      // Model name display
-  poker: IPokerColors;      // Poker game display
-  cache: ICacheColors;      // Cache metrics
-  tools: IToolsColors;      // Active tools
+  base: IBaseColors;           // Base text, muted text, accent, border
+  semantic: ISemanticColors;   // Success, warning, error, info
+  git: IGitColors;             // Git branch and changes
+  context: IContextColors;     // Context usage progress
+  lines: ILinesColors;         // Lines added/removed
+  cost: ICostColors;           // Cost display
+  duration: IDurationColors;   // Session duration
+  model: IModelColors;         // Model name display
+  poker: IPokerColors;         // Poker game display
+  cache: ICacheColors;         // Cache metrics
+  tools: IToolsColors;         // Active tools
   devServer: IDevServerColors; // Dev server status
-  docker: IDockerColors;    // Docker container status
+  docker: IDockerColors;       // Docker container status
+  sysmon: ISysmonColors;       // System monitoring
+  configCount: IConfigCountColors; // Config count display
 }
 ```
 
@@ -101,6 +104,47 @@ interface IContextColors {
 }
 ```
 
+### ILinesColors
+```typescript
+interface ILinesColors {
+  added: string;     // Lines added color
+  removed: string;   // Lines removed color
+}
+```
+
+### ICostColors
+```typescript
+interface ICostColors {
+  amount: string;    // Cost amount color
+  currency: string;  // Currency symbol color
+}
+```
+
+### IDurationColors
+```typescript
+interface IDurationColors {
+  value: string;     // Duration value color
+  unit: string;      // Duration unit color
+}
+```
+
+### IModelColors
+```typescript
+interface IModelColors {
+  name: string;      // Model name color
+  version: string;   // Model version color
+}
+```
+
+### IPokerColors
+```typescript
+interface IPokerColors {
+  participating: string;    // Participating state color
+  nonParticipating: string; // Non-participating state color
+  result: string;           // Result color
+}
+```
+
 ### ICacheColors
 ```typescript
 interface ICacheColors {
@@ -127,21 +171,38 @@ interface IToolsColors {
 ### IDevServerColors
 ```typescript
 interface IDevServerColors {
-  running: string;  // Running status color
-  building: string; // Building status color
-  stopped: string;  // Stopped status color
-  name: string;     // Server name
-  icon: string;     // Lightning bolt icon
+  name: string;      // Server name (e.g., "Nuxt", "Vite")
+  status: string;    // Status text (e.g., "running", "building")
+  label: string;     // Label "Server:" or "Dev Server:"
 }
 ```
 
 ### IDockerColors
 ```typescript
 interface IDockerColors {
-  running: string;  // Running containers
-  total: string;    // Total container count
-  icon: string;     // Whale emoji
-  label: string;    // "Docker:" label
+  label: string;     // "Docker:" label
+  count: string;     // Container count
+  running: string;   // Running indicator
+  stopped: string;   // Stopped indicator
+}
+```
+
+### ISysmonColors
+```typescript
+interface ISysmonColors {
+  cpu: string;       // CPU usage color
+  ram: string;       // RAM usage color
+  disk: string;      // Disk usage color
+  network: string;   // Network usage color
+  separator: string; // Separator between metrics
+}
+```
+
+### IConfigCountColors
+```typescript
+interface IConfigCountColors {
+  label: string;     // Labels (CLAUDE.md, rules, MCPs, hooks)
+  separator: string; // Separator between items
 }
 ```
 
@@ -162,6 +223,21 @@ const defaultTheme = DEFAULT_THEME;
 
 // List all themes
 AVAILABLE_THEMES.forEach(t => console.log(`${t.name}: ${t.description}`));
+```
+
+### Using WidgetFactory with Custom Theme
+
+```typescript
+import { WidgetFactory } from './core/widget-factory.js';
+import { getThemeByName } from './ui/theme/index.js';
+
+// Create factory with custom theme
+const nordTheme = getThemeByName('nord');
+const factory = new WidgetFactory(nordTheme.colors);
+
+// All widgets created will use Nord theme
+const modelWidget = factory.createWidget('model');
+const contextWidget = factory.createWidget('context');
 ```
 
 ### Widget Theme Integration
@@ -190,7 +266,7 @@ const text = styleFunction(data, theme.colors.context);
 ### Using the Helper Function
 
 ```typescript
-import { createThemeColors } from './ui/theme/helpers.js';
+import { createThemeColors, rgb } from './ui/theme/helpers.js';
 
 const customTheme: IThemeColors = createThemeColors({
   // Git colors
@@ -206,13 +282,35 @@ const customTheme: IThemeColors = createThemeColors({
   linesAdded: rgb(34, 197, 94),    // Green
   linesRemoved: rgb(239, 68, 68),  // Red
 
-  // Other widget colors...
+  // Other widget colors
   cost: rgb(249, 115, 22),         // Orange
   model: rgb(99, 102, 241),        // Indigo
   duration: rgb(107, 114, 128),    // Gray
   accent: rgb(59, 130, 246),       // Blue
 
-  // ... rest of required colors
+  // Cache colors
+  cacheHigh: rgb(34, 197, 94),
+  cacheMedium: rgb(234, 179, 8),
+  cacheLow: rgb(239, 68, 68),
+  cacheRead: rgb(59, 130, 246),
+  cacheWrite: rgb(139, 92, 246),
+
+  // Tools colors
+  toolsRunning: rgb(234, 179, 8),
+  toolsCompleted: rgb(34, 197, 94),
+  toolsError: rgb(239, 68, 68),
+  toolsName: rgb(59, 130, 246),
+  toolsTarget: rgb(107, 114, 128),
+  toolsCount: rgb(249, 115, 22),
+
+  // Sysmon colors
+  sysmonCpu: rgb(239, 68, 68),
+  sysmonRam: rgb(59, 130, 246),
+  sysmonDisk: rgb(234, 179, 8),
+  sysmonNetwork: rgb(34, 197, 94),
+  sysmonSeparator: rgb(107, 114, 128),
+
+  // Optional: devServer, docker, configCount (have defaults)
 });
 ```
 

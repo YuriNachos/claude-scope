@@ -1,6 +1,7 @@
 import { SystemProvider } from "../providers/system-provider.js";
 import { TranscriptProvider } from "../providers/transcript-provider.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
+import type { IThemeColors } from "../ui/theme/types.js";
 import { ActiveToolsWidget } from "../widgets/active-tools/index.js";
 import { CacheMetricsWidget } from "../widgets/cache-metrics/index.js";
 import { ConfigCountWidget } from "../widgets/config-count-widget.js";
@@ -23,14 +24,21 @@ import type { IWidget } from "./types.js";
  *
  * This factory centralizes widget instantiation logic and provides
  * a single point to manage all available widget types.
+ *
+ * Supports custom themes via constructor parameter.
  */
 export class WidgetFactory {
   private transcriptProvider: TranscriptProvider;
   private systemProvider: SystemProvider;
+  private theme: IThemeColors;
 
-  constructor() {
+  /**
+   * @param theme - Optional theme colors. Defaults to DEFAULT_THEME (Monokai).
+   */
+  constructor(theme?: IThemeColors) {
     this.transcriptProvider = new TranscriptProvider();
     this.systemProvider = new SystemProvider();
+    this.theme = theme ?? DEFAULT_THEME;
   }
 
   /**
@@ -41,46 +49,46 @@ export class WidgetFactory {
   createWidget(widgetId: string): IWidget | null {
     switch (widgetId) {
       case "model":
-        return new ModelWidget();
+        return new ModelWidget(this.theme);
 
       case "context":
-        return new ContextWidget();
+        return new ContextWidget(this.theme);
 
       case "cost":
-        return new CostWidget();
+        return new CostWidget(this.theme);
 
       case "lines":
-        return new LinesWidget();
+        return new LinesWidget(this.theme);
 
       case "duration":
-        return new DurationWidget();
+        return new DurationWidget(this.theme);
 
       case "git":
-        return new GitWidget();
+        return new GitWidget(undefined, this.theme);
 
       case "git-tag":
-        return new GitTagWidget();
+        return new GitTagWidget(undefined, this.theme);
 
       case "config-count":
-        return new ConfigCountWidget();
+        return new ConfigCountWidget(undefined, this.theme);
 
       case "cache-metrics":
-        return new CacheMetricsWidget(DEFAULT_THEME);
+        return new CacheMetricsWidget(this.theme);
 
       case "active-tools":
-        return new ActiveToolsWidget(DEFAULT_THEME, this.transcriptProvider);
+        return new ActiveToolsWidget(this.theme, this.transcriptProvider);
 
       case "dev-server":
-        return new DevServerWidget(DEFAULT_THEME);
+        return new DevServerWidget(this.theme);
 
       case "docker":
-        return new DockerWidget(DEFAULT_THEME);
+        return new DockerWidget(this.theme);
 
       case "poker":
-        return new PokerWidget(DEFAULT_THEME);
+        return new PokerWidget(this.theme);
 
       case "sysmon":
-        return new SysmonWidget(DEFAULT_THEME, this.systemProvider);
+        return new SysmonWidget(this.theme, this.systemProvider);
 
       case "empty-line":
         return new EmptyLineWidget();

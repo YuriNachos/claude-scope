@@ -95,6 +95,9 @@ export function createThemeColors(params: {
   sysmonDisk: string;
   sysmonNetwork: string;
   sysmonSeparator: string;
+  // Config count widget colors (optional - defaults from semantic)
+  configCountLabel?: string;
+  configCountSeparator?: string;
 }): IThemeColors {
   const base = createBaseColors({
     modelColor: params.model,
@@ -175,6 +178,10 @@ export function createThemeColors(params: {
       disk: params.sysmonDisk,
       network: params.sysmonNetwork,
       separator: params.sysmonSeparator,
+    },
+    configCount: {
+      label: params.configCountLabel ?? semantic.info,
+      separator: params.configCountSeparator ?? base.muted,
     },
   };
 }

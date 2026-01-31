@@ -37,6 +37,7 @@ export { createBaseColors, createSemanticColors, createThemeColors } from "./hel
 export type {
   IBaseColors,
   ICacheColors,
+  IConfigCountColors,
   IContextColors,
   ICostColors,
   IDevServerColors,

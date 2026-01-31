@@ -159,6 +159,16 @@ export interface ISysmonColors {
 }
 
 /**
+ * Config count widget colors
+ */
+export interface IConfigCountColors {
+  /** Color for labels (CLAUDE.md, rules, MCPs, hooks) */
+  label: string;
+  /** Color for separator between items */
+  separator: string;
+}
+
+/**
  * Unified theme colors interface
  * All widget colors in one place for consistent theming
  */
@@ -177,6 +187,7 @@ export interface IThemeColors {
   devServer: IDevServerColors;
   docker: IDockerColors;
   sysmon: ISysmonColors;
+  configCount: IConfigCountColors;
 }
 
 /**

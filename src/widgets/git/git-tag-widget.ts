@@ -85,6 +85,11 @@ export class GitTagWidget implements IWidget {
       // Fetch the latest tag
       const latestTag = await (this.git.latestTag?.() ?? Promise.resolve(null));
 
+      // Return null if no tag exists (widget disappears like other widgets)
+      if (!latestTag) {
+        return null;
+      }
+
       const renderData: GitTagRenderData = { tag: latestTag };
       return this.styleFn(renderData, this.colors.git);
     } catch {

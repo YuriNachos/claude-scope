@@ -64,6 +64,8 @@ describe("Theme Validation", () => {
           colors.poker.participating,
           colors.poker.nonParticipating,
           colors.poker.result,
+          colors.configCount.label,
+          colors.configCount.separator,
         ];
 
         colorSections.forEach((color) => {

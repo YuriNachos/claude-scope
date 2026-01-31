@@ -376,6 +376,10 @@ function getDefaultColors(): IThemeColors {
       network: "\x1b[32m",
       separator: "\x1b[90m",
     },
+    configCount: {
+      label: "\x1b[36m",
+      separator: "\x1b[90m",
+    },
   };
 }
 

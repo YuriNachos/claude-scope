@@ -1,6 +1,7 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
 import { WidgetFactory } from "../../../src/core/widget-factory.js";
+import { NORD_THEME } from "../../../src/ui/theme/index.js";
 import { ActiveToolsWidget } from "../../../src/widgets/active-tools/index.js";
 import { CacheMetricsWidget } from "../../../src/widgets/cache-metrics/index.js";
 import { ConfigCountWidget } from "../../../src/widgets/config-count-widget.js";
@@ -119,5 +120,21 @@ describe("WidgetFactory", () => {
       "cache-metrics",
       "active-tools",
     ]);
+  });
+
+  it("should accept custom theme in constructor", () => {
+    const factory = new WidgetFactory(NORD_THEME.colors);
+    const widget = factory.createWidget("model");
+
+    expect(widget).to.not.be.null;
+    expect(widget?.id).to.equal("model");
+  });
+
+  it("should use default theme when none provided", () => {
+    const factory = new WidgetFactory();
+    const widget = factory.createWidget("context");
+
+    expect(widget).to.not.be.null;
+    expect(widget?.id).to.equal("context");
   });
 });

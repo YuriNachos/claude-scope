@@ -15,7 +15,7 @@ import {
   type IConfigProvider,
 } from "../providers/config-provider.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
-import type { IThemeColors } from "../ui/theme/types.js";
+import type { IConfigCountColors, IThemeColors } from "../ui/theme/types.js";
 import { configCountStyles } from "./config-count/styles.js";
 import type { ConfigCountStyleRenderData } from "./config-count/types.js";
 
@@ -40,7 +40,7 @@ export class ConfigCountWidget implements IWidget {
   private configs?: ConfigCounts;
   private colors: IThemeColors;
   private enabled = true;
-  private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IThemeColors> =
+  private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IConfigCountColors> =
     configCountStyles.balanced!;
   private _lineOverride?: number;
 
@@ -87,7 +87,7 @@ export class ConfigCountWidget implements IWidget {
       hooksCount,
     };
 
-    return this.styleFn(renderData, this.colors);
+    return this.styleFn(renderData, this.colors.configCount);
   }
 
   setLine(line: number): void {

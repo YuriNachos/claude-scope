@@ -71,7 +71,7 @@ describe("GitTagWidget", () => {
       expect(result).to.include("v1.2.3");
     });
 
-    it("should show no tag when none exist", async () => {
+    it("should return null when no tag exists (widget disappears)", async () => {
       const mockGit = new MockGit();
       mockGit.setLatestTag(null);
 
@@ -80,8 +80,7 @@ describe("GitTagWidget", () => {
       await widget.update({ cwd: "/test/dir" } as any);
 
       const result = await widget.render({ width: 80, timestamp: 0 });
-      expect(result).to.be.a("string");
-      expect(result).to.include("no tag");
+      expect(result).to.be.null;
     });
 
     it("should return null when widget is disabled", async () => {
@@ -96,7 +95,7 @@ describe("GitTagWidget", () => {
       expect(result).to.be.null;
     });
 
-    it("should display tag with green color formatting", async () => {
+    it("should display tag with color formatting", async () => {
       const mockGit = new MockGit();
       mockGit.setLatestTag("v2.0.0");
 
@@ -107,7 +106,6 @@ describe("GitTagWidget", () => {
       const result = await widget.render({ width: 80, timestamp: 0 });
       expect(result).to.be.a("string");
       expect(result).to.include("v2.0.0");
-      expect(result).to.include("Tag:");
     });
 
     it("should handle tags with different formats", async () => {
@@ -165,7 +163,7 @@ describe("GitTagWidget", () => {
       await matchSnapshot("git-tag-widget-with-tag", stripAnsi(result || ""));
     });
 
-    it("should snapshot no tag output", async () => {
+    it("should snapshot no tag output (null)", async () => {
       const mockGit = new MockGit();
       mockGit.setLatestTag(null);
 
@@ -174,7 +172,9 @@ describe("GitTagWidget", () => {
 
       const result = await widget.render({ width: 80, timestamp: 0 });
 
-      await matchSnapshot("git-tag-widget-no-tag", stripAnsi(result || ""));
+      // Widget returns null when no tag exists (disappears)
+      expect(result).to.be.null;
+      await matchSnapshot("git-tag-widget-no-tag", "null");
     });
   });
 
@@ -190,7 +190,7 @@ describe("GitTagWidget", () => {
     };
 
     describe("balanced style", () => {
-      it("should render tag or em dash", async () => {
+      it("should render tag", async () => {
         const widget = createMockWidget(testTag);
         widget.setStyle("balanced");
 
@@ -199,13 +199,13 @@ describe("GitTagWidget", () => {
         expect(result).to.equal("v0.5.4");
       });
 
-      it("should render em dash when no tag", async () => {
+      it("should return null when no tag (widget disappears)", async () => {
         const widget = createMockWidget(null);
         widget.setStyle("balanced");
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("—");
+        expect(result).to.be.null;
       });
     });
 
@@ -219,13 +219,13 @@ describe("GitTagWidget", () => {
         expect(result).to.equal("0.5.4");
       });
 
-      it("should render em dash when no tag", async () => {
+      it("should return null when no tag (widget disappears)", async () => {
         const widget = createMockWidget(null);
         widget.setStyle("compact");
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("—");
+        expect(result).to.be.null;
       });
     });
 
@@ -239,13 +239,13 @@ describe("GitTagWidget", () => {
         expect(result).to.equal("🏷️ v0.5.4");
       });
 
-      it("should render emoji with em dash when no tag", async () => {
+      it("should return null when no tag (widget disappears)", async () => {
         const widget = createMockWidget(null);
         widget.setStyle("playful");
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("🏷️ —");
+        expect(result).to.be.null;
       });
     });
 
@@ -259,13 +259,13 @@ describe("GitTagWidget", () => {
         expect(result).to.equal("version v0.5.4");
       });
 
-      it("should render version none when no tag", async () => {
+      it("should return null when no tag (widget disappears)", async () => {
         const widget = createMockWidget(null);
         widget.setStyle("verbose");
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("version: none");
+        expect(result).to.be.null;
       });
     });
 
@@ -279,13 +279,13 @@ describe("GitTagWidget", () => {
         expect(result).to.equal("Tag: v0.5.4");
       });
 
-      it("should render tag none when no tag", async () => {
+      it("should return null when no tag (widget disappears)", async () => {
         const widget = createMockWidget(null);
         widget.setStyle("labeled");
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("Tag: none");
+        expect(result).to.be.null;
       });
     });
 
@@ -299,13 +299,13 @@ describe("GitTagWidget", () => {
         expect(result).to.equal("● v0.5.4");
       });
 
-      it("should render bullet with em dash when no tag", async () => {
+      it("should return null when no tag (widget disappears)", async () => {
         const widget = createMockWidget(null);
         widget.setStyle("indicator");
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("● —");
+        expect(result).to.be.null;
       });
     });
 
