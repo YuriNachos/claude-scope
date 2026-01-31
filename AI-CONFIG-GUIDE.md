@@ -598,6 +598,6 @@ If configuration seems invalid:
 
 ---
 
-**Document Version**: 1.0.0
-**Last Updated**: 2026-01-12
-**Compatible with**: claude-scope >= 0.8.16
+**Document Version**: 1.1.0
+**Last Updated**: 2026-01-31
+**Compatible with**: claude-scope >= 0.8.46
