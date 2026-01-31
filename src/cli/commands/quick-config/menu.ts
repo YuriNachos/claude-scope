@@ -46,7 +46,7 @@ async function selectLayout(): Promise<QuickConfigLayout> {
     },
     {
       name: "Rich",
-      description: "3 lines: + Dev Server|Docker|Active Tools on line 3",
+      description: "5 lines: Core metrics + Git/Cache + Dev/Docker/Tools + Sysmon",
       value: "rich",
       getConfig: (s, t) => generateRichLayout(s, t),
     },
