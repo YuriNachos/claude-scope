@@ -2,7 +2,7 @@
 
 Claude Code CLI tool that displays status information in the terminal.
 
-**Version**: v0.8.15
+**Version**: v0.8.44
 
 ---
 
@@ -23,7 +23,7 @@ On first run, `claude-scope` automatically creates `~/.claude-scope/config.json`
 
 - **Layout**: `rich` (3 lines)
 - **Display Style**: `balanced`
-- **Theme**: `dracula`
+- **Theme**: `monokai`
 
 Users can customize via:
 ```bash
