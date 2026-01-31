@@ -27,20 +27,3 @@ export function literal<T extends string | number | boolean>(expected: T): Valid
     },
   };
 }
-
-export function nullValidator(): Validator<null> {
-  return {
-    validate(value) {
-      if (value === null) return success(null);
-      return failure([], "Expected null", value);
-    },
-  };
-}
-
-export function unknown(): Validator<unknown> {
-  return {
-    validate(value) {
-      return success(value);
-    },
-  };
-}
