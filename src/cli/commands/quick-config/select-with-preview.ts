@@ -13,6 +13,7 @@ import {
   usePagination,
   useState,
 } from "@inquirer/core";
+import { AVAILABLE_THEMES } from "../../../ui/theme/index.js";
 import type { QuickConfigStyle, ScopeConfig } from "./config-schema.js";
 import { renderPreviewFromConfig } from "./layout-preview.js";
 
@@ -55,17 +56,8 @@ export async function generatePreviews<T>(
   const isStyleSelection = choices.length >= 3 && choices.every((c) => isQuickConfigStyle(c.value));
 
   // Detect if this is a theme selection stage (choices have theme names as values)
-  // IMPORTANT: This must match the first 8 themes in AVAILABLE_THEMES from src/ui/theme/index.ts
-  const availableThemes = [
-    "catppuccin-mocha", // AVAILABLE_THEMES[0]
-    "cyberpunk-neon", // AVAILABLE_THEMES[1]
-    "dracula", // AVAILABLE_THEMES[2]
-    "dusty-sage", // AVAILABLE_THEMES[3]
-    "github-dark-dimmed", // AVAILABLE_THEMES[4]
-    "gray", // AVAILABLE_THEMES[5] - was missing!
-    "monokai", // AVAILABLE_THEMES[6]
-    "muted-gray", // AVAILABLE_THEMES[7] - was missing!
-  ];
+  // Generate theme list dynamically from AVAILABLE_THEMES (first 8 used in quick-config)
+  const availableThemes = AVAILABLE_THEMES.slice(0, 8).map((t) => t.name);
   const isThemeSelection = choices.some((c) => isThemeName(c.value, availableThemes));
 
   for (const choice of choices) {
