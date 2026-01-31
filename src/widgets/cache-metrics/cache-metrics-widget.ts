@@ -26,7 +26,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     2 // Third line
   );
 
-  private theme: IThemeColors;
+  private colors: IThemeColors;
   private _lineOverride?: number;
   private style: CacheMetricsStyle = "balanced";
   private renderData?: CacheMetricsRenderData;
@@ -36,9 +36,9 @@ export class CacheMetricsWidget extends StdinDataWidget {
   private cachedUsage?: ContextUsage | null; // Cache parsed usage within render cycle
   private cachedCumulativeCache?: { cacheRead: number; cacheCreation: number } | null; // Cumulative cache for session
 
-  constructor(theme?: IThemeColors) {
+  constructor(colors?: IThemeColors) {
     super();
-    this.theme = theme ?? DEFAULT_THEME;
+    this.colors = colors ?? DEFAULT_THEME;
     this.cacheManager = new CacheManager();
     this.usageParser = new UsageParser();
   }
@@ -231,7 +231,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     if (!styleFn) {
       return null;
     }
-    return styleFn(this.renderData, this.theme);
+    return styleFn(this.renderData, this.colors);
   }
 
   /**

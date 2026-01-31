@@ -36,7 +36,7 @@ export class ActiveToolsWidget extends StdinDataWidget {
   private renderData?: ActiveToolsRenderData;
 
   constructor(
-    private theme: IThemeColors,
+    private colors: IThemeColors,
     private transcriptProvider: ITranscriptProvider
   ) {
     super();
@@ -122,7 +122,7 @@ export class ActiveToolsWidget extends StdinDataWidget {
     if (!styleFn) {
       return null;
     }
-    return styleFn(this.renderData, this.theme);
+    return styleFn(this.renderData, this.colors);
   }
 
   /**
