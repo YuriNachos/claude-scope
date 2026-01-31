@@ -19,6 +19,7 @@ import { CostWidget } from "../../../widgets/cost-widget.js";
 import { DevServerWidget } from "../../../widgets/dev-server/dev-server-widget.js";
 import { DockerWidget } from "../../../widgets/docker/docker-widget.js";
 import { DurationWidget } from "../../../widgets/duration-widget.js";
+import { EmptyLineWidget } from "../../../widgets/empty-line-widget.js";
 import { GitTagWidget } from "../../../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../../../widgets/git/git-widget.js";
 import { LinesWidget } from "../../../widgets/lines-widget.js";
@@ -106,6 +107,9 @@ async function registerWidgetsFromConfig(
       const w = new SysmonWidget(themeColors, createMockSystemProvider());
       w.setStyle(s);
       return w;
+    },
+    "empty-line": () => {
+      return new EmptyLineWidget();
     },
   };
 
