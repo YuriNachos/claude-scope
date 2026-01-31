@@ -27,7 +27,7 @@ On first run, `claude-scope` automatically creates `~/.claude-scope/config.json`
 
 Users can customize via:
 ```bash
-claude-scope config      # Interactive configuration menu
+claude-scope quick-config   # Interactive configuration menu
 ```
 
 Or manually edit `~/.claude-scope/config.json`.
