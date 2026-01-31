@@ -23,8 +23,9 @@ import { GitTagWidget } from "../../../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../../../widgets/git/git-widget.js";
 import { LinesWidget } from "../../../widgets/lines-widget.js";
 import { ModelWidget } from "../../../widgets/model-widget.js";
+import { SysmonWidget } from "../../../widgets/sysmon-widget.js";
 import type { QuickConfigStyle, ScopeConfig } from "./config-schema.js";
-import { createDemoData } from "./demo-data.js";
+import { createDemoData, createMockSystemProvider } from "./demo-data.js";
 
 /**
  * Register widgets from config into registry
@@ -98,6 +99,11 @@ async function registerWidgetsFromConfig(
     },
     docker: (s) => {
       const w = new DockerWidget(themeColors);
+      w.setStyle(s);
+      return w;
+    },
+    sysmon: (s) => {
+      const w = new SysmonWidget(themeColors, createMockSystemProvider());
       w.setStyle(s);
       return w;
     },

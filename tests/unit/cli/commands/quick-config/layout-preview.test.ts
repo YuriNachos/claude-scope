@@ -6,7 +6,10 @@
 import assert from "node:assert";
 import { describe, it } from "node:test";
 import { renderPreviewFromConfig } from "../../../../../src/cli/commands/quick-config/layout-preview.js";
-import { generateBalancedLayout } from "../../../../../src/config/default-config.js";
+import {
+  generateBalancedLayout,
+  generateRichLayout,
+} from "../../../../../src/config/default-config.js";
 
 describe("layout-preview", () => {
   describe("renderPreviewFromConfig", () => {
@@ -63,6 +66,22 @@ describe("layout-preview", () => {
 
       // Should fall back to monokai (same preview)
       assert.strictEqual(invalidPreview, monokaiPreview);
+    });
+
+    it("should render sysmon widget in rich layout preview", async () => {
+      const config = generateRichLayout("balanced", "monokai");
+
+      // Rich layout has sysmon on line 3
+      assert.ok(config.lines["3"], "Rich layout should have line 3");
+      const sysmonWidget = config.lines["3"].find((w: any) => w.id === "sysmon");
+      assert.ok(sysmonWidget, "Rich layout should have sysmon widget");
+
+      // Preview should render without errors
+      const preview = await renderPreviewFromConfig(config, "balanced", "monokai");
+      assert.ok(preview.length > 0, "Preview should render");
+      // Sysmon shows "CPU XX%" and "RAM" - these are unique to sysmon output
+      assert.ok(preview.includes("CPU "), "Preview should contain CPU metrics from sysmon");
+      assert.ok(preview.includes("RAM "), "Preview should contain RAM metrics from sysmon");
     });
   });
 });
