@@ -20,22 +20,6 @@ import type {
 export type { StdinData, ModelInfo, Workspace, OutputStyle, CostInfo, ContextWindow, ContextUsage };
 
 /**
- * Git repository information
- */
-export interface GitInfo {
-  branch: string | null;
-  isRepo: boolean;
-}
-
-/**
- * Git change statistics
- */
-export interface GitChanges {
-  insertions: number;
-  deletions: number;
-}
-
-/**
  * Rendering context passed to widgets
  */
 export interface RenderContext {

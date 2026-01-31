@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
-import type { GitInfo, ModelInfo, RenderContext, StdinData } from "../../src/types.js";
+import type { ModelInfo, RenderContext, StdinData } from "../../src/types.js";
 
 describe("StdinData", () => {
   it("should accept valid stdin data structure", () => {
@@ -26,16 +26,6 @@ describe("StdinData", () => {
 
     expect(model.id).to.equal("claude-opus-4-5");
     expect(model.display_name).to.equal("Opus 4.5");
-  });
-
-  it("should accept GitInfo structure", () => {
-    const git: GitInfo = {
-      branch: "main",
-      isRepo: true,
-    };
-
-    expect(git.branch).to.equal("main");
-    expect(git.isRepo).to.be.true;
   });
 
   it("should accept RenderContext structure", () => {
