@@ -501,7 +501,7 @@ Tell user to run: `claude-scope config` and select theme interactively.
 
 ## Example Configurations
 
-### Rich Layout (3 lines, default)
+### Rich Layout (5 lines, default)
 ```json
 {
   "version": "1.0.0",
@@ -516,14 +516,20 @@ Tell user to run: `claude-scope config` and select theme interactively.
     ],
     "1": [
       { "id": "git", "style": "balanced", "colors": { "branch": "...", "changes": "..." } },
-      { "id": "git-tag", "style": "balanced", "colors": { "base": "..." } },
+      { "id": "git-tag", "style": "balanced", "colors": { "branch": "...", "changes": "..." } },
       { "id": "cache-metrics", "style": "balanced", "colors": { "high": "...", "medium": "...", "low": "...", "read": "...", "write": "..." } },
-      { "id": "config-count", "style": "balanced", "colors": { "base": "..." } }
+      { "id": "config-count", "style": "balanced", "colors": { "label": "...", "separator": "..." } }
     ],
     "2": [
       { "id": "dev-server", "style": "balanced", "colors": { "name": "...", "status": "...", "label": "..." } },
       { "id": "docker", "style": "balanced", "colors": { "label": "...", "count": "...", "running": "...", "stopped": "..." } },
       { "id": "active-tools", "style": "balanced", "colors": { "running": "...", "completed": "...", "error": "...", "name": "...", "target": "...", "count": "..." } }
+    ],
+    "3": [
+      { "id": "sysmon", "style": "balanced", "colors": { "cpu": "...", "ram": "...", "disk": "...", "network": "...", "separator": "..." } }
+    ],
+    "4": [
+      { "id": "empty-line" }
     ]
   }
 }
