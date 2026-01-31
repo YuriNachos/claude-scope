@@ -9,7 +9,6 @@ import {
   formatDuration,
   formatK,
   getContextColor,
-  progressBar,
 } from "../../../src/ui/utils/formatters.js";
 
 describe("formatDuration", () => {
@@ -136,58 +135,6 @@ describe("formatCostUSD", () => {
 
     it("should handle very small values", () => {
       expect(formatCostUSD(0.000001)).to.equal("$0.00");
-    });
-  });
-});
-
-describe("progressBar", () => {
-  describe("default width (20)", () => {
-    it("should return empty bar for 0%", () => {
-      expect(progressBar(0)).to.equal("░░░░░░░░░░░░░░░░░░░░");
-    });
-
-    it("should return full bar for 100%", () => {
-      expect(progressBar(100)).to.equal("████████████████████");
-    });
-
-    it("should return half-filled bar for 50%", () => {
-      expect(progressBar(50)).to.equal("██████████░░░░░░░░░░");
-    });
-
-    it("should return quarter-filled bar for 25%", () => {
-      expect(progressBar(25)).to.equal("█████░░░░░░░░░░░░░░░");
-    });
-
-    it("should return three-quarter filled bar for 75%", () => {
-      expect(progressBar(75)).to.equal("███████████████░░░░░");
-    });
-  });
-
-  describe("custom width", () => {
-    it("should handle width of 10", () => {
-      expect(progressBar(50, 10)).to.equal("█████░░░░░");
-    });
-
-    it("should handle width of 30", () => {
-      expect(progressBar(33, 30)).to.equal("██████████░░░░░░░░░░░░░░░░░░░░");
-    });
-
-    it("should handle width of 5", () => {
-      expect(progressBar(40, 5)).to.equal("██░░░");
-    });
-  });
-
-  describe("edge cases", () => {
-    it("should clamp values above 100%", () => {
-      expect(progressBar(150)).to.equal("████████████████████");
-    });
-
-    it("should clamp values below 0%", () => {
-      expect(progressBar(-10)).to.equal("░░░░░░░░░░░░░░░░░░░░");
-    });
-
-    it("should handle floating point precision", () => {
-      expect(progressBar(33.333)).to.have.lengthOf(20);
     });
   });
 });

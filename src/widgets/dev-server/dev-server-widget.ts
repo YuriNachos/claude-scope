@@ -98,13 +98,6 @@ export class DevServerWidget implements IWidget {
   }
 
   /**
-   * Cleanup resources
-   */
-  async cleanup(): Promise<void> {
-    // No resources to clean up
-  }
-
-  /**
    * Render widget output
    * @param context - Render context
    * @returns Rendered string, or null if no dev server detected

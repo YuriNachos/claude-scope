@@ -19,9 +19,6 @@ import type {
 // Re-export for convenience
 export type { StdinData, ModelInfo, Workspace, OutputStyle, CostInfo, ContextWindow, ContextUsage };
 
-// Workspace alias for backwards compatibility
-export type WorkspaceInfo = Workspace;
-
 /**
  * Git repository information
  */

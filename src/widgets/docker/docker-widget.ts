@@ -66,10 +66,6 @@ export class DockerWidget implements IWidget {
     return this.enabled;
   }
 
-  async cleanup(): Promise<void> {
-    // No resources to clean up
-  }
-
   async render(_context: RenderContext): Promise<string | null> {
     if (!this.enabled) {
       return null;

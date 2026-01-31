@@ -100,8 +100,4 @@ export class GitTagWidget implements IWidget {
   isEnabled(): boolean {
     return this.enabled;
   }
-
-  async cleanup(): Promise<void> {
-    // No cleanup needed for native git implementation
-  }
 }

@@ -140,8 +140,6 @@ describe("SysmonWidget", () => {
       await new Promise((resolve) => setTimeout(resolve, 100));
       const result2 = await widget.render({ width: 80, timestamp: Date.now() });
       assert.ok(result2, "should render with cached metrics");
-
-      await widget.cleanup();
     });
 
     it("should use cached metrics within TTL", async () => {
@@ -171,8 +169,6 @@ describe("SysmonWidget", () => {
       const result4 = await widget.render({ width: 80, timestamp: Date.now() });
 
       assert.ok(result2 && result3 && result4, "all renders should succeed with cached metrics");
-
-      await widget.cleanup();
     });
   });
 
@@ -191,24 +187,6 @@ describe("SysmonWidget", () => {
     it("should return false when provider is null", () => {
       const widget = new SysmonWidget(DEFAULT_THEME, null as any);
       assert.strictEqual(widget.isEnabled(), false);
-    });
-  });
-
-  describe("cleanup", () => {
-    it("should stop updates on cleanup", async () => {
-      const provider = createMockProvider({
-        cpu: { percent: 50 },
-        memory: { used: 8, total: 16, percent: 50 },
-        disk: { used: 100, total: 200, percent: 50 },
-        network: { rxSec: 1, txSec: 0.5 },
-      });
-      const widget = new SysmonWidget(DEFAULT_THEME, provider);
-
-      await widget.initialize({});
-
-      // Cleanup should not throw
-      await widget.cleanup();
-      assert.ok(true);
     });
   });
 });

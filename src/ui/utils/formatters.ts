@@ -2,7 +2,7 @@
  * Formatter utilities for displaying data in human-readable formats
  */
 
-import { ANSI_COLORS, CONTEXT_THRESHOLDS, DEFAULTS, TIME } from "../../constants.js";
+import { ANSI_COLORS, CONTEXT_THRESHOLDS, TIME } from "../../constants.js";
 
 /**
  * Format milliseconds to human-readable duration
@@ -53,20 +53,6 @@ export function formatCostUSD(usd: number): string {
 }
 
 /**
- * Create a visual progress bar
- *
- * @param percent - Percentage (0-100)
- * @param width - Bar width in characters (default: DEFAULTS.PROGRESS_BAR_WIDTH)
- * @returns Progress bar string like "████████░░░░░░░░░░░░"
- */
-export function progressBar(percent: number, width: number = DEFAULTS.PROGRESS_BAR_WIDTH): string {
-  const clampedPercent = Math.max(0, Math.min(100, percent));
-  const filled = Math.round((clampedPercent / 100) * width);
-  const empty = width - filled;
-  return "█".repeat(filled) + "░".repeat(empty);
-}
-
-/**
  * Get color code for context percentage
  *
  * - <50%: green (low usage)
@@ -86,17 +72,6 @@ export function getContextColor(percent: number): string {
   } else {
     return ANSI_COLORS.RED;
   }
-}
-
-/**
- * Colorize text with ANSI color code
- *
- * @param text - Text to colorize
- * @param color - ANSI color code
- * @returns Colorized text with reset code
- */
-export function colorize(text: string, color: string): string {
-  return `${color}${text}${ANSI_COLORS.RESET}`;
 }
 
 /**

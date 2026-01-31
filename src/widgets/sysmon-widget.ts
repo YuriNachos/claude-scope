@@ -65,10 +65,6 @@ export class SysmonWidget implements IWidget {
     return this.enabled && this.provider !== null;
   }
 
-  async cleanup(): Promise<void> {
-    // No-op - nothing to clean up
-  }
-
   setStyle(style: WidgetStyle = "balanced"): void {
     const fn = sysmonStyles[style];
     if (fn) {

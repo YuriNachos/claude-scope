@@ -78,6 +78,3 @@ export const DEMO_DATA = {
   /** Demo cache read tokens */
   CACHE_READ_TOKENS: 15000,
 } as const;
-
-// Re-export for backward compatibility
-export const DEFAULT_PROGRESS_BAR_WIDTH = DEFAULTS.PROGRESS_BAR_WIDTH;

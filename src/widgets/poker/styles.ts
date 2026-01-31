@@ -4,8 +4,7 @@
 
 import type { StyleMap } from "../../core/style-types.js";
 import type { IPokerColors } from "../../ui/theme/types.js";
-import { bold, gray, lightGray, red, reset } from "../../ui/utils/colors.js";
-import { colorize } from "../../ui/utils/formatters.js";
+import { bold, colorize, gray, lightGray, red, reset } from "../../ui/utils/colors.js";
 import { type Card, formatCard, formatCardEmoji, isRedSuit } from "./types.js";
 import type { PokerCardData, PokerRenderData } from "./widget-types.js";
 

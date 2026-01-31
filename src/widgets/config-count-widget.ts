@@ -38,7 +38,6 @@ export class ConfigCountWidget implements IWidget {
 
   private configProvider: IConfigProvider;
   private configs?: ConfigCounts;
-  private cwd?: string;
   private themeColors: IThemeColors;
   private _lineOverride?: number;
   private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IThemeColors> =
@@ -69,7 +68,6 @@ export class ConfigCountWidget implements IWidget {
   }
 
   async update(data: StdinData): Promise<void> {
-    this.cwd = data.cwd;
     this.configs = await this.configProvider.getConfigs({ cwd: data.cwd });
   }
 
@@ -98,9 +96,5 @@ export class ConfigCountWidget implements IWidget {
     };
 
     return this.styleFn(renderData, this.themeColors);
-  }
-
-  async cleanup(): Promise<void> {
-    // No cleanup needed
   }
 }
