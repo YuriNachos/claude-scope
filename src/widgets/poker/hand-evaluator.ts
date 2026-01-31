@@ -150,7 +150,6 @@ function getStraightFlushHighCard(cards: Card[], suit: string): number | null {
  * Get indices for a straight flush with the given high card and suit
  */
 function getStraightFlushIndices(cards: Card[], highCard: number, suit: string): number[] {
-  const _suitCards = cards.filter((c) => c.suit === suit);
   const suitCardIndices: Card[] = [];
 
   // Map filtered cards back to original indices

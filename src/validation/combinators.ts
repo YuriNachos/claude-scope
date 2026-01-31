@@ -44,13 +44,3 @@ export function nullable<T>(validator: Validator<T>): Validator<T | null> {
     },
   };
 }
-
-export function partial<T extends Record<string, Validator<any>>>(
-  shape: T
-): Validator<Partial<{ [K in keyof T]: InferValidator<T[K]> }>> {
-  const optionalShape: Record<string, Validator<any>> = {};
-  for (const [key, validator] of Object.entries(shape)) {
-    optionalShape[key] = optional(validator);
-  }
-  return object(optionalShape) as any;
-}

@@ -3,9 +3,6 @@ import { describe, it } from "node:test";
 import {
   formatTokens,
   progressBar,
-  withAngleBrackets,
-  withBrackets,
-  withFancy,
   withIndicator,
   withLabel,
 } from "../../../../src/ui/utils/style-utils.js";
@@ -24,24 +21,6 @@ describe("style-utils", () => {
   describe("withIndicator", () => {
     it("should add indicator prefix to value", () => {
       assert.equal(withIndicator("Opus 4.5"), "● Opus 4.5");
-    });
-  });
-
-  describe("withFancy", () => {
-    it("should wrap value in french quotes", () => {
-      assert.equal(withFancy("Opus 4.5"), "«Opus 4.5»");
-    });
-  });
-
-  describe("withBrackets", () => {
-    it("should wrap value in square brackets", () => {
-      assert.equal(withBrackets("Opus 4.5"), "[Opus 4.5]");
-    });
-  });
-
-  describe("withAngleBrackets", () => {
-    it("should wrap value in angle brackets", () => {
-      assert.equal(withAngleBrackets("71%"), "⟨71%⟩");
     });
   });
 

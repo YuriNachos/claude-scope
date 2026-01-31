@@ -5,7 +5,7 @@
 import type { StyleMap } from "../../core/style-types.js";
 import type { IThemeColors } from "../../ui/theme/types.js";
 import { formatK } from "../../ui/utils/formatters.js";
-import type { CacheMetricsRenderData, CacheMetricsStyle } from "./types.js";
+import type { CacheMetricsRenderData } from "./types.js";
 
 /**
  * Format as USD currency

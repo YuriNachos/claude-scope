@@ -30,8 +30,6 @@ export const CONTEXT_THRESHOLDS = {
 export const DEFAULTS = {
   /** Default separator between widgets */
   SEPARATOR: " ",
-  /** Default width for progress bars in characters */
-  PROGRESS_BAR_WIDTH: 20,
 } as const;
 
 /**

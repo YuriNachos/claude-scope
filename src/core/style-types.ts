@@ -26,12 +26,6 @@ export interface StyleConfig {
   [widgetId: string]: WidgetStyleConfig;
 }
 
-export function getDefaultStyleConfig(
-  style: WidgetStyle = DEFAULT_WIDGET_STYLE
-): WidgetStyleConfig {
-  return { style };
-}
-
 export function isValidWidgetStyle(value: string): value is WidgetStyle {
   return [
     "minimal",

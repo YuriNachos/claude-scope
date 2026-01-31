@@ -5,8 +5,9 @@
  * Uses UsageParser to read usage from transcript files when current_usage is null
  */
 
+import type { StyleRendererFn } from "../../core/style-types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
-import { UsageParser } from "../../providers/usage-parser.js";
+import { hasRealUsage, UsageParser } from "../../providers/usage-parser.js";
 import type { ContextUsage } from "../../schemas/stdin-schema.js";
 import { CacheManager } from "../../storage/cache-manager.js";
 import type { RenderContext, StdinData } from "../../types.js";
@@ -27,8 +28,8 @@ export class CacheMetricsWidget extends StdinDataWidget {
   );
 
   private colors: IThemeColors;
-  private _lineOverride?: number;
-  private style: CacheMetricsStyle = "balanced";
+  private styleFn: StyleRendererFn<CacheMetricsRenderData, IThemeColors> =
+    cacheMetricsStyles.balanced!;
   private renderData?: CacheMetricsRenderData;
   private cacheManager: CacheManager;
   private usageParser: UsageParser;
@@ -47,15 +48,10 @@ export class CacheMetricsWidget extends StdinDataWidget {
    * Set display style
    */
   setStyle(style: CacheMetricsStyle): void {
-    this.style = style;
-  }
-
-  setLine(line: number): void {
-    this._lineOverride = line;
-  }
-
-  getLine(): number {
-    return this._lineOverride ?? this.metadata.line ?? 0;
+    const fn = cacheMetricsStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
   }
 
   /**
@@ -116,7 +112,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
    * Update widget with new data and calculate metrics
    * Stores valid usage data in cache for future use
    */
-  async update(data: StdinData): Promise<void> {
+  override async update(data: StdinData): Promise<void> {
     await super.update(data);
 
     const sessionId = data.session_id;
@@ -139,13 +135,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     // Also skip caching when session just changed (to avoid caching old session's data)
     const usage = data.context_window?.current_usage;
     if (usage && !sessionChanged && sessionId) {
-      const hasAnyTokens =
-        (usage.input_tokens ?? 0) > 0 ||
-        (usage.output_tokens ?? 0) > 0 ||
-        (usage.cache_creation_input_tokens ?? 0) > 0 ||
-        (usage.cache_read_input_tokens ?? 0) > 0;
-
-      if (hasAnyTokens) {
+      if (hasRealUsage(usage)) {
         this.cacheManager.setCachedUsage(sessionId, {
           input_tokens: usage.input_tokens,
           output_tokens: usage.output_tokens,
@@ -159,17 +149,8 @@ export class CacheMetricsWidget extends StdinDataWidget {
     // Priority 1: current_usage (checked in renderWithData)
     // Priority 2: transcript file (persists during tool execution)
     // Priority 3: cache manager (5-min cache)
-
-    // For current usage (most recent message): used when current_usage is null/empty
-    const hasRealUsage =
-      usage &&
-      ((usage.input_tokens ?? 0) > 0 ||
-        (usage.output_tokens ?? 0) > 0 ||
-        (usage.cache_read_input_tokens ?? 0) > 0 ||
-        (usage.cache_creation_input_tokens ?? 0) > 0);
-
     const transcriptPath = data.transcript_path;
-    if (!usage || !hasRealUsage) {
+    if (!hasRealUsage(usage)) {
       // current_usage is null or all zeros - try transcript
       if (transcriptPath) {
         this.cachedUsage = await this.usageParser.parseLastUsage(transcriptPath);
@@ -193,17 +174,9 @@ export class CacheMetricsWidget extends StdinDataWidget {
     // Priority 1: current_usage from stdin (fastest, most recent)
     let usage = data.context_window?.current_usage;
 
-    // Check if current_usage has real data (not all zeros)
-    const hasRealUsage =
-      usage &&
-      ((usage.input_tokens ?? 0) > 0 ||
-        (usage.output_tokens ?? 0) > 0 ||
-        (usage.cache_read_input_tokens ?? 0) > 0 ||
-        (usage.cache_creation_input_tokens ?? 0) > 0);
-
     // Priority 2: usage parsed from transcript (persists during tool execution)
     // Use transcript if current_usage is null or has no real data
-    if ((!usage || !hasRealUsage) && this.cachedUsage) {
+    if (!hasRealUsage(usage) && this.cachedUsage) {
       usage = this.cachedUsage;
     }
 
@@ -226,12 +199,7 @@ export class CacheMetricsWidget extends StdinDataWidget {
     }
 
     this.renderData = metrics;
-
-    const styleFn = cacheMetricsStyles[this.style] ?? cacheMetricsStyles.balanced;
-    if (!styleFn) {
-      return null;
-    }
-    return styleFn(this.renderData, this.colors);
+    return this.styleFn(this.renderData, this.colors);
   }
 
   /**

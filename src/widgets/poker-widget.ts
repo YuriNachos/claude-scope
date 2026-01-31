@@ -14,7 +14,7 @@ import { StdinDataWidget } from "./core/stdin-data-widget.js";
 import { Deck } from "./poker/deck.js";
 import { evaluateHand } from "./poker/hand-evaluator.js";
 import { pokerStyles } from "./poker/styles.js";
-import { type Card, formatCard, isRedSuit } from "./poker/types.js";
+import { type Card, formatCard } from "./poker/types.js";
 import type { PokerCardData, PokerRenderData } from "./poker/widget-types.js";
 
 export class PokerWidget extends StdinDataWidget {
@@ -33,7 +33,6 @@ export class PokerWidget extends StdinDataWidget {
   private lastUpdateTimestamp = 0;
   private readonly THROTTLE_MS = 5000; // 5 seconds
   private colors: IThemeColors;
-  private _lineOverride?: number;
   private styleFn: StyleRendererFn<PokerRenderData, IPokerColors> = pokerStyles.balanced!;
 
   setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
@@ -41,14 +40,6 @@ export class PokerWidget extends StdinDataWidget {
     if (fn) {
       this.styleFn = fn;
     }
-  }
-
-  setLine(line: number): void {
-    this._lineOverride = line;
-  }
-
-  getLine(): number {
-    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   constructor(colors?: IThemeColors) {
@@ -108,7 +99,6 @@ export class PokerWidget extends StdinDataWidget {
    * Format card with appropriate color (red for ♥♦, gray for ♠♣)
    */
   private formatCardColor(card: Card): string {
-    const _color = isRedSuit(card.suit) ? "red" : "gray";
     // This is just for internal storage, actual formatting happens in styles
     return formatCard(card);
   }

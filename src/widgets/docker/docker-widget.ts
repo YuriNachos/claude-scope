@@ -9,7 +9,11 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
+import {
+  DEFAULT_WIDGET_STYLE,
+  type StyleRendererFn,
+  type WidgetStyle,
+} from "../../core/style-types.js";
 import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
@@ -39,7 +43,7 @@ export class DockerWidget implements IWidget {
     this.colors = colors ?? DEFAULT_THEME;
   }
 
-  setStyle(style: WidgetStyle = "balanced"): void {
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
     const fn = dockerStyles[style];
     if (fn) {
       this.styleFn = fn;

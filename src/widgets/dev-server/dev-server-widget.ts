@@ -6,7 +6,11 @@
  * 2. Process-based detection (fallback) - checks process list via ps
  */
 
-import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
+import {
+  DEFAULT_WIDGET_STYLE,
+  type StyleRendererFn,
+  type WidgetStyle,
+} from "../../core/style-types.js";
 import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
@@ -50,7 +54,7 @@ export class DevServerWidget implements IWidget {
    * Set display style
    * @param style - Style to use for rendering
    */
-  setStyle(style: WidgetStyle = "balanced"): void {
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
     const fn = devServerStyles[style];
     if (fn) {
       this.styleFn = fn;

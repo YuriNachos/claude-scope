@@ -39,10 +39,10 @@ export class ConfigCountWidget implements IWidget {
   private configProvider: IConfigProvider;
   private configs?: ConfigCounts;
   private colors: IThemeColors;
-  private _lineOverride?: number;
   private enabled = true;
   private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IThemeColors> =
     configCountStyles.balanced!;
+  private _lineOverride?: number;
 
   constructor(configProvider?: IConfigProvider, colors?: IThemeColors) {
     this.configProvider = configProvider ?? new ConfigProvider();
@@ -54,14 +54,6 @@ export class ConfigCountWidget implements IWidget {
     if (fn) {
       this.styleFn = fn;
     }
-  }
-
-  setLine(line: number): void {
-    this._lineOverride = line;
-  }
-
-  getLine(): number {
-    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   async initialize(context: WidgetContext): Promise<void> {
@@ -96,5 +88,13 @@ export class ConfigCountWidget implements IWidget {
     };
 
     return this.styleFn(renderData, this.colors);
+  }
+
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 }

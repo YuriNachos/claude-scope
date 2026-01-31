@@ -2,7 +2,6 @@ import assert from "node:assert";
 import { describe, it } from "node:test";
 import {
   DEFAULT_WIDGET_STYLE,
-  getDefaultStyleConfig,
   isValidWidgetStyle,
   type WidgetStyle,
 } from "../../../src/core/style-types.js";
@@ -29,18 +28,6 @@ describe("style-types", () => {
 
     it("should have balanced as default style", () => {
       assert.equal(DEFAULT_WIDGET_STYLE, "balanced");
-    });
-  });
-
-  describe("getDefaultStyleConfig", () => {
-    it("should return config with default style when no argument", () => {
-      const config = getDefaultStyleConfig();
-      assert.deepEqual(config, { style: "balanced" });
-    });
-
-    it("should return config with specified style", () => {
-      const config = getDefaultStyleConfig("compact");
-      assert.deepEqual(config, { style: "compact" });
     });
   });
 

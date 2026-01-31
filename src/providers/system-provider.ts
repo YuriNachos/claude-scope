@@ -73,16 +73,12 @@ interface NetworkStatsData {
 }
 
 /**
- * Load network stats from persistent storage (synchronous for Node.js)
+ * Load network stats from persistent storage (async)
  */
-function loadNetworkStatsSync(): Map<string, { rx: number; tx: number; time: number }> {
+async function loadNetworkStats(): Promise<Map<string, { rx: number; tx: number; time: number }>> {
   try {
-    const fs = require("node:fs");
-    if (!fs.existsSync(NETWORK_STATS_FILE)) {
-      return new Map();
-    }
-
-    const text = fs.readFileSync(NETWORK_STATS_FILE, "utf-8");
+    const fs = await import("node:fs/promises");
+    const text = await fs.readFile(NETWORK_STATS_FILE, "utf-8");
     const data = JSON.parse(text) as NetworkStatsData;
 
     // Clear stats if older than 5 minutes (process was restarted long ago)
@@ -102,39 +98,65 @@ function loadNetworkStatsSync(): Map<string, { rx: number; tx: number; time: num
 }
 
 /**
- * Save network stats to persistent storage (synchronous)
+ * Save network stats to persistent storage (async with debouncing)
  */
-function saveNetworkStatsSync(stats: Map<string, { rx: number; tx: number; time: number }>): void {
-  try {
-    const fs = require("node:fs");
-    const data: NetworkStatsData = {
-      stats: Object.fromEntries(stats),
-      lastUpdate: Date.now(),
-    };
-    fs.writeFileSync(NETWORK_STATS_FILE, JSON.stringify(data), "utf-8");
-  } catch {
-    // Silently fail - we'll just start fresh next time
+let pendingSave: Promise<void> | null = null;
+let pendingSaveData: Map<string, { rx: number; tx: number; time: number }> | null = null;
+
+async function saveNetworkStats(
+  stats: Map<string, { rx: number; tx: number; time: number }>
+): Promise<void> {
+  // Store the latest data to save
+  pendingSaveData = stats;
+
+  // If a save is already pending, it will use the latest data
+  if (pendingSave) {
+    return;
   }
+
+  // Debounce: wait a tick before saving
+  pendingSave = (async () => {
+    // Use setImmediate to batch multiple saves
+    await new Promise((resolve) => setImmediate(resolve));
+
+    if (!pendingSaveData) {
+      pendingSave = null;
+      return;
+    }
+
+    try {
+      const fs = await import("node:fs/promises");
+      const data: NetworkStatsData = {
+        stats: Object.fromEntries(pendingSaveData),
+        lastUpdate: Date.now(),
+      };
+      await fs.writeFile(NETWORK_STATS_FILE, JSON.stringify(data), "utf-8");
+    } catch {
+      // Silently fail - we'll just start fresh next time
+    } finally {
+      pendingSave = null;
+      pendingSaveData = null;
+    }
+  })();
 }
 
 export class SystemProvider implements ISystemProvider {
   private intervalId?: NodeJS.Timeout;
-  private lastNetworkStats: Map<string, { rx: number; tx: number; time: number }>;
+  private lastNetworkStats: Map<string, { rx: number; tx: number; time: number }> = new Map();
   private lastErrorTime = 0;
   private readonly ERROR_LOG_INTERVAL = 60000; // 1 minute
   private initialized = false;
-  private statsLoaded = false;
-
-  constructor() {
-    // Load persistent stats on construction (synchronous)
-    this.lastNetworkStats = loadNetworkStatsSync();
-    this.statsLoaded = true;
-  }
+  private networkStatsLoaded = false;
 
   private async ensureInitialized(): Promise<void> {
     if (!this.initialized) {
       await loadSystemInformation();
       this.initialized = true;
+    }
+    // Load network stats lazily on first use
+    if (!this.networkStatsLoaded) {
+      this.lastNetworkStats = await loadNetworkStats();
+      this.networkStatsLoaded = true;
     }
   }
 
@@ -174,7 +196,7 @@ export class SystemProvider implements ISystemProvider {
 
       // Network - calculate speed from difference
       const iface = Array.isArray(net) && net.length > 0 ? net[0] : net;
-      const networkSpeed = this.calculateNetworkSpeed(iface);
+      const networkSpeed = await this.calculateNetworkSpeed(iface);
 
       return {
         cpu: { percent: cpuPercent },
@@ -221,7 +243,7 @@ export class SystemProvider implements ISystemProvider {
     }
   }
 
-  private calculateNetworkSpeed(iface: any): { rxSec: number; txSec: number } {
+  private async calculateNetworkSpeed(iface: any): Promise<{ rxSec: number; txSec: number }> {
     if (!iface || iface.iface === undefined) {
       return { rxSec: 0, txSec: 0 };
     }
@@ -237,8 +259,8 @@ export class SystemProvider implements ISystemProvider {
         tx: iface.tx_bytes,
         time: now,
       });
-      // Save to persistent storage
-      saveNetworkStatsSync(this.lastNetworkStats);
+      // Save to persistent storage (async, non-blocking)
+      saveNetworkStats(this.lastNetworkStats);
       return { rxSec: 0, txSec: 0 };
     }
 
@@ -256,8 +278,8 @@ export class SystemProvider implements ISystemProvider {
       time: now,
     });
 
-    // Save to persistent storage for next process
-    saveNetworkStatsSync(this.lastNetworkStats);
+    // Save to persistent storage for next process (async, non-blocking)
+    saveNetworkStats(this.lastNetworkStats);
 
     return {
       rxSec: Math.max(0, Number(rx_sec.toFixed(2))),

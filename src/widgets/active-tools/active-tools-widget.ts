@@ -5,7 +5,9 @@
  * by parsing Claude Code's transcript file
  */
 
-import type { IWidgetMetadata, RenderContext } from "../../core/types.js";
+import type { StyleRendererFn } from "../../core/style-types.js";
+import type { RenderContext } from "../../core/types.js";
+import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { ITranscriptProvider } from "../../providers/transcript-provider.js";
 import type { ToolEntry } from "../../providers/transcript-types.js";
 import type { StdinData } from "../../types.js";
@@ -22,16 +24,16 @@ import type { ActiveToolsRenderData, ActiveToolsStyle } from "./types.js";
  */
 export class ActiveToolsWidget extends StdinDataWidget {
   readonly id = "active-tools";
-  readonly metadata: IWidgetMetadata = {
-    name: "Active Tools",
-    description: "Active tools display from transcript",
-    version: "1.0.0",
-    author: "claude-scope",
-    line: 2, // Display on third line (0-indexed)
-  };
+  readonly metadata = createWidgetMetadata(
+    "Active Tools",
+    "Active tools display from transcript",
+    "1.0.0",
+    "claude-scope",
+    2 // Display on third line (0-indexed)
+  );
 
-  private style: ActiveToolsStyle = "balanced";
-  private _lineOverride?: number;
+  private styleFn: StyleRendererFn<ActiveToolsRenderData, IThemeColors> =
+    activeToolsStyles.balanced!;
   private tools: ToolEntry[] = [];
   private renderData?: ActiveToolsRenderData;
 
@@ -47,15 +49,10 @@ export class ActiveToolsWidget extends StdinDataWidget {
    * @param style - Style to use for rendering
    */
   setStyle(style: ActiveToolsStyle): void {
-    this.style = style;
-  }
-
-  setLine(line: number): void {
-    this._lineOverride = line;
-  }
-
-  getLine(): number {
-    return this._lineOverride ?? this.metadata.line ?? 0;
+    const fn = activeToolsStyles[style];
+    if (fn) {
+      this.styleFn = fn;
+    }
   }
 
   /**
@@ -118,11 +115,7 @@ export class ActiveToolsWidget extends StdinDataWidget {
       return null;
     }
 
-    const styleFn = activeToolsStyles[this.style] ?? activeToolsStyles.balanced;
-    if (!styleFn) {
-      return null;
-    }
-    return styleFn(this.renderData, this.colors);
+    return this.styleFn(this.renderData, this.colors);
   }
 
   /**

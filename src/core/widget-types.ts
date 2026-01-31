@@ -2,7 +2,7 @@
  * Widget type utilities and helpers
  */
 
-import type { IWidget, IWidgetMetadata } from "./types.js";
+import type { IWidgetMetadata } from "./types.js";
 
 /**
  * Create widget metadata with defaults
@@ -27,28 +27,5 @@ export function createWidgetMetadata(
     version,
     author,
     line,
-  };
-}
-
-/**
- * Type for widget constructor
- * Can be used with dependency injection
- */
-export type WidgetConstructor = new (...args: unknown[]) => IWidget;
-
-/**
- * Widget configuration options
- */
-export interface WidgetConfig {
-  enabled?: boolean;
-}
-
-/**
- * Create widget config with defaults
- */
-export function createWidgetConfig(config: WidgetConfig = {}): WidgetConfig {
-  return {
-    enabled: true,
-    ...config,
   };
 }

@@ -41,6 +41,11 @@ export abstract class StdinDataWidget implements IWidget {
   protected enabled = true;
 
   /**
+   * Line override for dynamic positioning
+   */
+  private _lineOverride?: number;
+
+  /**
    * Widget identifier (multiple instances can share the same id)
    */
   abstract readonly id: string;
@@ -111,6 +116,22 @@ export abstract class StdinDataWidget implements IWidget {
    * @returns Rendered string, or null if widget should not display
    */
   protected abstract renderWithData(data: StdinData, context: RenderContext): string | null;
+
+  /**
+   * Set line override for dynamic positioning
+   * @param line - Line number to position widget on
+   */
+  setLine(line: number): void {
+    this._lineOverride = line;
+  }
+
+  /**
+   * Get effective line number (override or metadata default)
+   * @returns Line number for widget positioning
+   */
+  getLine(): number {
+    return this._lineOverride ?? this.metadata.line ?? 0;
+  }
 
   /**
    * Optional cleanup method

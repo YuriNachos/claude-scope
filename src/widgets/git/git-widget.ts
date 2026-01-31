@@ -6,7 +6,11 @@
  * because it requires async git operations with custom lifecycle management.
  */
 
-import type { StyleRendererFn, WidgetStyle } from "../../core/style-types.js";
+import {
+  DEFAULT_WIDGET_STYLE,
+  type StyleRendererFn,
+  type WidgetStyle,
+} from "../../core/style-types.js";
 import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../core/types.js";
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import type { IGit } from "../../providers/git-provider.js";
@@ -53,7 +57,7 @@ export class GitWidget implements IWidget {
     this.colors = colors ?? DEFAULT_THEME;
   }
 
-  setStyle(style: WidgetStyle = "balanced"): void {
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
     const fn = gitStyles[style];
     if (fn) {
       this.styleFn = fn;

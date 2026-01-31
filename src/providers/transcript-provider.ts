@@ -1,5 +1,4 @@
-import { createReadStream, existsSync } from "node:fs";
-import { createInterface } from "node:readline";
+import { readJsonlLines } from "./jsonl-reader.js";
 import type { ToolEntry } from "./transcript-types.js";
 
 /**
@@ -38,34 +37,19 @@ export class TranscriptProvider implements ITranscriptProvider {
    * @returns Array of tool entries, limited to last 20
    */
   async parseTools(transcriptPath: string): Promise<ToolEntry[]> {
-    if (!existsSync(transcriptPath)) {
-      return [];
-    }
-
+    const lines = await readJsonlLines(transcriptPath);
     const toolMap = new Map<string, ToolEntry>();
 
-    try {
-      const fileStream = createReadStream(transcriptPath, { encoding: "utf-8" });
-      const rl = createInterface({
-        input: fileStream,
-        crlfDelay: Infinity,
-      });
-
-      for await (const line of rl) {
-        if (!line.trim()) continue;
-
-        try {
-          const entry = JSON.parse(line) as TranscriptLine;
-          this.processLine(entry, toolMap);
-        } catch {}
-      }
-
-      // Convert to array and limit to last 20 tools
-      const tools = Array.from(toolMap.values());
-      return tools.slice(-this.MAX_TOOLS);
-    } catch {
-      return [];
+    for (const line of lines) {
+      try {
+        const entry = JSON.parse(line) as TranscriptLine;
+        this.processLine(entry, toolMap);
+      } catch {}
     }
+
+    // Convert to array and limit to last 20 tools
+    const tools = Array.from(toolMap.values());
+    return tools.slice(-this.MAX_TOOLS);
   }
 
   /**

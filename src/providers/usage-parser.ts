@@ -6,11 +6,9 @@
  * (during tool execution or in new sessions).
  */
 
-// Use require for existsSync to ensure it works in bundled code
-import { createReadStream, existsSync } from "fs";
-import { createInterface } from "readline";
 import type { ContextUsage } from "../schemas/stdin-schema.js";
-import type { TranscriptLine, TranscriptUsage } from "./usage-types.js";
+import { readJsonlLines } from "./jsonl-reader.js";
+import type { TranscriptLine } from "./usage-types.js";
 
 /**
  * Parses Claude Code transcript files to extract usage data
@@ -24,14 +22,13 @@ export class UsageParser {
    * @returns ContextUsage or null if not found
    */
   async parseLastUsage(transcriptPath: string): Promise<ContextUsage | null> {
-    // Fast fail if file doesn't exist
-    if (!existsSync(transcriptPath)) {
-      return null;
-    }
-
     try {
       // Read all lines into memory (transcripts are typically small)
-      const lines = await this.readAllLines(transcriptPath);
+      const lines = await readJsonlLines(transcriptPath);
+
+      if (lines.length === 0) {
+        return null;
+      }
 
       // Find the MOST RECENT assistant message with usage data
       // Strategy:
@@ -84,32 +81,6 @@ export class UsageParser {
   }
 
   /**
-   * Read all lines from transcript file
-   */
-  private async readAllLines(transcriptPath: string): Promise<string[]> {
-    const lines: string[] = [];
-
-    try {
-      const fileStream = createReadStream(transcriptPath, { encoding: "utf-8" });
-      const rl = createInterface({
-        input: fileStream,
-        crlfDelay: Infinity,
-      });
-
-      for await (const line of rl) {
-        if (line.trim()) {
-          lines.push(line);
-        }
-      }
-    } catch {
-      // Return empty array on read error
-      return [];
-    }
-
-    return lines;
-  }
-
-  /**
    * Parse cumulative cache tokens from all assistant messages in transcript
    *
    * Handles two transcript formats:
@@ -122,12 +93,12 @@ export class UsageParser {
   async parseCumulativeCache(
     transcriptPath: string
   ): Promise<{ cacheRead: number; cacheCreation: number } | null> {
-    if (!existsSync(transcriptPath)) {
-      return null;
-    }
-
     try {
-      const lines = await this.readAllLines(transcriptPath);
+      const lines = await readJsonlLines(transcriptPath);
+
+      if (lines.length === 0) {
+        return null;
+      }
 
       // Collect all cache entries with timestamps
       const cacheEntries: { cacheRead: number; cacheCreation: number; timestamp: string }[] = [];
@@ -277,4 +248,18 @@ export class UsageParser {
       return null;
     }
   }
+}
+
+/**
+ * Check if usage has any real token values (not all zeros)
+ * Prevents zero-value data from being treated as valid usage
+ */
+export function hasRealUsage(usage: ContextUsage | null | undefined): boolean {
+  if (!usage) return false;
+  return (
+    (usage.input_tokens ?? 0) > 0 ||
+    (usage.output_tokens ?? 0) > 0 ||
+    (usage.cache_read_input_tokens ?? 0) > 0 ||
+    (usage.cache_creation_input_tokens ?? 0) > 0
+  );
 }

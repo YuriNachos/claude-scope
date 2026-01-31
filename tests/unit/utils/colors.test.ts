@@ -5,19 +5,14 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
 import {
-  bgRed,
-  blue,
   bold,
   colorize,
   contextColors,
-  cyan,
   gray,
   green,
   lightGray,
-  magenta,
   red,
   reset,
-  white,
   yellow,
 } from "../../../src/ui/utils/colors.js";
 
@@ -45,22 +40,6 @@ describe("color utilities", () => {
       expect(yellow).to.equal("\x1b[33m");
     });
 
-    it("should return ANSI code for blue", () => {
-      expect(blue).to.equal("\x1b[34m");
-    });
-
-    it("should return ANSI code for magenta", () => {
-      expect(magenta).to.equal("\x1b[35m");
-    });
-
-    it("should return ANSI code for cyan", () => {
-      expect(cyan).to.equal("\x1b[36m");
-    });
-
-    it("should return ANSI code for white", () => {
-      expect(white).to.equal("\x1b[37m");
-    });
-
     it("should return ANSI code for gray", () => {
       expect(gray).to.equal("\x1b[90m");
     });
@@ -70,7 +49,7 @@ describe("color utilities", () => {
     });
 
     it("should all be different codes", () => {
-      const codes = [red, green, yellow, blue, magenta, cyan, white, gray];
+      const codes = [red, green, yellow, gray];
       const uniqueCodes = new Set(codes);
       expect(uniqueCodes.size).to.equal(codes.length);
     });
@@ -79,21 +58,6 @@ describe("color utilities", () => {
       expect(gray).to.not.equal(lightGray);
       expect(gray).to.equal("\x1b[90m");
       expect(lightGray).to.equal("\x1b[37m");
-    });
-
-    it("should share same code as white (both are ANSI 37)", () => {
-      expect(lightGray).to.equal(white);
-      expect(lightGray).to.equal("\x1b[37m");
-    });
-  });
-
-  describe("background colors", () => {
-    it("should return ANSI code for bgRed", () => {
-      expect(bgRed).to.equal("\x1b[41m");
-    });
-
-    it("should differ from foreground colors", () => {
-      expect(bgRed).to.not.equal(red);
     });
   });
 
@@ -118,8 +82,8 @@ describe("color utilities", () => {
 
     it("should handle special characters", () => {
       const text = "Hello\nWorld\t!";
-      const colored = `${blue}${text}${reset}`;
-      expect(colored).to.equal("\x1b[34mHello\nWorld\t!\x1b[0m");
+      const colored = `${gray}${text}${reset}`;
+      expect(colored).to.equal("\x1b[90mHello\nWorld\t!\x1b[0m");
     });
 
     it("should handle unicode characters", () => {
@@ -130,8 +94,8 @@ describe("color utilities", () => {
 
     it("should handle emoji", () => {
       const text = "Hello ✨";
-      const colored = `${magenta}${text}${reset}`;
-      expect(colored).to.equal("\x1b[35mHello ✨\x1b[0m");
+      const colored = `${green}${text}${reset}`;
+      expect(colored).to.equal("\x1b[32mHello ✨\x1b[0m");
     });
   });
 
@@ -141,12 +105,6 @@ describe("color utilities", () => {
       const styled = `${bold}${red}${text}${reset}`;
       expect(styled).to.equal("\x1b[1m\x1b[31mImportant\x1b[0m");
     });
-
-    it("should combine background, foreground, and style", () => {
-      const text = "Alert";
-      const styled = `${bold}${bgRed}${white}${text}${reset}`;
-      expect(styled).to.equal("\x1b[1m\x1b[41m\x1b[37mAlert\x1b[0m");
-    });
   });
 
   describe("ANSI code format", () => {
@@ -154,13 +112,12 @@ describe("color utilities", () => {
       const ansiPattern = /^\x1b\[\d+m$/;
       expect(red).to.match(ansiPattern);
       expect(green).to.match(ansiPattern);
-      expect(blue).to.match(ansiPattern);
+      expect(yellow).to.match(ansiPattern);
       expect(bold).to.match(ansiPattern);
-      expect(bgRed).to.match(ansiPattern);
     });
 
     it("should have consistent ESC prefix", () => {
-      const allCodes = [red, green, yellow, blue, magenta, cyan, white, gray, bgRed, bold, reset];
+      const allCodes = [red, green, yellow, gray, bold, reset];
 
       allCodes.forEach((code) => {
         expect(code.startsWith("\x1b[")).to.be.true;
@@ -201,8 +158,8 @@ describe("color utilities", () => {
     });
 
     it("should handle special characters", () => {
-      const result = colorize("Hello\nWorld", blue);
-      expect(result).to.equal("\x1b[34mHello\nWorld\x1b[0m");
+      const result = colorize("Hello\nWorld", gray);
+      expect(result).to.equal("\x1b[90mHello\nWorld\x1b[0m");
     });
 
     it("should handle unicode", () => {
@@ -211,8 +168,8 @@ describe("color utilities", () => {
     });
 
     it("should handle emoji", () => {
-      const result = colorize("✨", magenta);
-      expect(result).to.equal("\x1b[35m✨\x1b[0m");
+      const result = colorize("✨", green);
+      expect(result).to.equal("\x1b[32m✨\x1b[0m");
     });
 
     it("should work with context colors", () => {

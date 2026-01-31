@@ -19,22 +19,12 @@ export class EmptyLineWidget extends StdinDataWidget {
     5 // Sixth line (0-indexed)
   );
 
-  private _lineOverride?: number;
-
   /**
    * All styles return the same value (Braille Pattern Blank).
    * This method exists for API consistency with other widgets.
    */
   setStyle(_style: WidgetStyle): void {
     // No-op - all styles return the same value
-  }
-
-  setLine(line: number): void {
-    this._lineOverride = line;
-  }
-
-  getLine(): number {
-    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   /**

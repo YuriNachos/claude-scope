@@ -5,7 +5,11 @@
  * Data source: cost.total_lines_added / cost.total_lines_removed
  */
 
-import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
+import {
+  DEFAULT_WIDGET_STYLE,
+  type StyleRendererFn,
+  type WidgetStyle,
+} from "../core/style-types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { RenderContext, StdinData } from "../types.js";
 import { DEFAULT_THEME } from "../ui/theme/index.js";
@@ -31,7 +35,6 @@ export class LinesWidget extends StdinDataWidget {
   );
 
   private colors: IThemeColors;
-  private _lineOverride?: number;
   private styleFn: StyleRendererFn<LinesRenderData, ILinesColors> = linesStyles.balanced!;
 
   constructor(colors?: IThemeColors) {
@@ -39,19 +42,11 @@ export class LinesWidget extends StdinDataWidget {
     this.colors = colors ?? DEFAULT_THEME;
   }
 
-  setStyle(style: WidgetStyle = "balanced"): void {
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
     const fn = linesStyles[style];
     if (fn) {
       this.styleFn = fn;
     }
-  }
-
-  setLine(line: number): void {
-    this._lineOverride = line;
-  }
-
-  getLine(): number {
-    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
   protected renderWithData(data: StdinData, _context: RenderContext): string | null {

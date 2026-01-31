@@ -35,45 +35,6 @@ export function withIndicator(value: string): string {
 }
 
 /**
- * Wrap a value in fancy french quotes
- *
- * @param value - The value to wrap
- * @returns Formatted string with french quotes
- *
- * @example
- * withFancy("$0.42") // "«$0.42»"
- */
-export function withFancy(value: string): string {
-  return `«${value}»`;
-}
-
-/**
- * Wrap a value in square brackets
- *
- * @param value - The value to wrap
- * @returns Formatted string with brackets
- *
- * @example
- * withBrackets("main") // "[main]"
- */
-export function withBrackets(value: string): string {
-  return `[${value}]`;
-}
-
-/**
- * Wrap a value in angle brackets
- *
- * @param value - The value to wrap
- * @returns Formatted string with angle brackets
- *
- * @example
- * withAngleBrackets("71%") // "⟨71%⟩"
- */
-export function withAngleBrackets(value: string): string {
-  return `⟨${value}⟩`;
-}
-
-/**
  * Format a number as token count with K suffix
  *
  * @param n - The number to format

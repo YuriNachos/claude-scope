@@ -5,7 +5,11 @@
  * Fetches metrics on each render for accurate data
  */
 
-import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
+import {
+  DEFAULT_WIDGET_STYLE,
+  type StyleRendererFn,
+  type WidgetStyle,
+} from "../core/style-types.js";
 import type { IWidget, RenderContext, WidgetContext } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import type { ISystemProvider } from "../providers/system-provider.js";
@@ -26,10 +30,10 @@ export class SysmonWidget implements IWidget {
 
   private colors: IThemeColors;
   private provider: ISystemProvider | null;
-  private _lineOverride?: number;
   private styleFn: StyleRendererFn<SysmonRenderData, IThemeColors["sysmon"]> =
     sysmonStyles.balanced!;
   private enabled = true;
+  private _lineOverride?: number;
 
   constructor(colors?: IThemeColors, provider?: ISystemProvider | null) {
     this.colors = colors ?? DEFAULT_THEME;
@@ -65,7 +69,7 @@ export class SysmonWidget implements IWidget {
     return this.enabled && this.provider !== null;
   }
 
-  setStyle(style: WidgetStyle = "balanced"): void {
+  setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
     const fn = sysmonStyles[style];
     if (fn) {
       this.styleFn = fn;
@@ -77,6 +81,6 @@ export class SysmonWidget implements IWidget {
   }
 
   getLine(): number {
-    return this._lineOverride ?? this.metadata.line ?? 2;
+    return this._lineOverride ?? this.metadata.line ?? 0;
   }
 }
