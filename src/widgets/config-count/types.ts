@@ -2,8 +2,6 @@
  * Types for ConfigCountWidget
  */
 
-import type { IThemeColors } from "../../ui/theme/types.js";
-
 export interface ConfigCountRenderData {
   claudeMdCount: number;
   rulesCount: number;
@@ -11,6 +9,4 @@ export interface ConfigCountRenderData {
   hooksCount: number;
 }
 
-export interface ConfigCountStyleRenderData extends ConfigCountRenderData {
-  colors?: IThemeColors;
-}
+export type ConfigCountStyleRenderData = ConfigCountRenderData;

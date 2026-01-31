@@ -7,7 +7,7 @@
 
 import type { StyleRendererFn, WidgetStyle } from "../core/style-types.js";
 import { DEFAULT_WIDGET_STYLE } from "../core/style-types.js";
-import type { IWidget, RenderContext, StdinData } from "../core/types.js";
+import type { IWidget, RenderContext, StdinData, WidgetContext } from "../core/types.js";
 import { createWidgetMetadata } from "../core/widget-types.js";
 import {
   type ConfigCounts,
@@ -38,14 +38,15 @@ export class ConfigCountWidget implements IWidget {
 
   private configProvider: IConfigProvider;
   private configs?: ConfigCounts;
-  private themeColors: IThemeColors;
+  private colors: IThemeColors;
   private _lineOverride?: number;
+  private enabled = true;
   private styleFn: StyleRendererFn<ConfigCountStyleRenderData, IThemeColors> =
     configCountStyles.balanced!;
 
-  constructor(configProvider?: IConfigProvider, themeColors?: IThemeColors) {
+  constructor(configProvider?: IConfigProvider, colors?: IThemeColors) {
     this.configProvider = configProvider ?? new ConfigProvider();
-    this.themeColors = themeColors ?? DEFAULT_THEME;
+    this.colors = colors ?? DEFAULT_THEME;
   }
 
   setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
@@ -63,8 +64,8 @@ export class ConfigCountWidget implements IWidget {
     return this._lineOverride ?? this.metadata.line ?? 0;
   }
 
-  async initialize(): Promise<void> {
-    // No initialization needed
+  async initialize(context: WidgetContext): Promise<void> {
+    this.enabled = context.config?.enabled !== false;
   }
 
   async update(data: StdinData): Promise<void> {
@@ -72,8 +73,8 @@ export class ConfigCountWidget implements IWidget {
   }
 
   isEnabled(): boolean {
-    // Only show if we have configs AND at least one count > 0
-    if (!this.configs) {
+    // Only show if enabled AND we have configs AND at least one count > 0
+    if (!this.enabled || !this.configs) {
       return false;
     }
 
@@ -92,9 +93,8 @@ export class ConfigCountWidget implements IWidget {
       rulesCount,
       mcpCount,
       hooksCount,
-      colors: this.themeColors,
     };
 
-    return this.styleFn(renderData, this.themeColors);
+    return this.styleFn(renderData, this.colors);
   }
 }
