@@ -53,7 +53,9 @@ interface IWidget {
 interface IWidgetMetadata {
   name: string;        // Widget display name
   description: string; // Widget description
-  line?: number;      // Which statusline line (0-indexed)
+  line?: number;       // Which statusline line (0-indexed)
+  version?: string;    // Widget version (e.g., "1.0.0")
+  author?: string;     // Widget author
 }
 ```
 
