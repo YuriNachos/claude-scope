@@ -141,6 +141,14 @@ export interface SysmonColors {
 }
 
 /**
+ * Config count widget colors
+ */
+export interface ConfigCountColors {
+  label: ColorCode;
+  separator: ColorCode;
+}
+
+/**
  * Widget-specific color configuration
  * Different widgets have different color requirements
  */
@@ -157,9 +165,9 @@ export type WidgetColors =
   | DockerColors
   | SysmonColors
   | PokerColors
+  | ConfigCountColors
   | BaseColors
-  | SemanticColors
-  | { base: ColorCode }; // For widgets with minimal color needs
+  | SemanticColors;
 
 /**
  * Widget configuration

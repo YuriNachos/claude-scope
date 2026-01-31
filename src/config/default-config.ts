@@ -95,7 +95,8 @@ export function generateConfigWithStyleAndTheme(
           id: "config-count",
           style: style,
           colors: {
-            base: theme.base.muted,
+            label: theme.configCount.label,
+            separator: theme.configCount.separator,
           },
         },
       ],
@@ -215,7 +216,7 @@ export function generateBalancedLayout(style: QuickConfigStyle, themeName: strin
         {
           id: "config-count",
           style: style,
-          colors: { base: theme.base.muted },
+          colors: { label: theme.configCount.label, separator: theme.configCount.separator },
         },
       ],
     },
@@ -341,7 +342,7 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
         {
           id: "config-count",
           style: style,
-          colors: { base: theme.base.muted },
+          colors: { label: theme.configCount.label, separator: theme.configCount.separator },
         },
       ],
       "2": [

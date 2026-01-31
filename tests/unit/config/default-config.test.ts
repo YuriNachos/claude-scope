@@ -150,4 +150,11 @@ describe("DefaultConfig", () => {
     const gitTagWidget = config.lines["1"].find((w) => w.id === "git-tag")!;
     assert.ok("branch" in gitTagWidget.colors, "git-tag should have branch color");
   });
+
+  it("should have config-count widget with label and separator color fields", () => {
+    const config = generateDefaultConfig();
+    const configCountWidget = config.lines["1"].find((w) => w.id === "config-count")!;
+    assert.ok("label" in configCountWidget.colors, "config-count should have label color");
+    assert.ok("separator" in configCountWidget.colors, "config-count should have separator color");
+  });
 });

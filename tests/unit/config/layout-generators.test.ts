@@ -429,7 +429,8 @@ describe("Layout Generators", () => {
       const configCountWidget = config.lines["1"].find((w) => w.id === "config-count");
 
       assert.ok(configCountWidget);
-      assert.ok("base" in configCountWidget.colors);
+      assert.ok("label" in configCountWidget.colors);
+      assert.ok("separator" in configCountWidget.colors);
     });
 
     it("should have correct color structure for active-tools widget", () => {
