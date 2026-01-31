@@ -362,11 +362,35 @@ Each widget has a `"colors"` object containing ANSI escape codes:
 }
 ```
 
+#### Duration Widget (`duration`)
+```json
+"colors": {
+  "value": "\u001b[38;2;R;G;Bm",    // Time value color
+  "unit": "\u001b[38;2;R;G;Bm"      // Time unit color (h, m, s)
+}
+```
+
 #### Git Widget (`git`)
 ```json
 "colors": {
   "branch": "\u001b[38;2;R;G;Bm",   // Branch name
   "changes": "\u001b[38;2;R;G;Bm"   // Changes indicator
+}
+```
+
+#### Git Tag Widget (`git-tag`)
+```json
+"colors": {
+  "branch": "\u001b[38;2;R;G;Bm",   // Tag name color
+  "changes": "\u001b[38;2;R;G;Bm"   // Required by type (unused)
+}
+```
+
+#### Config Count Widget (`config-count`)
+```json
+"colors": {
+  "label": "\u001b[38;2;R;G;Bm",     // Label color (CLAUDE.md, rules, MCPs, hooks)
+  "separator": "\u001b[38;2;R;G;Bm"  // Separator (│) color
 }
 ```
 
