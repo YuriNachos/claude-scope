@@ -94,6 +94,7 @@ Each widget in the config follows this format:
 | `active-tools` | Active Tools Widget | Currently running and completed tools | 2 |
 | `dev-server` | DevServer Widget | Running dev server status (Nuxt, Next, Vite, etc.) | 2 |
 | `docker` | Docker Widget | Docker container count and status | 2 |
+| `sysmon` | Sysmon Widget | System metrics: CPU, RAM, Disk, Network | 3 |
 | `empty-line` | Empty Line Widget | Creates blank separator line | 5 |
 | `poker` | Poker Widget | Random Texas Hold'em hands (easter egg) | 4 |
 
@@ -215,6 +216,14 @@ Every widget supports multiple display styles. Not all widgets support all style
 | `compact` | `🐳 3/5` |
 | `playful` | `🐳 Docker: 3/5 🟢` |
 | `labeled` | `Docker: 3/5` |
+
+#### Sysmon Widget (`sysmon`)
+| Style | Output |
+|-------|--------|
+| `balanced` | `CPU 45% │ RAM 8.2G │ Disk 65% │ Net ↑1.2M ↓3.4M` |
+| `compact` | `CPU:45% RAM:8.2G` |
+| `playful` | `🖥️ 45% │ 🧠 8.2G │ 💾 65% │ 🌐 ↑1.2M` |
+| `verbose` | `CPU: 45% used │ RAM: 8.2GB/16GB │ Disk: 65% │ Network: ↑1.2MB/s ↓3.4MB/s` |
 
 ---
 
@@ -400,6 +409,17 @@ Each widget has a `"colors"` object containing ANSI escape codes:
   "count": "\u001b[38;2;R;G;Bm",    // Container count
   "running": "\u001b[38;2;R;G;Bm",  // Running containers
   "stopped": "\u001b[38;2;R;G;Bm"   // Stopped containers
+}
+```
+
+#### Sysmon Widget (`sysmon`)
+```json
+"colors": {
+  "cpu": "\u001b[38;2;R;G;Bm",       // CPU usage color
+  "ram": "\u001b[38;2;R;G;Bm",       // RAM usage color
+  "disk": "\u001b[38;2;R;G;Bm",      // Disk usage color
+  "network": "\u001b[38;2;R;G;Bm",   // Network usage color
+  "separator": "\u001b[38;2;R;G;Bm"  // Separator (│) color
 }
 ```
 
