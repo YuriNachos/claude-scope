@@ -26,7 +26,7 @@ test.afterEach(() => {
   cleanupRealConfig();
 });
 
-test("ensureDefaultConfig creates config with balanced layout, balanced style, cyberpunk-neon theme", async () => {
+test("ensureDefaultConfig creates config with rich layout, balanced style, monokai theme", async () => {
   // Ensure default config exists
   await ensureDefaultConfig();
 
@@ -53,7 +53,7 @@ test("ensureDefaultConfig creates config with balanced layout, balanced style, c
     assert.strictEqual(w.style, "balanced");
   });
 
-  // Check theme is cyberpunk-neon (has specific color codes)
+  // Check theme colors are present (monokai theme)
   const modelWidget = content.lines["0"].find((w: any) => w.id === "model");
   assert(modelWidget.colors.name, "model should have name color");
 });

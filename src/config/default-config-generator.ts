@@ -35,8 +35,8 @@ export async function ensureDefaultConfig(): Promise<void> {
     mkdirSync(configDir, { recursive: true });
   }
 
-  // Generate default config: rich layout, balanced style, dracula theme
-  const defaultConfig = generateRichLayout("balanced", "dracula");
+  // Generate default config: rich layout, balanced style, monokai theme
+  const defaultConfig = generateRichLayout("balanced", "monokai");
 
   // Write config file
   writeFileSync(configPath, JSON.stringify(defaultConfig, null, 2), "utf-8");
