@@ -5,24 +5,18 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
 import {
-  bgBlue,
-  bgGreen,
   bgRed,
-  bgYellow,
   blue,
   bold,
   colorize,
   contextColors,
   cyan,
-  dim,
   gray,
   green,
-  italic,
   lightGray,
   magenta,
   red,
   reset,
-  underline,
   white,
   yellow,
 } from "../../../src/ui/utils/colors.js";
@@ -98,53 +92,14 @@ describe("color utilities", () => {
       expect(bgRed).to.equal("\x1b[41m");
     });
 
-    it("should return ANSI code for bgGreen", () => {
-      expect(bgGreen).to.equal("\x1b[42m");
-    });
-
-    it("should return ANSI code for bgYellow", () => {
-      expect(bgYellow).to.equal("\x1b[43m");
-    });
-
-    it("should return ANSI code for bgBlue", () => {
-      expect(bgBlue).to.equal("\x1b[44m");
-    });
-
-    it("should all be different codes", () => {
-      const codes = [bgRed, bgGreen, bgYellow, bgBlue];
-      const uniqueCodes = new Set(codes);
-      expect(uniqueCodes.size).to.equal(codes.length);
-    });
-
     it("should differ from foreground colors", () => {
       expect(bgRed).to.not.equal(red);
-      expect(bgGreen).to.not.equal(green);
-      expect(bgYellow).to.not.equal(yellow);
-      expect(bgBlue).to.not.equal(blue);
     });
   });
 
   describe("text styles", () => {
     it("should return ANSI code for bold", () => {
       expect(bold).to.equal("\x1b[1m");
-    });
-
-    it("should return ANSI code for dim", () => {
-      expect(dim).to.equal("\x1b[2m");
-    });
-
-    it("should return ANSI code for italic", () => {
-      expect(italic).to.equal("\x1b[3m");
-    });
-
-    it("should return ANSI code for underline", () => {
-      expect(underline).to.equal("\x1b[4m");
-    });
-
-    it("should all be different codes", () => {
-      const codes = [bold, dim, italic, underline];
-      const uniqueCodes = new Set(codes);
-      expect(uniqueCodes.size).to.equal(codes.length);
     });
   });
 
@@ -187,12 +142,6 @@ describe("color utilities", () => {
       expect(styled).to.equal("\x1b[1m\x1b[31mImportant\x1b[0m");
     });
 
-    it("should combine background and foreground", () => {
-      const text = "Highlight";
-      const styled = `${bgYellow}${blue}${text}${reset}`;
-      expect(styled).to.equal("\x1b[43m\x1b[34mHighlight\x1b[0m");
-    });
-
     it("should combine background, foreground, and style", () => {
       const text = "Alert";
       const styled = `${bold}${bgRed}${white}${text}${reset}`;
@@ -211,25 +160,7 @@ describe("color utilities", () => {
     });
 
     it("should have consistent ESC prefix", () => {
-      const allCodes = [
-        red,
-        green,
-        yellow,
-        blue,
-        magenta,
-        cyan,
-        white,
-        gray,
-        bgRed,
-        bgGreen,
-        bgYellow,
-        bgBlue,
-        bold,
-        dim,
-        italic,
-        underline,
-        reset,
-      ];
+      const allCodes = [red, green, yellow, blue, magenta, cyan, white, gray, bgRed, bold, reset];
 
       allCodes.forEach((code) => {
         expect(code.startsWith("\x1b[")).to.be.true;

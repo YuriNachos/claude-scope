@@ -27,17 +27,11 @@ export const lightGray = "\x1b[37m"; // Light gray for labels
  * Background colors (40-47)
  */
 export const bgRed = "\x1b[41m";
-export const bgGreen = "\x1b[42m";
-export const bgYellow = "\x1b[43m";
-export const bgBlue = "\x1b[44m";
 
 /**
  * Text styles
  */
 export const bold = "\x1b[1m";
-export const dim = "\x1b[2m";
-export const italic = "\x1b[3m";
-export const underline = "\x1b[4m";
 
 /**
  * Context usage colors
