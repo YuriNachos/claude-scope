@@ -115,24 +115,3 @@ export const cacheMetricsStyles: StyleMap<CacheMetricsRenderData, IThemeColors> 
     return `💾 ${amount} cache | Hit: ${read}, Write: ${write} | ${saved}`;
   },
 };
-
-/**
- * Get the default style for cache metrics
- */
-export function getDefaultCacheMetricsStyle(): CacheMetricsStyle {
-  return "balanced";
-}
-
-/**
- * Get all available cache metrics styles
- */
-export function getCacheMetricsStyles(): CacheMetricsStyle[] {
-  return ["balanced", "compact", "playful", "verbose", "labeled", "indicator", "breakdown"];
-}
-
-/**
- * Validate if a string is a valid cache metrics style
- */
-export function isValidCacheMetricsStyle(style: string): style is CacheMetricsStyle {
-  return getCacheMetricsStyles().includes(style as CacheMetricsStyle);
-}
