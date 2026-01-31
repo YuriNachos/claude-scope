@@ -87,7 +87,8 @@ export function generateConfigWithStyleAndTheme(
           id: "git-tag",
           style: style,
           colors: {
-            base: theme.base.text,
+            branch: theme.git.branch,
+            changes: theme.git.changes,
           },
         },
         {
@@ -198,7 +199,7 @@ export function generateBalancedLayout(style: QuickConfigStyle, themeName: strin
         {
           id: "git-tag",
           style: style,
-          colors: { base: theme.base.text },
+          colors: { branch: theme.git.branch, changes: theme.git.changes },
         },
         {
           id: "cache-metrics",
@@ -324,7 +325,7 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
         {
           id: "git-tag",
           style: style,
-          colors: { base: theme.base.text },
+          colors: { branch: theme.git.branch, changes: theme.git.changes },
         },
         {
           id: "cache-metrics",

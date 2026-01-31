@@ -144,4 +144,10 @@ describe("DefaultConfig", () => {
     const emptyLineWidget = config.lines["4"][0];
     assert.strictEqual(emptyLineWidget.id, "empty-line");
   });
+
+  it("should have git-tag widget with branch color field", () => {
+    const config = generateDefaultConfig();
+    const gitTagWidget = config.lines["1"].find((w) => w.id === "git-tag")!;
+    assert.ok("branch" in gitTagWidget.colors, "git-tag should have branch color");
+  });
 });

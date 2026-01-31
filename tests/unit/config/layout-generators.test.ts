@@ -419,7 +419,9 @@ describe("Layout Generators", () => {
       const gitTagWidget = config.lines["1"].find((w) => w.id === "git-tag");
 
       assert.ok(gitTagWidget);
-      assert.ok("base" in gitTagWidget.colors);
+      assert.ok(gitTagWidget.colors, `Widget ${gitTagWidget.id} should have colors defined`);
+      assert.ok("branch" in gitTagWidget.colors);
+      assert.ok("changes" in gitTagWidget.colors);
     });
 
     it("should have correct color structure for config-count widget", () => {
