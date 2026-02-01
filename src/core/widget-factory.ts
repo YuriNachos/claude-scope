@@ -7,6 +7,7 @@ import { CacheMetricsWidget } from "../widgets/cache-metrics/index.js";
 import { ConfigCountWidget } from "../widgets/config-count-widget.js";
 import { ContextWidget } from "../widgets/context-widget.js";
 import { CostWidget } from "../widgets/cost-widget.js";
+import { CwdWidget } from "../widgets/cwd/index.js";
 import { DevServerWidget } from "../widgets/dev-server/index.js";
 import { DockerWidget } from "../widgets/docker/index.js";
 import { DurationWidget } from "../widgets/duration-widget.js";
@@ -48,6 +49,9 @@ export class WidgetFactory {
    */
   createWidget(widgetId: string): IWidget | null {
     switch (widgetId) {
+      case "cwd":
+        return new CwdWidget(this.theme);
+
       case "model":
         return new ModelWidget(this.theme);
 
@@ -103,6 +107,7 @@ export class WidgetFactory {
    */
   getSupportedWidgetIds(): string[] {
     return [
+      "cwd",
       "model",
       "context",
       "cost",
