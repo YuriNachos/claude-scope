@@ -98,6 +98,9 @@ export function createThemeColors(params: {
   // Config count widget colors (optional - defaults from semantic)
   configCountLabel?: string;
   configCountSeparator?: string;
+  // CWD widget colors (optional - defaults from branch/duration)
+  cwdName?: string;
+  cwdSeparator?: string;
 }): IThemeColors {
   const base = createBaseColors({
     modelColor: params.model,
@@ -182,6 +185,10 @@ export function createThemeColors(params: {
     configCount: {
       label: params.configCountLabel ?? semantic.info,
       separator: params.configCountSeparator ?? base.muted,
+    },
+    cwd: {
+      name: params.cwdName ?? params.branch,
+      separator: params.cwdSeparator ?? params.duration,
     },
   };
 }

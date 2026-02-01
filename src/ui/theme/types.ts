@@ -169,6 +169,16 @@ export interface IConfigCountColors {
 }
 
 /**
+ * CWD (Current Working Directory) widget colors
+ */
+export interface ICwdColors {
+  /** Color for directory name */
+  name: string;
+  /** Color for path separator (/) */
+  separator: string;
+}
+
+/**
  * Unified theme colors interface
  * All widget colors in one place for consistent theming
  */
@@ -188,6 +198,7 @@ export interface IThemeColors {
   docker: IDockerColors;
   sysmon: ISysmonColors;
   configCount: IConfigCountColors;
+  cwd: ICwdColors;
 }
 
 /**
