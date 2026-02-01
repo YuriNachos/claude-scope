@@ -380,6 +380,10 @@ function getDefaultColors(): IThemeColors {
       label: "\x1b[36m",
       separator: "\x1b[90m",
     },
+    cwd: {
+      name: "\x1b[36m",
+      separator: "\x1b[90m",
+    },
   };
 }
 
