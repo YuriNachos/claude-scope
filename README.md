@@ -41,23 +41,6 @@ This single command:
 
 **Restart Claude Code — done!**
 
-<details>
-<summary>📝 Manual installation</summary>
-
-Add to your `~/.claude/settings.json`:
-
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "npx -y claude-scope@latest",
-    "padding": 0
-  }
-}
-```
-
-</details>
-
 ---
 
 ## 💡 Why claude-scope?
