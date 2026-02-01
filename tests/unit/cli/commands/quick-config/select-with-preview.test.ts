@@ -67,7 +67,7 @@ describe("selectWithPreview", () => {
       assert.strictEqual(config.version, "1.0.0");
       assert.ok(config.lines["0"]);
       assert.ok(config.lines["1"]);
-      assert.strictEqual(config.lines["0"]?.[0].id, "model");
+      assert.strictEqual(config.lines["0"]?.[0].id, "cwd");
       assert.strictEqual(config.lines["1"]?.[0].id, "git");
     });
 
@@ -82,7 +82,7 @@ describe("selectWithPreview", () => {
 
       assert.strictEqual(config.version, "1.0.0");
       assert.ok(config.lines["0"]);
-      assert.strictEqual(config.lines["0"]?.[0].id, "model");
+      assert.strictEqual(config.lines["0"]?.[0].id, "cwd");
       // Compact layout only has line 0
       assert.strictEqual(config.lines["1"], undefined);
     });

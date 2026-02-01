@@ -40,6 +40,7 @@ describe("DefaultConfig", () => {
     const line0 = config.lines["0"];
 
     const widgetIds = line0.map((w) => w.id);
+    assert.ok(widgetIds.includes("cwd"));
     assert.ok(widgetIds.includes("model"));
     assert.ok(widgetIds.includes("context"));
     assert.ok(widgetIds.includes("cost"));
@@ -114,9 +115,21 @@ describe("DefaultConfig", () => {
     assert.ok("count" in activeToolsWidget.colors);
   });
 
-  it("should have 6 widgets on line 0", () => {
+  it("should have 7 widgets on line 0 (including cwd)", () => {
     const config = generateDefaultConfig();
-    assert.strictEqual(config.lines["0"].length, 6);
+    assert.strictEqual(config.lines["0"].length, 7);
+  });
+
+  it("should have cwd widget first on line 0", () => {
+    const config = generateDefaultConfig();
+    assert.strictEqual(config.lines["0"][0].id, "cwd");
+  });
+
+  it("should have cwd widget with name and separator color fields", () => {
+    const config = generateDefaultConfig();
+    const cwdWidget = config.lines["0"].find((w) => w.id === "cwd")!;
+    assert.ok("name" in cwdWidget.colors, "cwd should have name color");
+    assert.ok("separator" in cwdWidget.colors, "cwd should have separator color");
   });
 
   it("should have 2 widgets on line 1", () => {

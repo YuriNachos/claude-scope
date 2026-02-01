@@ -81,10 +81,10 @@ describe("Quick Config Integration", () => {
       // Assert: Verify widget structure is preserved
       assert.ok(loaded, "Config should be loaded");
 
-      // Check line 0 widgets (model, context, cost, lines, duration, git)
+      // Check line 0 widgets (cwd, model, context, cost, lines, duration, git)
       const line0Widgets = loaded.lines["0"];
       assert.ok(Array.isArray(line0Widgets), "Line 0 should be an array");
-      assert.strictEqual(line0Widgets.length, 6, "Line 0 should have 6 widgets");
+      assert.strictEqual(line0Widgets.length, 7, "Line 0 should have 7 widgets");
 
       // Verify widget structure
       const modelWidget = line0Widgets.find((w) => w.id === "model");

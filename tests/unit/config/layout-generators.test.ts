@@ -23,11 +23,12 @@ describe("Layout Generators", () => {
       assert.ok(config.lines["1"]);
     });
 
-    it("should include model, context, cost, duration, lines on line 0", () => {
+    it("should include cwd, model, context, cost, duration, lines on line 0", () => {
       const config = generateBalancedLayout(defaultStyle, defaultTheme);
       const line0 = config.lines["0"];
 
       const ids = line0.map((w) => w.id);
+      assert.ok(ids.includes("cwd"));
       assert.ok(ids.includes("model"));
       assert.ok(ids.includes("context"));
       assert.ok(ids.includes("cost"));
@@ -51,9 +52,9 @@ describe("Layout Generators", () => {
       assert.strictEqual(config.version, "1.0.0");
     });
 
-    it("should have 5 widgets on line 0", () => {
+    it("should have 6 widgets on line 0 (including cwd)", () => {
       const config = generateBalancedLayout(defaultStyle, defaultTheme);
-      assert.strictEqual(config.lines["0"].length, 5);
+      assert.strictEqual(config.lines["0"].length, 6);
     });
 
     it("should have 4 widgets on line 1", () => {
@@ -61,11 +62,11 @@ describe("Layout Generators", () => {
       assert.strictEqual(config.lines["1"].length, 4);
     });
 
-    it("should have 5 widgets on line 0 in new order", () => {
+    it("should have 6 widgets on line 0 in correct order", () => {
       const config = generateBalancedLayout(defaultStyle, defaultTheme);
       const line0Ids = config.lines["0"].map((w) => w.id);
 
-      assert.deepStrictEqual(line0Ids, ["model", "context", "lines", "cost", "duration"]);
+      assert.deepStrictEqual(line0Ids, ["cwd", "model", "context", "lines", "cost", "duration"]);
     });
 
     it("should have 4 widgets on line 1 in new order", () => {
@@ -84,11 +85,12 @@ describe("Layout Generators", () => {
       assert.ok(config.lines["0"]);
     });
 
-    it("should include model, context, cost, git, duration", () => {
+    it("should include cwd, model, context, cost, git, duration", () => {
       const config = generateCompactLayout(defaultStyle, defaultTheme);
       const line0 = config.lines["0"];
 
       const ids = line0.map((w) => w.id);
+      assert.ok(ids.includes("cwd"));
       assert.ok(ids.includes("model"));
       assert.ok(ids.includes("context"));
       assert.ok(ids.includes("cost"));
@@ -125,9 +127,9 @@ describe("Layout Generators", () => {
       assert.strictEqual(config.version, "1.0.0");
     });
 
-    it("should have 5 widgets on line 0", () => {
+    it("should have 6 widgets on line 0 (including cwd)", () => {
       const config = generateCompactLayout(defaultStyle, defaultTheme);
-      assert.strictEqual(config.lines["0"].length, 5);
+      assert.strictEqual(config.lines["0"].length, 6);
     });
   });
 
@@ -143,11 +145,12 @@ describe("Layout Generators", () => {
       assert.ok(config.lines["4"]);
     });
 
-    it("should include model, context, cost, lines, duration on line 0", () => {
+    it("should include cwd, model, context, cost, lines, duration on line 0", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
       const line0 = config.lines["0"];
 
       const ids = line0.map((w) => w.id);
+      assert.ok(ids.includes("cwd"));
       assert.ok(ids.includes("model"));
       assert.ok(ids.includes("context"));
       assert.ok(ids.includes("cost"));
@@ -181,9 +184,9 @@ describe("Layout Generators", () => {
       assert.strictEqual(config.version, "1.0.0");
     });
 
-    it("should have 5 widgets on line 0", () => {
+    it("should have 6 widgets on line 0 (including cwd)", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
-      assert.strictEqual(config.lines["0"].length, 5);
+      assert.strictEqual(config.lines["0"].length, 6);
     });
 
     it("should have 4 widgets on line 1", () => {
@@ -196,11 +199,11 @@ describe("Layout Generators", () => {
       assert.strictEqual(config.lines["2"].length, 3);
     });
 
-    it("should have 5 widgets on line 0 in new order", () => {
+    it("should have 6 widgets on line 0 in correct order", () => {
       const config = generateRichLayout(defaultStyle, defaultTheme);
       const line0Ids = config.lines["0"].map((w) => w.id);
 
-      assert.deepStrictEqual(line0Ids, ["model", "context", "lines", "cost", "duration"]);
+      assert.deepStrictEqual(line0Ids, ["cwd", "model", "context", "lines", "cost", "duration"]);
     });
 
     it("should have 4 widgets on line 1 with cache-metrics", () => {
