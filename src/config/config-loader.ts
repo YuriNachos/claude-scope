@@ -23,11 +23,13 @@ export interface LoadedWidgetConfig {
 
 /**
  * Loaded configuration structure
- * Contains only the lines object, not the full ScopeConfig
+ * Contains lines and theme from config
  */
 export interface LoadedConfig {
   /** Line-based widget configuration */
   lines: Record<string, LoadedWidgetConfig[]>;
+  /** Theme name (e.g., "monokai", "catppuccin-mocha") */
+  theme?: string;
 }
 
 /**
@@ -67,9 +69,10 @@ export async function loadWidgetConfig(): Promise<LoadedConfig | null> {
       return null;
     }
 
-    // Extract only the lines object (ignore version field)
+    // Extract lines and theme from config
     return {
       lines: config.lines,
+      theme: config.theme,
     };
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";

@@ -196,6 +196,8 @@ export interface ScopeConfig {
   version: string;
   /** AI documentation URL for assistants to modify config */
   $aiDocs?: string;
+  /** Theme name (e.g., "monokai", "catppuccin-mocha", "dracula") */
+  theme?: string;
   /** Line-based widget configuration */
   lines: LinesConfig;
 }

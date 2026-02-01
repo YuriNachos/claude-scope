@@ -12,6 +12,7 @@ import { isValidWidgetStyle, type WidgetStyle } from "./core/style-types.js";
 import { WidgetFactory } from "./core/widget-factory.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
+import { getThemeByName } from "./ui/theme/index.js";
 
 /**
  * Read stdin as string
@@ -83,8 +84,10 @@ export async function main(): Promise<string> {
     // Load widget configuration
     const widgetConfig = await loadWidgetConfig();
 
-    // Create widget factory
-    const factory = new WidgetFactory();
+    // Create widget factory with theme from config (or default to monokai)
+    const themeName = widgetConfig?.theme ?? "monokai";
+    const themeColors = getThemeByName(themeName).colors;
+    const factory = new WidgetFactory(themeColors);
 
     // Register widgets from config - config is the SINGLE SOURCE OF TRUTH
     if (widgetConfig) {
