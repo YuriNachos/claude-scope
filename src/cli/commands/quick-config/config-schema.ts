@@ -149,6 +149,14 @@ export interface ConfigCountColors {
 }
 
 /**
+ * CWD (Current Working Directory) widget colors
+ */
+export interface CwdColors {
+  name: ColorCode;
+  separator: ColorCode;
+}
+
+/**
  * Widget-specific color configuration
  * Different widgets have different color requirements
  */
@@ -166,6 +174,7 @@ export type WidgetColors =
   | SysmonColors
   | PokerColors
   | ConfigCountColors
+  | CwdColors
   | BaseColors
   | SemanticColors;
 

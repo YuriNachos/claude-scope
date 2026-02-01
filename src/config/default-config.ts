@@ -33,6 +33,14 @@ export function generateConfigWithStyleAndTheme(
     lines: {
       "0": [
         {
+          id: "cwd",
+          style: style,
+          colors: {
+            name: theme.cwd.name,
+            separator: theme.cwd.separator,
+          },
+        },
+        {
           id: "model",
           style: style,
           colors: {
@@ -163,6 +171,11 @@ export function generateBalancedLayout(style: QuickConfigStyle, themeName: strin
     lines: {
       "0": [
         {
+          id: "cwd",
+          style: style,
+          colors: { name: theme.cwd.name, separator: theme.cwd.separator },
+        },
+        {
           id: "model",
           style: style,
           colors: { name: theme.model.name, version: theme.model.version },
@@ -239,6 +252,11 @@ export function generateCompactLayout(style: QuickConfigStyle, themeName: string
     lines: {
       "0": [
         {
+          id: "cwd",
+          style: style,
+          colors: { name: theme.cwd.name, separator: theme.cwd.separator },
+        },
+        {
           id: "model",
           style: style,
           colors: { name: theme.model.name, version: theme.model.version },
@@ -290,6 +308,11 @@ export function generateRichLayout(style: QuickConfigStyle, themeName: string): 
     theme: themeName,
     lines: {
       "0": [
+        {
+          id: "cwd",
+          style: style,
+          colors: { name: theme.cwd.name, separator: theme.cwd.separator },
+        },
         {
           id: "model",
           style: style,
