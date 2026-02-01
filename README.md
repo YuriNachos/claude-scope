@@ -15,7 +15,7 @@
 
   **Track context, cost, git, docker, and more — right in your terminal**
 
-  [Quick Start](#-quick-start) · [Features](#-features) · [Themes](#-themes) · [Configuration](#-configuration) · [Documentation](#-documentation)
+  [Quick Start](#-quick-start) · [Features](#-features) · [Themes](#-themes) · [Configuration](#-configuration) · [Docs](#-documentation)
 
 </div>
 
@@ -29,52 +29,20 @@
 
 ---
 
-## Why claude-scope?
-
-**claude-scope** transforms your Claude Code CLI into a powerful command center. See everything you need at a glance:
-
-| What you get | Why it matters |
-|--------------|----------------|
-| **Context usage** | Know when you're running low before it's too late |
-| **Session cost** | Track spending in real-time |
-| **Git status** | Branch, changes, tags — no switching windows |
-| **Docker containers** | Monitor your stack without leaving the terminal |
-| **Active tools** | See what Claude is doing right now |
-| **System metrics** | CPU, RAM, disk, network — all in one place |
-
----
-
-## Highlights
-
-- **Zero runtime dependencies** — pure TypeScript, native Node.js only
-- **15 customizable widgets** — model, context, cost, git, docker, sysmon, and more
-- **17 built-in themes** — from Dracula to Nord to Cyberpunk
-- **12 display styles** — balanced, playful, compact, verbose, technical...
-- **AI-friendly configuration** — just ask Claude to customize it!
-- **Instant setup** — one command, works immediately
-
----
-
-## Quick Start
+## 🚀 Quick Start
 
 ```bash
 npx -y claude-scope@latest install
 ```
 
 This single command:
-1. Adds statusLine to `~/.claude/settings.json`
-2. Opens interactive configurator to choose layout, theme, and style
+1. ✅ Adds statusLine to `~/.claude/settings.json`
+2. ✅ Opens interactive configurator to choose layout, theme, and style
 
-Restart Claude Code — done!
-
-### Reconfigure anytime
-
-```bash
-npx -y claude-scope@latest quick-config
-```
+**Restart Claude Code — done!**
 
 <details>
-<summary>Manual installation</summary>
+<summary>📝 Manual installation</summary>
 
 Add to your `~/.claude/settings.json`:
 
@@ -92,7 +60,33 @@ Add to your `~/.claude/settings.json`:
 
 ---
 
-## Features
+## 💡 Why claude-scope?
+
+**claude-scope** transforms your Claude Code CLI into a powerful command center. See everything you need at a glance:
+
+| What you get | Why it matters |
+|--------------|----------------|
+| 📊 **Context usage** | Know when you're running low before it's too late |
+| 💰 **Session cost** | Track spending in real-time |
+| 🔀 **Git status** | Branch, changes, tags — no switching windows |
+| 🐳 **Docker containers** | Monitor your stack without leaving the terminal |
+| 🔧 **Active tools** | See what Claude is doing right now |
+| 💻 **System metrics** | CPU, RAM, disk, network — all in one place |
+
+---
+
+## ✨ Highlights
+
+- 🪶 **Zero runtime dependencies** — pure TypeScript, native Node.js only
+- 🧩 **15 customizable widgets** — model, context, cost, git, docker, sysmon, and more
+- 🎨 **17 built-in themes** — from Dracula to Nord to Cyberpunk
+- 🎭 **12 display styles** — balanced, playful, compact, verbose, technical...
+- 🤖 **AI-friendly configuration** — just ask Claude to customize it!
+- ⚡ **Instant setup** — one command, works immediately
+
+---
+
+## 🧩 Features
 
 ### Available Widgets
 
@@ -114,7 +108,7 @@ Add to your `~/.claude/settings.json`:
 | **poker** | Easter egg | `🃏 A♠ K♠` |
 | **cwd** | Current directory | `~/projects/app` |
 
-### Layout Presets
+### 📐 Layout Presets
 
 | Preset | Lines | Best for |
 |--------|-------|----------|
@@ -124,7 +118,7 @@ Add to your `~/.claude/settings.json`:
 
 ---
 
-## Themes
+## 🎨 Themes
 
 <div align="center">
   <img src="assets/themes.png" alt="claude-scope themes" width="700"/>
@@ -136,25 +130,24 @@ Add to your `~/.claude/settings.json`:
 
 | Category | Themes |
 |----------|--------|
-| **Popular** | `dracula`, `tokyo-night`, `nord`, `monokai` |
-| **IDE** | `vscode-dark-plus`, `one-dark-pro`, `github-dark-dimmed` |
-| **Pastel** | `catppuccin-mocha`, `rose-pine` |
-| **Vibrant** | `cyberpunk-neon` |
-| **Professional** | `professional-blue`, `solarized-dark` |
-| **Minimal** | `gray`, `muted-gray`, `slate-blue`, `dusty-sage` |
-| **Semantic** | `semantic-classic` |
+| 🔥 **Popular** | `dracula`, `tokyo-night`, `nord`, `monokai` |
+| 💻 **IDE** | `vscode-dark-plus`, `one-dark-pro`, `github-dark-dimmed` |
+| 🌸 **Pastel** | `catppuccin-mocha`, `rose-pine` |
+| ⚡ **Vibrant** | `cyberpunk-neon` |
+| 👔 **Professional** | `professional-blue`, `solarized-dark` |
+| 🌫️ **Minimal** | `gray`, `muted-gray`, `slate-blue`, `dusty-sage` |
+| 🎯 **Semantic** | `semantic-classic` |
 
 Switch themes instantly:
 ```bash
 npx -y claude-scope@latest quick-config
-# → Select "Theme" → Choose from 17 options
 ```
 
 ---
 
-## Configuration
+## ⚙️ Configuration
 
-### AI-Powered Customization
+### 🤖 AI-Powered Customization
 
 **claude-scope is built to work with AI!** Just ask Claude:
 
@@ -173,7 +166,7 @@ Claude automatically edits `~/.claude-scope/config.json` — changes take effect
 - AI understands all 15 widgets, 12 styles, and 17 themes
 - Natural language → instant configuration
 
-### Manual Configuration
+### 📝 Manual Configuration
 
 Edit `~/.claude-scope/config.json` directly:
 
@@ -193,37 +186,36 @@ Edit `~/.claude-scope/config.json` directly:
 }
 ```
 
-See [AI-CONFIG-GUIDE.md](AI-CONFIG-GUIDE.md) for complete reference with all widgets, styles, and color codes.
+See [AI-CONFIG-GUIDE.md](AI-CONFIG-GUIDE.md) for complete reference.
 
 ---
 
-## Documentation
+## 📚 Documentation
 
 | Topic | Description |
 |-------|-------------|
-| [AI-CONFIG-GUIDE.md](AI-CONFIG-GUIDE.md) | Complete configuration reference for AI assistants |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, data flow, providers |
+| [AI-CONFIG-GUIDE.md](AI-CONFIG-GUIDE.md) | Complete configuration reference for AI |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, data flow |
 | [WIDGETS.md](docs/WIDGETS.md) | All widgets, styles, examples |
 | [THEME-SYSTEM.md](docs/THEME-SYSTEM.md) | Theme system, customization |
-| [FORMATTERS.md](docs/FORMATTERS.md) | Formatters, ANSI colors |
 | [CHANGELOG.md](docs/CHANGELOG.md) | Version history, roadmap |
 
 ---
 
-## Requirements
+## 📋 Requirements
 
 - **Node.js** 18+
 - **Claude Code** CLI
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ---
 
-## License
+## 📄 License
 
 [MIT](LICENSE.md) — use freely in your projects.
 
