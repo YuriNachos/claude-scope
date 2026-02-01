@@ -82,6 +82,7 @@ Each widget in the config follows this format:
 
 | Widget ID | Name | Description | Default Line |
 |-----------|------|-------------|--------------|
+| `cwd` | CWD Widget | Current working directory | 0 |
 | `model` | Model Widget | Current Claude model name (e.g., "Claude Opus 4.5") | 0 |
 | `context` | Context Widget | Context window usage with progress bar | 0 |
 | `cost` | Cost Widget | Total session cost in USD | 0 |
@@ -123,6 +124,18 @@ Every widget supports multiple display styles. Not all widgets support all style
 | `breakdown` | Multi-line breakdown | Cache metrics only |
 
 ### Style Examples by Widget
+
+#### CWD Widget (`cwd`)
+| Style | Output |
+|-------|--------|
+| `minimal` | `~/p/claude-scope` |
+| `balanced` | `claude-scope` |
+| `compact` | `claude-scope` |
+| `playful` | `📁 claude-scope` |
+| `technical` | `/Users/demo/projects/claude-scope` |
+| `symbolic` | `◆ claude-scope` |
+| `labeled` | `Dir: claude-scope` |
+| `indicator` | `● claude-scope` |
 
 #### Model Widget (`model`)
 | Style | Output |
@@ -327,6 +340,14 @@ Each widget has a `"colors"` object containing ANSI escape codes:
 **Important**: These are 24-bit RGB ANSI codes in the format `\u001b[38;2;R;G;Bm`
 
 ### Widget-Specific Color Fields
+
+#### CWD Widget (`cwd`)
+```json
+"colors": {
+  "name": "\u001b[38;2;R;G;Bm",      // Directory name color
+  "separator": "\u001b[38;2;R;G;Bm"  // Path separator color
+}
+```
 
 #### Model Widget (`model`)
 ```json

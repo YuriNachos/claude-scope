@@ -113,16 +113,31 @@ The `WidgetFactory` centralizes widget instantiation:
 export class WidgetFactory {
   createWidget(widgetId: string): IWidget | null {
     switch (widgetId) {
+      case "cwd": return new CwdWidget();
       case "model": return new ModelWidget();
-      case "git": return new GitWidget();
       case "context": return new ContextWidget();
+      case "cost": return new CostWidget();
+      case "lines": return new LinesWidget();
+      case "duration": return new DurationWidget();
+      case "git": return new GitWidget();
+      case "git-tag": return new GitTagWidget();
+      case "config-count": return new ConfigCountWidget();
+      case "cache-metrics": return new CacheMetricsWidget();
+      case "active-tools": return new ActiveToolsWidget();
+      case "dev-server": return new DevServerWidget();
+      case "docker": return new DockerWidget();
+      case "poker": return new PokerWidget();
       case "sysmon": return new SysmonWidget();
+      case "empty-line": return new EmptyLineWidget();
       default: return null;
     }
   }
 
   getSupportedWidgetIds(): string[] {
-    return ["model", "git", "context", /* ... */];
+    return ["cwd", "model", "context", "cost", "lines", "duration",
+            "git", "git-tag", "config-count", "cache-metrics",
+            "active-tools", "dev-server", "docker", "poker",
+            "sysmon", "empty-line"];
   }
 }
 ```
@@ -392,12 +407,11 @@ export async function loadWidgetConfig(): Promise<LoadedConfig | null> {
 ### Widget Categories
 
 **1. Data Widgets** (Inherit from StdinDataWidget):
-- ModelWidget, ContextWidget, CostWidget, LinesWidget, DurationWidget
+- CwdWidget, ModelWidget, ContextWidget, CostWidget, LinesWidget, DurationWidget
 
 **2. Complex Widgets** (Custom Implementation):
-- ActiveToolsWidget, CacheMetricsWidget, DevServerWidget, DockerWidget
+- GitWidget, GitTagWidget, ConfigCountWidget, ActiveToolsWidget, CacheMetricsWidget, DevServerWidget, DockerWidget
 
-**3. Entertainment Widgets**:
 **3. Entertainment Widgets**:
 - PokerWidget, EmptyLineWidget
 

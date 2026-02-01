@@ -504,24 +504,24 @@ export class WidgetFactory {
 
 ### Supported Widget IDs
 
-`model`, `context`, `cost`, `lines`, `duration`, `git`, `git-tag`, `config-count`, `cache-metrics`, `active-tools`, `dev-server`, `docker`, `sysmon`
+`cwd`, `model`, `context`, `cost`, `lines`, `duration`, `git`, `git-tag`, `config-count`, `cache-metrics`, `active-tools`, `dev-server`, `docker`, `poker`, `sysmon`, `empty-line`
 
-Note: `poker` and `sysmon` widgets require external packages (`poker` is not in default config, `sysmon` requires `systeminformation`).
+Note: `poker` and `empty-line` widgets are rarely used in normal configs.
 
 
 ## Line Distribution
 
-**Line 0**: ModelWidget, ContextWidget, CostWidget, DurationWidget, LinesWidget, GitWidget, DevServerWidget, DockerWidget
+**Line 0**: CwdWidget, ModelWidget, ContextWidget, CostWidget, DurationWidget, LinesWidget, GitWidget, DevServerWidget, DockerWidget
 
 **Line 1**: GitTagWidget, ConfigCountWidget
 
-**Line 2**: ActiveToolsWidget, CacheMetricsWidget, SysmonWidget
+**Line 2**: ActiveToolsWidget, CacheMetricsWidget, DevServerWidget, DockerWidget
 
-**Line 3**: PokerWidget
+**Line 3**: SysmonWidget
 
-**Line 4**: EmptyLineWidget
+**Line 4**: PokerWidget
 
-**Line 5**: (reserved for future use)
+**Line 5**: EmptyLineWidget
 
 
 ## Quick-Config Layouts

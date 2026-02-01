@@ -2,6 +2,28 @@
 
 ## Version History
 
+### v0.9.0 (2026-02-01) - Install Command & README Redesign
+
+**New features:**
+- **Install Command**: New `npx claude-scope install` command for one-step setup
+  - Automatically adds statusLine to `~/.claude/settings.json`
+  - Launches quick-config for immediate customization
+  - No manual JSON editing required
+- **README Redesign**: Complete overhaul of documentation
+  - Custom logo with rounded corners
+  - Demo screenshot and themes preview images
+  - Improved structure with Quick Start first
+  - Added emojis for better readability
+  - Reorganized sections: Quick Start → Why → Highlights → Features
+
+**Files added:**
+- `src/cli/commands/install/index.ts`
+- `assets/logo.png`
+- `assets/demo.png`
+- `assets/themes.png`
+
+---
+
 ### v0.8.49 (2026-02-01) - CWD Widget
 
 **New features:**
@@ -64,6 +86,8 @@
 
 | Version | Date | Key Changes |
 |---------|------|-------------|
+| v0.9.0 | 2026-02-01 | Install command, README redesign |
+| v0.8.49 | 2026-02-01 | CWD Widget |
 | v0.8.16 | 2026-01-12 | AI-CONFIG-GUIDE.md, $aiDocs field in config |
 | v0.8.15 | 2026-01-12 | Quick-config layout updates |
 | v0.8.13 | 2026-01-12 | Dev server detection improvements |
@@ -254,8 +278,10 @@ cache_hit_rate = cache_read_tokens / (cache_read_tokens + cache_write_tokens + i
 ## Git Tags Reference
 
 All versions follow semantic versioning:
-- `v0.8.15` - Current stable (2026-01-12)
-- `v0.8.14` - Dev server detection improvements (2026-01-12)
+- `v0.9.0` - Current stable (2026-02-01) - Install command, README redesign
+- `v0.8.49` - CWD Widget (2026-02-01)
+- `v0.8.16` - AI-CONFIG-GUIDE.md (2026-01-12)
+- `v0.8.15` - Quick-config layout updates (2026-01-12)
 - `v0.8.10` - DevServer & Docker widgets (2026-01-12)
 - `v0.8.0` - Quick-config (2026-01-11)
 - `v0.6.17` - ActiveTools sorting (2026-01-09)
@@ -263,7 +289,6 @@ All versions follow semantic versioning:
 - `v0.6.9` - Critical cache fix (2026-01-09)
 - `v0.6.2` - Theme system (2026-01-09)
 - `v0.6.0` - Style system (2026-01-09)
-- `v0.5.5` - Git changes (2026-01-09)
 
 ---
 
