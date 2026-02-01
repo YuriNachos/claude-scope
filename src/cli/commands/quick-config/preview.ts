@@ -12,6 +12,7 @@ import { CacheMetricsWidget } from "../../../widgets/cache-metrics/index.js";
 import { ConfigCountWidget } from "../../../widgets/config-count-widget.js";
 import { ContextWidget } from "../../../widgets/context-widget.js";
 import { CostWidget } from "../../../widgets/cost-widget.js";
+import { CwdWidget } from "../../../widgets/cwd/index.js";
 import { DurationWidget } from "../../../widgets/duration-widget.js";
 import { GitTagWidget } from "../../../widgets/git/git-tag-widget.js";
 import { GitWidget } from "../../../widgets/git/git-widget.js";
@@ -36,6 +37,10 @@ export async function renderPreview(style: QuickConfigStyle, themeName: string):
   const transcriptProvider = new TranscriptProvider();
 
   // Register all widgets except Poker
+  const cwdWidget = new CwdWidget(theme.colors);
+  cwdWidget.setStyle(style);
+  await registry.register(cwdWidget);
+
   const modelWidget = new ModelWidget(theme.colors);
   modelWidget.setStyle(style);
   await registry.register(modelWidget);
