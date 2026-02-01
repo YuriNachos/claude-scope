@@ -3,9 +3,10 @@
  * Routes commands based on process.argv
  */
 
+import { handleInstallCommand } from "./commands/install/index.js";
 import { handleQuickConfigCommand } from "./commands/quick-config/index.js";
 
-export type CliCommand = "stdin" | "quick-config";
+export type CliCommand = "stdin" | "quick-config" | "install";
 
 /**
  * Parse command from argv
@@ -16,6 +17,10 @@ export function parseCommand(): CliCommand {
 
   if (args[0] === "quick-config") {
     return "quick-config";
+  }
+
+  if (args[0] === "install") {
+    return "install";
   }
 
   // Default: stdin mode (current behavior)
@@ -29,6 +34,9 @@ export async function routeCommand(command: CliCommand): Promise<void> {
   switch (command) {
     case "quick-config":
       await handleQuickConfigCommand();
+      break;
+    case "install":
+      await handleInstallCommand();
       break;
     case "stdin":
       // Handled by main()

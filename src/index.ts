@@ -60,7 +60,7 @@ export async function main(): Promise<string> {
     // Check if we're in command mode
     const command = parseCommand();
 
-    if (command === "quick-config") {
+    if (command === "quick-config" || command === "install") {
       await routeCommand(command);
       return ""; // Commands handle their own output
     }
