@@ -2,6 +2,25 @@
 
 ## Version History
 
+### v0.8.49 (2026-02-01) - CWD Widget
+
+**New features:**
+- **CWD Widget**: New widget displaying current working directory
+  - 8 display styles: minimal (default), balanced, compact, playful, technical, symbolic, labeled, indicator
+  - Minimal style shows shortened path with ~ (e.g., `~/p/claude-scope`)
+  - Balanced/compact styles show directory name only
+  - Positioned first on Line 0, before model widget
+  - Full theme integration with name and separator colors
+
+**Files added:**
+- `src/widgets/cwd/cwd-widget.ts`
+- `src/widgets/cwd/styles.ts`
+- `src/widgets/cwd/types.ts`
+- `src/widgets/cwd/index.ts`
+- `tests/unit/widgets/cwd-widget.test.ts`
+
+---
+
 ### v0.8.16 (2026-01-12) - Current Stable
 
 **Latest version**: v0.8.16

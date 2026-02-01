@@ -4,6 +4,7 @@
 
 | Widget ID | Name | Status | Line | Description |
 |-----------|------|--------|------|-------------|
+| `cwd` | CWD Widget | ✅ Implemented | 0 | Displays current working directory |
 | `model` | Model Widget | ✅ Implemented | 0 | Displays current Claude model name |
 | `context` | Context Widget | ✅ Implemented | 0 | Displays context window usage with progress bar |
 | `cost` | Cost Widget | ✅ Implemented | 0 | Displays total session cost in USD |
@@ -81,6 +82,29 @@ abstract class StdinDataWidget implements IWidget {
 
 
 ## Individual Widget Documentation
+
+### CwdWidget (`cwd`)
+
+**What it displays**: Current working directory
+
+**Line**: 0 (first widget)
+
+**Base class**: `StdinDataWidget`
+
+**Styles**:
+| Style | Example | Description |
+|-------|---------|-------------|
+| minimal (default) | `~/p/claude-scope` | Shortened path with ~ |
+| balanced | `claude-scope` | Directory name only |
+| compact | `claude-scope` | Directory name only (same as balanced) |
+| playful | `📁 claude-scope` | With folder emoji |
+| technical | `/Users/demo/projects/claude-scope` | Full path |
+| symbolic | `◆ claude-scope` | With diamond symbol |
+| labeled | `Dir: claude-scope` | With Dir: prefix |
+| indicator | `● claude-scope` | With bullet indicator |
+
+**File**: `src/widgets/cwd/cwd-widget.ts`
+
 
 ### ModelWidget (`model`)
 
