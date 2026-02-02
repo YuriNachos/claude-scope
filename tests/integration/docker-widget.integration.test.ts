@@ -26,7 +26,6 @@ class TestDockerWidget implements Pick<DockerWidget, keyof DockerWidget> {
   };
 
   private enabled = true;
-  private colors: typeof DEFAULT_THEME;
   private _lineOverride?: number;
   private mockStatus: DockerStatus | null = null;
   private callCount = 0;

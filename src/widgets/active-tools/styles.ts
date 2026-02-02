@@ -17,7 +17,7 @@ function truncatePath(path: string): string {
     return path;
   }
   const parts = path.split("/");
-  return ".../" + parts[parts.length - 1];
+  return `.../${parts[parts.length - 1]}`;
 }
 
 /**
@@ -30,7 +30,7 @@ function truncatePath(path: string): string {
 function formatTool(name: string, target: string | undefined, colors: IThemeColors): string {
   const nameStr = colorize(name, colors.tools.name);
   if (target) {
-    const targetStr = colorize(": " + truncatePath(target), colors.tools.target);
+    const targetStr = colorize(`: ${truncatePath(target)}`, colors.tools.target);
     return nameStr + targetStr;
   }
   return nameStr;
@@ -52,7 +52,7 @@ function pluralizeTool(name: string): string {
     Grep: "Greps",
     Glob: "Globs",
   };
-  return irregular[name] || name + "s";
+  return irregular[name] || `${name}s`;
 }
 
 /**
@@ -96,21 +96,21 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
       if (runningCount > 0 && completedCount > 0) {
         // Both running and completed: "ToolName (1 running, 6 done)"
         const nameStr = colorize(name, c.tools.name);
-        const runningStr = colorize(runningCount + " running", c.tools.running);
-        const doneStr = colorize(completedCount + " done", c.tools.completed);
-        parts.push(nameStr + " (" + runningStr + ", " + doneStr + ")");
+        const runningStr = colorize(`${runningCount} running`, c.tools.running);
+        const doneStr = colorize(`${completedCount} done`, c.tools.completed);
+        parts.push(`${nameStr} (${runningStr}, ${doneStr})`);
       } else if (completedCount > 0) {
         // Only completed: "Tools: 6" (pluralized)
         const pluralName = pluralizeTool(name);
         const nameStr = colorize(pluralName, c.tools.name);
         const countStr = colorize(String(completedCount), c.tools.count);
-        parts.push(nameStr + ": " + countStr);
+        parts.push(`${nameStr}: ${countStr}`);
       } else if (runningCount > 0) {
         // Only running: "ToolName (1 running, 0 done)"
         const nameStr = colorize(name, c.tools.name);
-        const runningStr = colorize(runningCount + " running", c.tools.running);
+        const runningStr = colorize(`${runningCount} running`, c.tools.running);
         const doneStr = colorize("0 done", c.tools.completed);
-        parts.push(nameStr + " (" + runningStr + ", " + doneStr + ")");
+        parts.push(`${nameStr} (${runningStr}, ${doneStr})`);
       }
     }
 
@@ -128,11 +128,11 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
     const c = colors ?? getDefaultColors();
 
     for (const tool of data.running) {
-      parts.push("[" + colorize(tool.name, c.tools.name) + "]");
+      parts.push(`[${colorize(tool.name, c.tools.name)}]`);
     }
 
     for (const [name] of data.completed.slice(0, 3)) {
-      parts.push("[" + colorize(name, c.tools.completed) + "]");
+      parts.push(`[${colorize(name, c.tools.completed)}]`);
     }
 
     if (parts.length === 0) {
@@ -195,20 +195,20 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
       if (runningCount > 0 && completedCount > 0) {
         // Both running and completed: "✨ Edit (▶1, ✓3)"
         const nameStr = colorize(name, c.tools.name);
-        const runningStr = colorize("▶" + runningCount, c.tools.running);
-        const doneStr = colorize("✓" + completedCount, c.tools.completed);
-        parts.push(emoji + " " + nameStr + " (" + runningStr + ", " + doneStr + ")");
+        const runningStr = colorize(`▶${runningCount}`, c.tools.running);
+        const doneStr = colorize(`✓${completedCount}`, c.tools.completed);
+        parts.push(`${emoji} ${nameStr} (${runningStr}, ${doneStr})`);
       } else if (completedCount > 0) {
         // Only completed: "✨ Edits: 3" (pluralized)
         const pluralName = pluralizeTool(name);
         const nameStr = colorize(pluralName, c.tools.name);
         const countStr = colorize(String(completedCount), c.tools.count);
-        parts.push(emoji + " " + nameStr + ": " + countStr);
+        parts.push(`${emoji} ${nameStr}: ${countStr}`);
       } else if (runningCount > 0) {
         // Only running: "✨ Edit (▶1)"
         const nameStr = colorize(name, c.tools.name);
-        const runningStr = colorize("▶" + runningCount, c.tools.running);
-        parts.push(emoji + " " + nameStr + " (" + runningStr + ")");
+        const runningStr = colorize(`▶${runningCount}`, c.tools.running);
+        parts.push(`${emoji} ${nameStr} (${runningStr})`);
       }
     }
 
@@ -227,15 +227,15 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
 
     for (const tool of data.running) {
       const label = colorize("Running:", c.tools.running);
-      parts.push(label + " " + formatTool(tool.name, tool.target, c));
+      parts.push(`${label} ${formatTool(tool.name, tool.target, c)}`);
     }
 
     const sorted = data.completed.slice(0, 3);
 
     for (const [name, count] of sorted) {
       const label = colorize("Completed:", c.tools.completed);
-      const countStr = colorize("(" + count + "x)", c.tools.count);
-      parts.push(label + " " + name + " " + countStr);
+      const countStr = colorize(`(${count}x)`, c.tools.count);
+      parts.push(`${label} ${name} ${countStr}`);
     }
 
     if (parts.length === 0) {
@@ -253,12 +253,12 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
     const allTools = [
       ...data.running.map((t) => {
         const indicator = colorize("◐", c.tools.running);
-        return indicator + " " + formatTool(t.name, t.target, c);
+        return `${indicator} ${formatTool(t.name, t.target, c)}`;
       }),
       ...data.completed.slice(0, 3).map(([name, count]) => {
         const indicator = colorize("✓", c.tools.completed);
-        const countStr = colorize("×" + count, c.tools.count);
-        return indicator + " " + name + " " + countStr;
+        const countStr = colorize(`×${count}`, c.tools.count);
+        return `${indicator} ${name} ${countStr}`;
       }),
     ];
 
@@ -267,7 +267,7 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
     }
 
     const prefix = colors ? colorize("Tools:", c.semantic.info) : "Tools:";
-    return prefix + ": " + allTools.join(" | ");
+    return `${prefix}: ${allTools.join(" | ")}`;
   },
 
   /**
@@ -279,12 +279,12 @@ export const activeToolsStyles: StyleMap<ActiveToolsRenderData, IThemeColors> = 
 
     for (const tool of data.running) {
       const bullet = colorize("●", c.semantic.info);
-      parts.push(bullet + " " + formatTool(tool.name, tool.target, c));
+      parts.push(`${bullet} ${formatTool(tool.name, tool.target, c)}`);
     }
 
     for (const [name] of data.completed.slice(0, 3)) {
       const bullet = colorize("●", c.tools.completed);
-      parts.push(bullet + " " + name);
+      parts.push(`${bullet} ${name}`);
     }
 
     if (parts.length === 0) {

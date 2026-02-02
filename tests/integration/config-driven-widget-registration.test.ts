@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, it } from "node:test";
+import { describe, it } from "node:test";
 import { expect } from "chai";
 import type { LoadedConfig } from "../../src/config/config-loader.js";
 import { WidgetFactory } from "../../src/core/widget-factory.js";
@@ -43,7 +43,7 @@ describe("Config-Driven Widget Registration", () => {
     const factory = new WidgetFactory();
 
     // NEW LOGIC: Iterate over config lines and widgets
-    for (const [lineNum, widgets] of Object.entries(config.lines)) {
+    for (const [_lineNum, widgets] of Object.entries(config.lines)) {
       for (const widgetConfig of widgets) {
         const widget = factory.createWidget(widgetConfig.id);
         if (widget) {
@@ -72,7 +72,7 @@ describe("Config-Driven Widget Registration", () => {
     const factory = new WidgetFactory();
 
     // Iterate over config
-    for (const [lineNum, widgets] of Object.entries(config.lines)) {
+    for (const [_lineNum, widgets] of Object.entries(config.lines)) {
       for (const widgetConfig of widgets) {
         const widget = factory.createWidget(widgetConfig.id);
         if (widget) {
@@ -113,7 +113,7 @@ describe("Config-Driven Widget Registration", () => {
     const factory = new WidgetFactory();
 
     // Iterate over config
-    for (const [lineNum, widgets] of Object.entries(config.lines)) {
+    for (const [_lineNum, widgets] of Object.entries(config.lines)) {
       for (const widgetConfig of widgets) {
         const widget = factory.createWidget(widgetConfig.id);
         if (widget) {

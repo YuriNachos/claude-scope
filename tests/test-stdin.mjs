@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from "node:fs";
 import { StdinProvider } from "../src/data/stdin-provider.js";
 
 const stdin = fs.readFileSync("/tmp/test-cli.json", "utf8");

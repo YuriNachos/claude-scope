@@ -13,7 +13,7 @@ import type { CwdRenderData } from "./types.js";
  */
 function shortenPath(path: string): string {
   const home = process.env.HOME || "";
-  const result = home && path.startsWith(home) ? "~" + path.slice(home.length) : path;
+  const result = home && path.startsWith(home) ? `~${path.slice(home.length)}` : path;
 
   const parts = result.split("/").filter(Boolean);
   if (parts.length <= 2) return result;

@@ -158,7 +158,7 @@ describe("UsageResolver", () => {
           },
         }),
       ];
-      writeFileSync(filePath, lines.join("\n") + "\n");
+      writeFileSync(filePath, `${lines.join("\n")}\n`);
 
       const result = await resolver.getCumulativeCache(filePath);
       // With cumulative format detection (values increasing), should use last values
