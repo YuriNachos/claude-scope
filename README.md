@@ -130,24 +130,37 @@ npx -y claude-scope@latest quick-config
 
 ## ⚙️ Configuration
 
-### 🤖 AI-Powered Customization
+### 🤖 /scope — AI-Powered Configuration
 
-**claude-scope is built to work with AI!** Just ask Claude:
+**claude-scope** includes a built-in Claude Code skill for effortless configuration. Just type `/scope` or ask naturally:
 
+<div align="center">
+  <img src="assets/scope-skill.png" alt="/scope skill demo" width="600"/>
+  <br/>
+  <sub>Configure widgets with natural language — no manual editing needed</sub>
+</div>
+
+<br/>
+
+**Use the `/scope` command:**
 ```
-"Add the docker widget to line 3"
-"Switch theme to nord"
-"Make it more playful"
-"Show only model and context"
-"Add system monitoring"
+/scope swap line 0 and line 1
+/scope add docker widget to line 2
+/scope change theme to dracula
+/scope make all widgets compact
 ```
 
-Claude automatically edits `~/.claude-scope/config.json` — changes take effect instantly.
+**Or just ask Claude naturally:**
+```
+"Move git widget to the first line"
+"Switch to nord theme"
+"Show me current config"
+"Remove the cost widget"
+```
 
-**How it works:**
-- Config contains `$aiDocs` field linking to [AI-CONFIG-GUIDE.md](AI-CONFIG-GUIDE.md)
-- AI understands all 15 widgets, 12 styles, and 17 themes
-- Natural language → instant configuration
+The skill is installed automatically with the package — no setup required!
+
+Changes apply instantly on the next status line update.
 
 ### 📝 Manual Configuration
 
