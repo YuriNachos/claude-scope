@@ -10,10 +10,13 @@
   },
   "files": [
     "dist/claude-scope.cjs",
+    ".claude/skills/",
+    "scripts/install-skill.sh",
     "README.md",
     "LICENSE.md"
   ],
   "scripts": {
+    "postinstall": "bash scripts/install-skill.sh 2>/dev/null || true",
     "prepack": "npm run build",
     "build": "npm run build:tsc && npm run build:bundle",
     "build:tsc": "tsc",
