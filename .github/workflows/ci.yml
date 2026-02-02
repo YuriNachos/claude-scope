@@ -47,5 +47,10 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: c8 --reporter=lcov --reporter=text tsx --test tests/e2e/stdin-flow.test.ts tests/integration/cli-flow.integration.test.ts tests/integration/config-line-assignment.test.ts tests/integration/five-widgets.integration.test.ts tests/integration/preview-mock-config.test.ts tests/integration/quick-config.integration.test.ts tests/integration/three-stage-config-flow.test.ts tests/unit/cli.test.ts tests/unit/cli/commands/quick-config/*.test.ts tests/unit/providers/*.test.ts tests/unit/types.test.ts tests/unit/config/*.test.ts tests/unit/core/*.test.ts tests/unit/data/*.test.ts tests/unit/utils/*.test.ts tests/unit/widgets/*.test.ts tests/unit/ui/theme/*.test.ts
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
