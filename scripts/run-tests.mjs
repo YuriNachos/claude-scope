@@ -23,7 +23,7 @@
  *   --timeout=<ms>        per-test timeout (default 30000)
  */
 
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, readdirSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join, resolve } from "node:path";
@@ -144,11 +144,24 @@ function fail(message) {
  * @param {string[]} files
  */
 function buildArgs(options, files) {
-  const args = ["--test", `--test-timeout=${options.timeout}`];
+  const args = ["--test"];
+
+  // These two are the hang protection, and Node rejects an unknown flag
+  // outright - taking the whole run down before a single test loads. Neither
+  // exists on 18, and their arrival is scattered across 20.x and 21.x, so each
+  // is asked for rather than derived from a version range.
+  if (nodeAccepts(`--test-timeout=${options.timeout}`)) {
+    args.push(`--test-timeout=${options.timeout}`);
+  } else {
+    console.error(
+      `run-tests: node ${process.versions.node} has no --test-timeout; ` +
+        "a hung test will run until something outside this process stops it"
+    );
+  }
 
   // A test that leaves a handle open (a prompt reading stdin, a live server)
   // otherwise wedges the run after the reporter is already done.
-  if (supportsForceExit()) {
+  if (nodeAccepts("--test-force-exit")) {
     args.push("--test-force-exit");
   }
 
@@ -156,11 +169,17 @@ function buildArgs(options, files) {
 }
 
 /**
- * Whether this Node build accepts --test-force-exit (added in 20.14)
+ * Whether this Node build accepts a flag
+ *
+ * Asked rather than inferred: --test-timeout landed in 20.11 and 21.2,
+ * --test-force-exit in 20.14 and 22.0, and a version comparison that gets
+ * either boundary wrong fails in the loudest possible way - every test
+ * invocation dying before it starts.
+ *
+ * @param {string} flag
  */
-function supportsForceExit() {
-  const [major, minor] = process.versions.node.split(".").map(Number);
-  return major > 20 || (major === 20 && minor >= 14);
+function nodeAccepts(flag) {
+  return spawnSync(process.execPath, [flag, "-e", ""]).status === 0;
 }
 
 const options = parseArgs(process.argv.slice(2));

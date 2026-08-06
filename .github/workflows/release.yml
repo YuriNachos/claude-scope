@@ -11,39 +11,38 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    # Same reasoning as ci.yml: a hung suite must not burn six hours, and here
+    # it would leave a pushed tag with nothing published against it.
+    timeout-minutes: 15
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      - name: Setup Biome
-        uses: biomejs/setup-biome@v2
-        with:
-          version: latest
-
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
           registry-url: 'https://registry.npmjs.org'
 
+      # See ci.yml: postinstall writes a skill into the user's home directory.
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
 
+      # The pinned Biome from devDependencies - see ci.yml.
       - name: Run Biome checks
-        run: biome ci .
+        run: npm run lint:ci
 
       - name: Build project
         run: npm run build
 
-      - name: Run tests
-        run: npm test
-
-      - name: Generate coverage
+      # Runs the whole suite under c8, so a separate `npm test` step would only
+      # run all 1052 tests a second time. Thresholds come from .c8rc.json, and
+      # a release that misses them is not one to publish.
+      - name: Run tests with coverage
         run: npm run test:coverage
-        continue-on-error: true
 
       - name: Publish to npm
         run: npm publish

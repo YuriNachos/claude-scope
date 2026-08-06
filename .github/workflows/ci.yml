@@ -5,10 +5,18 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Lets a flaky matrix cell be re-run without pushing an empty commit.
+  workflow_dispatch:
 
 permissions:
   contents: read
   pull-requests: read
+
+# Superseded pull-request runs are worth nothing; a main build may be the one
+# someone is watching, so it is left to finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   quality:
@@ -17,46 +25,89 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Biome
-        uses: biomejs/setup-biome@v2
-        with:
-          version: latest
-
-      - name: Run Biome checks
-        run: biome ci .
-
-  test:
-    name: Tests
-    runs-on: ubuntu-latest
-    # A test that blocks on stdin used to be able to wedge the job until the
-    # 6-hour default; the runner's --test-timeout is the first line of defence
-    # and this is the second.
-    timeout-minutes: 15
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci --ignore-scripts
+
+      # Deliberately the Biome from devDependencies rather than a separately
+      # installed `latest`: with two versions in play, a Biome release could
+      # turn this job red without a single commit to the repo - and did.
+      - name: Run Biome checks
+        run: npm run lint:ci
+
+  test:
+    name: Tests (${{ matrix.os }}, node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
+    # A test that blocks on stdin used to be able to wedge the job until the
+    # 6-hour default; the runner's --test-timeout is the first line of defence
+    # and this is the second.
+    timeout-minutes: 15
+
+    strategy:
+      # One red cell must not hide the result of the other four - which cells
+      # pass is the entire signal a matrix exists to give.
+      fail-fast: false
+      matrix:
+        # The node axis answers "does engines >=18 still hold?" and is cheapest
+        # on linux. The os axis answers "does the suite run without a shell?"
+        # and needs only one node version - pinning those cells to 20 means a
+        # failure there is unambiguously about the platform.
+        include:
+          # Node 18 has neither --test-timeout nor --test-force-exit, so this
+          # cell runs without per-test hang protection; timeout-minutes above
+          # is its only backstop.
+          - os: ubuntu-latest
+            node: '18'
+          - os: ubuntu-latest
+            node: '20'
+            coverage: true
+          - os: ubuntu-latest
+            node: '22'
+          - os: windows-latest
+            node: '20'
+          - os: macos-latest
+            node: '20'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: 'npm'
+
+      # --ignore-scripts: postinstall writes a skill into the user's home
+      # directory, which CI has no business doing. Nothing else in the tree
+      # needs an install lifecycle - esbuild resolves its binary from an
+      # optional platform package.
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
 
       - name: Build project
         run: npm run build
 
+      # Coverage runs on the one cell flagged for it: c8's source-map paths
+      # differ per OS, so merging five reports would compare different
+      # denominators. Which cell that is, is declared once, on the matrix.
       - name: Run tests with coverage
-        # Discovery lives in scripts/run-tests.mjs so this job cannot drift out
-        # of sync with what `npm test` runs locally.
-        run: npx c8 --reporter=lcov --reporter=text node scripts/run-tests.mjs
+        if: matrix.coverage
+        run: npm run test:coverage
+
+      - name: Run tests
+        if: ${{ !matrix.coverage }}
+        run: npm test
 
       - name: Upload coverage reports to Codecov
+        if: matrix.coverage
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
