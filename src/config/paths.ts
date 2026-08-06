@@ -12,7 +12,7 @@
  */
 
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 
 /** Directory name used under the user's home directory */
 const CONFIG_DIR_NAME = ".claude-scope";
@@ -22,6 +22,9 @@ const CONFIG_FILE_NAME = "config.json";
 
 /** Cache file name inside the cache directory */
 const CACHE_FILE_NAME = "cache.json";
+
+/** Diagnostics report file name, written next to the config */
+const REPORT_FILE_NAME = "config-report.txt";
 
 /**
  * Directory holding the user's config
@@ -42,6 +45,15 @@ export function getConfigDir(): string {
  */
 export function getConfigPath(): string {
   return process.env.CLAUDE_SCOPE_CONFIG || join(getConfigDir(), CONFIG_FILE_NAME);
+}
+
+/**
+ * Full path of the config diagnostics report
+ *
+ * Sits next to the resolved config file, so an override moves both together.
+ */
+export function getConfigReportPath(): string {
+  return join(dirname(getConfigPath()), REPORT_FILE_NAME);
 }
 
 /**

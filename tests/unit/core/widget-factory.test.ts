@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import { expect } from "chai";
-import { WidgetFactory } from "../../../src/core/widget-factory.js";
+import { SUPPORTED_WIDGET_IDS, WidgetFactory } from "../../../src/core/widget-factory.js";
 import { NORD_THEME } from "../../../src/ui/theme/index.js";
 import { ActiveToolsWidget } from "../../../src/widgets/active-tools/index.js";
 import { CacheMetricsWidget } from "../../../src/widgets/cache-metrics/index.js";
@@ -120,6 +120,24 @@ describe("WidgetFactory", () => {
       "cache-metrics",
       "active-tools",
     ]);
+  });
+
+  it("constructs a widget for every id in SUPPORTED_WIDGET_IDS, and getSupportedWidgetIds matches it exactly", () => {
+    // SUPPORTED_WIDGET_IDS and the builder map are two separate declarations
+    // (a readonly tuple and a Record) that TypeScript ties together at
+    // compile time; this proves the runtime behaviour actually lines up with
+    // that list rather than a hand-maintained switch that can silently drift.
+    const factory = new WidgetFactory();
+
+    for (const id of SUPPORTED_WIDGET_IDS) {
+      const widget = factory.createWidget(id);
+      expect(widget, `expected a widget for id "${id}"`).to.not.be.null;
+      expect(widget?.id).to.equal(id);
+    }
+
+    expect(factory.getSupportedWidgetIds().slice().sort()).to.deep.equal(
+      [...SUPPORTED_WIDGET_IDS].sort()
+    );
   });
 
   it("should accept custom theme in constructor", () => {

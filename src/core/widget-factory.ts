@@ -21,6 +21,33 @@ import { SysmonWidget } from "../widgets/sysmon-widget.js";
 import type { IWidget } from "./types.js";
 
 /**
+ * Every widget id the factory can build
+ *
+ * Exported so callers that only need the list - config validation, for one -
+ * do not construct a factory just to read it.
+ */
+export const SUPPORTED_WIDGET_IDS = [
+  "cwd",
+  "model",
+  "context",
+  "cost",
+  "lines",
+  "duration",
+  "git",
+  "git-tag",
+  "config-count",
+  "cache-metrics",
+  "active-tools",
+  "dev-server",
+  "docker",
+  "poker",
+  "sysmon",
+  "empty-line",
+] as const;
+
+export type SupportedWidgetId = (typeof SUPPORTED_WIDGET_IDS)[number];
+
+/**
  * Widget factory - creates widget instances by ID
  *
  * This factory centralizes widget instantiation logic and provides
@@ -48,81 +75,42 @@ export class WidgetFactory {
    * @returns Widget instance or null if widget ID is unknown
    */
   createWidget(widgetId: string): IWidget | null {
-    switch (widgetId) {
-      case "cwd":
-        return new CwdWidget(this.theme);
-
-      case "model":
-        return new ModelWidget(this.theme);
-
-      case "context":
-        return new ContextWidget(this.theme);
-
-      case "cost":
-        return new CostWidget(this.theme);
-
-      case "lines":
-        return new LinesWidget(this.theme);
-
-      case "duration":
-        return new DurationWidget(this.theme);
-
-      case "git":
-        return new GitWidget(undefined, this.theme);
-
-      case "git-tag":
-        return new GitTagWidget(undefined, this.theme);
-
-      case "config-count":
-        return new ConfigCountWidget(undefined, this.theme);
-
-      case "cache-metrics":
-        return new CacheMetricsWidget(this.theme);
-
-      case "active-tools":
-        return new ActiveToolsWidget(this.theme, this.transcriptProvider);
-
-      case "dev-server":
-        return new DevServerWidget(this.theme);
-
-      case "docker":
-        return new DockerWidget(this.theme);
-
-      case "poker":
-        return new PokerWidget(this.theme);
-
-      case "sysmon":
-        return new SysmonWidget(this.theme, this.systemProvider);
-
-      case "empty-line":
-        return new EmptyLineWidget();
-
-      default:
-        return null; // Unknown widget ID
-    }
+    const build = this.builders()[widgetId as SupportedWidgetId];
+    return build ? build() : null;
   }
 
   /**
    * Get list of all supported widget IDs
    */
   getSupportedWidgetIds(): string[] {
-    return [
-      "cwd",
-      "model",
-      "context",
-      "cost",
-      "lines",
-      "duration",
-      "git",
-      "git-tag",
-      "config-count",
-      "cache-metrics",
-      "active-tools",
-      "dev-server",
-      "docker",
-      "poker",
-      "sysmon",
-      "empty-line",
-    ];
+    return [...SUPPORTED_WIDGET_IDS];
+  }
+
+  /**
+   * Constructor for every supported widget
+   *
+   * Typed as a total map over SUPPORTED_WIDGET_IDS, so an id listed there with
+   * no constructor - or a constructor for an unlisted id - fails to compile.
+   * The two used to be a switch and a hand-maintained array that could drift.
+   */
+  private builders(): Record<SupportedWidgetId, () => IWidget> {
+    return {
+      cwd: () => new CwdWidget(this.theme),
+      model: () => new ModelWidget(this.theme),
+      context: () => new ContextWidget(this.theme),
+      cost: () => new CostWidget(this.theme),
+      lines: () => new LinesWidget(this.theme),
+      duration: () => new DurationWidget(this.theme),
+      git: () => new GitWidget(undefined, this.theme),
+      "git-tag": () => new GitTagWidget(undefined, this.theme),
+      "config-count": () => new ConfigCountWidget(undefined, this.theme),
+      "cache-metrics": () => new CacheMetricsWidget(this.theme),
+      "active-tools": () => new ActiveToolsWidget(this.theme, this.transcriptProvider),
+      "dev-server": () => new DevServerWidget(this.theme),
+      docker: () => new DockerWidget(this.theme),
+      poker: () => new PokerWidget(this.theme),
+      sysmon: () => new SysmonWidget(this.theme, this.systemProvider),
+      "empty-line": () => new EmptyLineWidget(),
+    };
   }
 }

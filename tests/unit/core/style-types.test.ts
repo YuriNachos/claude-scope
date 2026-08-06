@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   DEFAULT_WIDGET_STYLE,
   isValidWidgetStyle,
+  WIDGET_STYLES,
   type WidgetStyle,
 } from "../../../src/core/style-types.js";
 
@@ -50,6 +51,23 @@ describe("style-types", () => {
         // value is now typed as WidgetStyle
         assert.equal(value, "compact");
       }
+    });
+  });
+
+  describe("isValidWidgetStyle / WIDGET_STYLES stay in sync", () => {
+    // Named breakage: WidgetStyle/isValidWidgetStyle used to derive from a
+    // hardcoded literal list duplicated here and in style-types.ts; reverting
+    // isValidWidgetStyle to check its own hardcoded copy (instead of the
+    // WIDGET_STYLES single source of truth) would let the two drift again -
+    // a style added to one and forgotten in the other.
+    it("accepts every style listed in WIDGET_STYLES", () => {
+      for (const style of WIDGET_STYLES) {
+        assert.equal(isValidWidgetStyle(style), true, `expected "${style}" to be valid`);
+      }
+    });
+
+    it("rejects a style that is not in WIDGET_STYLES", () => {
+      assert.equal(isValidWidgetStyle("not-a-real-style"), false);
     });
   });
 });

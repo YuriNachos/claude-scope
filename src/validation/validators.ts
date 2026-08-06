@@ -27,3 +27,19 @@ export function literal<T extends string | number | boolean>(expected: T): Valid
     },
   };
 }
+
+/**
+ * Accept only one of a fixed set of string values
+ *
+ * @param values - Allowed values; the returned validator narrows to their union
+ */
+export function oneOf<T extends string>(values: readonly T[]): Validator<T> {
+  return {
+    validate(value) {
+      if (typeof value === "string" && (values as readonly string[]).includes(value)) {
+        return success(value as T);
+      }
+      return failure([], `Expected one of: ${values.join(", ")}`, value);
+    },
+  };
+}

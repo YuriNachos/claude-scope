@@ -7,11 +7,13 @@
 
 import { parseCommand, routeCommand } from "./cli/index.js";
 import { loadWidgetConfig } from "./config/config-loader.js";
+import { formatConfigNagLine, writeConfigReport } from "./config/config-report.js";
 import { Renderer } from "./core/renderer.js";
 import { isValidWidgetStyle, type WidgetStyle } from "./core/style-types.js";
-import { WidgetFactory } from "./core/widget-factory.js";
+import { SUPPORTED_WIDGET_IDS, WidgetFactory } from "./core/widget-factory.js";
 import { WidgetRegistry } from "./core/widget-registry.js";
 import { StdinProvider } from "./data/stdin-provider.js";
+import type { StdinData } from "./types.js";
 import { getThemeByName } from "./ui/theme/index.js";
 
 /**
@@ -81,38 +83,33 @@ export async function main(): Promise<string> {
     // Create registry
     const registry = new WidgetRegistry();
 
-    // Load widget configuration
-    const widgetConfig = await loadWidgetConfig();
+    // Load widget configuration. Always usable: an unreadable or unusable
+    // config is quarantined and replaced rather than dropping the statusline
+    // back to a hardcoded widget set with no explanation.
+    const loaded = await loadWidgetConfig(SUPPORTED_WIDGET_IDS);
+
+    // Record the diagnostics while the widgets render - nothing below reads
+    // the result, so its I/O has no reason to sit on the critical path.
+    const reportWritten = writeConfigReport(loaded.problems, loaded.quarantinedTo);
 
     // Create widget factory with theme from config (or default to monokai)
-    const themeName = widgetConfig?.theme ?? "monokai";
+    const themeName = loaded.config.theme ?? "monokai";
     const themeColors = getThemeByName(themeName).colors;
     const factory = new WidgetFactory(themeColors);
 
-    // Register widgets from config - config is the SINGLE SOURCE OF TRUTH
-    if (widgetConfig) {
-      for (const [lineNum, widgets] of Object.entries(widgetConfig.lines)) {
-        for (const widgetConfigItem of widgets) {
-          const widget = factory.createWidget(widgetConfigItem.id);
+    // Register widgets from config - config is the SINGLE SOURCE OF TRUTH.
+    // Unknown ids were already dropped and reported by the loader.
+    for (const [lineNum, widgets] of Object.entries(loaded.config.lines)) {
+      for (const widgetConfigItem of widgets) {
+        const widget = factory.createWidget(widgetConfigItem.id);
 
-          if (widget) {
-            // Apply style and line from config
-            applyWidgetConfig(widget, {
-              ...widgetConfigItem,
-              line: parseInt(lineNum, 10),
-            });
-            await registry.register(widget, { config: { ...widgetConfigItem } });
-          }
-          // If widget is null (unknown ID), skip it silently
-        }
-      }
-    } else {
-      // Fallback: if no config, register minimal default widgets
-      const defaultWidgets = ["model", "git", "context"];
-      for (const widgetId of defaultWidgets) {
-        const widget = factory.createWidget(widgetId);
         if (widget) {
-          await registry.register(widget, { config: {} });
+          // Apply style and line from config
+          applyWidgetConfig(widget, {
+            ...widgetConfigItem,
+            line: parseInt(lineNum, 10),
+          });
+          await registry.register(widget, { config: { ...widgetConfigItem } });
         }
       }
     }
@@ -140,6 +137,14 @@ export async function main(): Promise<string> {
       timestamp: Date.now(),
     });
 
+    // While problems last, say so on screen - a statusline host discards
+    // stderr, so anything reported only there is silence.
+    await reportWritten;
+    const nag = formatConfigNagLine(loaded.problems, loaded.quarantinedTo);
+    if (nag) {
+      lines.push(nag);
+    }
+
     // Join with newline
     return lines.join("\n");
   } catch (_error) {
@@ -163,7 +168,22 @@ async function tryGitFallback(): Promise<string> {
     }
 
     await widget.initialize({ config: {} });
-    await widget.update({ cwd, session_id: "fallback" } as any);
+
+    // Every StdinData field is optional in content but present as a key, so
+    // the absent ones are spelled out rather than cast away with `any`.
+    const fallbackData: StdinData = {
+      hook_event_name: undefined,
+      session_id: "fallback",
+      transcript_path: undefined,
+      cwd,
+      model: undefined,
+      workspace: undefined,
+      version: undefined,
+      output_style: undefined,
+      cost: undefined,
+      context_window: undefined,
+    };
+    await widget.update(fallbackData);
 
     const result = await widget.render({ width: 80, timestamp: Date.now() });
     return result || "";

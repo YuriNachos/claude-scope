@@ -119,6 +119,18 @@ export const DEFAULT_THEME_OBJECT = MONOKAI_THEME;
  * const defaultTheme = getThemeByName("unknown"); // Returns Monokai
  */
 export function getThemeByName(name: string): typeof MONOKAI_THEME {
-  const theme = AVAILABLE_THEMES.find((t) => t.name === name);
-  return theme ?? MONOKAI_THEME;
+  return findTheme(name) ?? MONOKAI_THEME;
+}
+
+/**
+ * Look up a theme by name, without falling back
+ *
+ * The signalling counterpart of `getThemeByName`, for callers that need to
+ * tell "unknown theme" from "the user asked for monokai".
+ *
+ * @param name - Theme name, e.g. "nord"
+ * @returns The theme, or undefined if no theme has that name
+ */
+export function findTheme(name: string): typeof MONOKAI_THEME | undefined {
+  return AVAILABLE_THEMES.find((t) => t.name === name);
 }

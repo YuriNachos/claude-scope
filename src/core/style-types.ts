@@ -1,20 +1,30 @@
 /**
  * Core types for the widget display style system
  */
-export type WidgetStyle =
-  | "minimal"
-  | "balanced"
-  | "compact"
-  | "playful"
-  | "verbose"
-  | "technical"
-  | "symbolic"
-  | "monochrome"
-  | "compact-verbose"
-  | "labeled"
-  | "indicator"
-  | "emoji"
-  | "breakdown";
+/**
+ * Every display style a widget may be configured with
+ *
+ * Single source of truth: both the `WidgetStyle` type and the runtime check
+ * derive from this list, so a new style cannot be added to one and forgotten
+ * in the other.
+ */
+export const WIDGET_STYLES = [
+  "minimal",
+  "balanced",
+  "compact",
+  "playful",
+  "verbose",
+  "technical",
+  "symbolic",
+  "monochrome",
+  "compact-verbose",
+  "labeled",
+  "indicator",
+  "emoji",
+  "breakdown",
+] as const;
+
+export type WidgetStyle = (typeof WIDGET_STYLES)[number];
 
 export const DEFAULT_WIDGET_STYLE: WidgetStyle = "balanced";
 
@@ -27,21 +37,7 @@ export interface StyleConfig {
 }
 
 export function isValidWidgetStyle(value: string): value is WidgetStyle {
-  return [
-    "minimal",
-    "balanced",
-    "compact",
-    "playful",
-    "verbose",
-    "technical",
-    "symbolic",
-    "monochrome",
-    "compact-verbose",
-    "labeled",
-    "indicator",
-    "emoji",
-    "breakdown",
-  ].includes(value);
+  return (WIDGET_STYLES as readonly string[]).includes(value);
 }
 
 /**
