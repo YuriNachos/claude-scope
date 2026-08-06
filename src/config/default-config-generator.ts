@@ -4,16 +4,16 @@
  */
 
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { dirname } from "node:path";
 import { generateRichLayout } from "./default-config.js";
+import { getConfigPath } from "./paths.js";
 
 /**
  * Get the default config file path
- * @returns Path to ~/.claude-scope/config.json
+ * @returns Resolved config path (see `getConfigPath`)
  */
 export function getDefaultConfigPath(): string {
-  return join(homedir(), ".claude-scope", "config.json");
+  return getConfigPath();
 }
 
 /**
@@ -29,8 +29,9 @@ export async function ensureDefaultConfig(): Promise<void> {
     return;
   }
 
-  // Create .claude-scope directory if it doesn't exist
-  const configDir = join(homedir(), ".claude-scope");
+  // Create the containing directory if it doesn't exist. Derived from the
+  // resolved config path, which an override may place outside the config dir.
+  const configDir = dirname(configPath);
   if (!existsSync(configDir)) {
     mkdirSync(configDir, { recursive: true });
   }

@@ -5,9 +5,8 @@
 
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { homedir } from "node:os";
-import { join } from "node:path";
 import { ensureDefaultConfig } from "./default-config-generator.js";
+import { getConfigPath } from "./paths.js";
 
 /**
  * Individual widget configuration from loaded config
@@ -30,18 +29,6 @@ export interface LoadedConfig {
   lines: Record<string, LoadedWidgetConfig[]>;
   /** Theme name (e.g., "monokai", "catppuccin-mocha") */
   theme?: string;
-}
-
-/**
- * Get config file path
- * @returns Path to ~/.claude-scope/config.json, or CLAUDE_SCOPE_CONFIG env var if set
- */
-function getConfigPath(): string {
-  // Allow overriding config path via environment variable for testing
-  if (process.env.CLAUDE_SCOPE_CONFIG) {
-    return process.env.CLAUDE_SCOPE_CONFIG;
-  }
-  return join(homedir(), ".claude-scope", "config.json");
 }
 
 /**

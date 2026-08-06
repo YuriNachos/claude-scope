@@ -3,7 +3,10 @@
  */
 
 import assert from "node:assert";
-import { beforeEach, describe, it } from "node:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, before, beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
 import { CacheManager } from "../../../src/storage/cache-manager.js";
 import type { ContextUsage } from "../../../src/types.js";
@@ -12,6 +15,26 @@ import { createMockStdinData } from "../../fixtures/mock-data.js";
 import { matchSnapshot, stripAnsi } from "../../helpers/snapshot.js";
 
 describe("ContextWidget", () => {
+  // CacheManager defaults to the real ~/.config/claude-scope/cache.json
+  // (src/config/paths.ts getCachePath). Point it at a temp dir for the
+  // lifetime of this file so the suite never touches the real cache file.
+  const originalScopeHome = process.env.CLAUDE_SCOPE_HOME;
+  let cacheHomeDir: string;
+
+  before(async () => {
+    cacheHomeDir = await mkdtemp(join(tmpdir(), "claude-scope-context-widget-"));
+    process.env.CLAUDE_SCOPE_HOME = cacheHomeDir;
+  });
+
+  after(async () => {
+    if (originalScopeHome === undefined) {
+      delete process.env.CLAUDE_SCOPE_HOME;
+    } else {
+      process.env.CLAUDE_SCOPE_HOME = originalScopeHome;
+    }
+    await rm(cacheHomeDir, { recursive: true, force: true });
+  });
+
   beforeEach(() => {
     // Clear cache before each test to ensure isolation across all tests
     const cacheManager = new CacheManager();

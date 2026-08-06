@@ -47,8 +47,11 @@ export const contextStyles: StyleMap<ContextRenderData, IContextColors> = {
   },
 
   verbose: (data: ContextRenderData, colors?: IContextColors) => {
-    const usedFormatted = data.used.toLocaleString();
-    const maxFormatted = data.contextWindowSize.toLocaleString();
+    // Pinned locale: a bare toLocaleString() follows the host locale, so the
+    // same session rendered "142,000" or "142 000" (narrow no-break space)
+    // depending on the machine, breaking statusline width alignment.
+    const usedFormatted = data.used.toLocaleString("en-US");
+    const maxFormatted = data.contextWindowSize.toLocaleString("en-US");
     const output = `${usedFormatted} / ${maxFormatted} tokens (${data.percent}%)`;
     if (!colors) return output;
     return colorize(output, getContextColor(data.percent, colors));

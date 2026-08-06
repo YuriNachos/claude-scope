@@ -1,5 +1,8 @@
 import assert from "node:assert";
-import { describe, it } from "node:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, before, describe, it } from "node:test";
 import {
   generatePreviews,
   type PreviewChoice,
@@ -11,6 +14,28 @@ import {
 import { AVAILABLE_THEMES } from "../../../../../src/ui/theme/index.js";
 
 describe("selectWithPreview", () => {
+  // generatePreviews() renders each choice via renderPreviewFromConfig, which
+  // updates a real ContextWidget/CacheMetricsWidget with demo data - and
+  // those go through CacheManager, which defaults to the real
+  // ~/.config/claude-scope/cache.json (src/config/paths.ts getCachePath).
+  // Point it at a temp dir for the lifetime of this file.
+  const originalScopeHome = process.env.CLAUDE_SCOPE_HOME;
+  let cacheHomeDir: string;
+
+  before(async () => {
+    cacheHomeDir = await mkdtemp(join(tmpdir(), "claude-scope-select-with-preview-"));
+    process.env.CLAUDE_SCOPE_HOME = cacheHomeDir;
+  });
+
+  after(async () => {
+    if (originalScopeHome === undefined) {
+      delete process.env.CLAUDE_SCOPE_HOME;
+    } else {
+      process.env.CLAUDE_SCOPE_HOME = originalScopeHome;
+    }
+    await rm(cacheHomeDir, { recursive: true, force: true });
+  });
+
   describe("PreviewChoice interface", () => {
     it("should have correct interface types", () => {
       const choice: PreviewChoice<string> = {

@@ -1,6 +1,7 @@
 /**
  * Style renderers for CWD widget
  */
+import { homedir } from "node:os";
 import type { StyleMap } from "../../core/style-types.js";
 import type { ICwdColors } from "../../ui/theme/types.js";
 import { colorize } from "../../ui/utils/colors.js";
@@ -10,10 +11,21 @@ import type { CwdRenderData } from "./types.js";
 /**
  * Shorten path by replacing home with ~ and abbreviating middle components
  * /Users/demo/projects/claude-scope -> ~/p/claude-scope
+ * C:\Users\demo\projects\claude-scope -> ~/p/claude-scope
  */
 function shortenPath(path: string): string {
-  const home = process.env.HOME || "";
-  const result = home && path.startsWith(home) ? `~${path.slice(home.length)}` : path;
+  // homedir() rather than $HOME: Windows exposes the home directory as
+  // %USERPROFILE% and leaves HOME unset, which left every path unshortened.
+  const home = homedir();
+  // Claude Code reports Windows paths with backslashes; normalise so both
+  // separators collapse to the display form used below.
+  const normalized = path.replace(/\\/g, "/");
+  const normalizedHome = home.replace(/\\/g, "/");
+
+  const result =
+    normalizedHome && normalized.startsWith(normalizedHome)
+      ? `~${normalized.slice(normalizedHome.length)}`
+      : normalized;
 
   const parts = result.split("/").filter(Boolean);
   if (parts.length <= 2) return result;
@@ -69,7 +81,7 @@ export const cwdStyles: StyleMap<CwdRenderData, ICwdColors> = {
   technical: (data: CwdRenderData, colors?: ICwdColors) => {
     if (!colors) return data.fullPath;
 
-    const parts = data.fullPath.split("/");
+    const parts = data.fullPath.split(/[/\\]/);
     return parts
       .map((p, i) => {
         if (p === "") return "";

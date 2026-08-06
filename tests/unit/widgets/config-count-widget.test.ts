@@ -8,6 +8,7 @@ import { after, before, describe, it } from "node:test";
 import { fileURLToPath } from "node:url";
 import { expect } from "chai";
 import { rimraf } from "rimraf";
+import type { IConfigProvider } from "../../../src/providers/config-provider.js";
 import { ConfigCountWidget } from "../../../src/widgets/config-count-widget.js";
 import { createMockStdinData } from "../../fixtures/mock-data.js";
 import { stripAnsi } from "../../helpers/snapshot.js";
@@ -45,8 +46,15 @@ describe("ConfigCountWidget", () => {
   });
 
   it("should be disabled when all counts are zero", async () => {
-    process.env.HOME = "/tmp/nonexistent";
-    const widget = new ConfigCountWidget();
+    // config-count-widget.ts:ConfigCountWidget - inject a fake IConfigProvider
+    // returning all-zero counts instead of relying on process.env.HOME, which
+    // does not steer the real ConfigProvider's os.homedir() lookup on Windows.
+    const zeroCountsProvider: IConfigProvider = {
+      async getConfigs() {
+        return { claudeMdCount: 0, rulesCount: 0, mcpCount: 0, hooksCount: 0 };
+      },
+    };
+    const widget = new ConfigCountWidget(zeroCountsProvider);
     await widget.update(createMockStdinData({ cwd: "/tmp/nonexistent" }));
 
     expect(widget.isEnabled()).to.be.false;

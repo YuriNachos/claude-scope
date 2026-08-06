@@ -2,7 +2,10 @@
  * Integration tests for core widgets
  */
 
-import { describe, it } from "node:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, before, describe, it } from "node:test";
 import { expect } from "chai";
 import { Renderer } from "../../src/core/renderer.js";
 import { WidgetRegistry } from "../../src/core/widget-registry.js";
@@ -16,6 +19,26 @@ import { createMockStdinData } from "../fixtures/mock-data.js";
 import { stripAnsi } from "../helpers/snapshot.js";
 
 describe("Core Widgets Integration", () => {
+  // ContextWidget updates go through CacheManager, which defaults to the
+  // real ~/.config/claude-scope/cache.json (src/config/paths.ts getCachePath).
+  // Point it at a temp dir for the lifetime of this file.
+  const originalScopeHome = process.env.CLAUDE_SCOPE_HOME;
+  let cacheHomeDir: string;
+
+  before(async () => {
+    cacheHomeDir = await mkdtemp(join(tmpdir(), "claude-scope-five-widgets-"));
+    process.env.CLAUDE_SCOPE_HOME = cacheHomeDir;
+  });
+
+  after(async () => {
+    if (originalScopeHome === undefined) {
+      delete process.env.CLAUDE_SCOPE_HOME;
+    } else {
+      process.env.CLAUDE_SCOPE_HOME = originalScopeHome;
+    }
+    await rm(cacheHomeDir, { recursive: true, force: true });
+  });
+
   it("should render all widgets in single line with pipe separator", async () => {
     const registry = new WidgetRegistry();
 

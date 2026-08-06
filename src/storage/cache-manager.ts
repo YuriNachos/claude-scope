@@ -13,11 +13,10 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { dirname } from "node:path";
+import { getCachePath } from "../config/paths.js";
 import type { CachedContextUsage, CacheFile, CacheManagerOptions } from "./types.js";
 
-const DEFAULT_CACHE_PATH = `${homedir()}/.config/claude-scope/cache.json`;
 const DEFAULT_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
 
 export class CacheManager {
@@ -25,7 +24,7 @@ export class CacheManager {
   private expiryMs: number;
 
   constructor(options?: Partial<CacheManagerOptions>) {
-    this.cachePath = options?.cachePath ?? DEFAULT_CACHE_PATH;
+    this.cachePath = options?.cachePath ?? getCachePath();
     this.expiryMs = options?.expiryMs ?? DEFAULT_EXPIRY_MS;
 
     // Ensure cache directory exists

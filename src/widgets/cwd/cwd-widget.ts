@@ -42,7 +42,9 @@ export class CwdWidget extends StdinDataWidget {
       return null;
     }
 
-    const parts = data.cwd.split("/");
+    // Split on both separators: Claude Code reports Windows paths with
+    // backslashes, which previously left dirName holding the entire path.
+    const parts = data.cwd.split(/[/\\]/);
     const dirName = parts[parts.length - 1] || data.cwd;
 
     const renderData: CwdRenderData = {

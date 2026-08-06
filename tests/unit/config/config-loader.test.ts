@@ -1,28 +1,34 @@
 import assert from "node:assert";
-import { mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { after, before, describe, it } from "node:test";
 import { loadWidgetConfig } from "../../../src/config/config-loader.js";
 
-const testHomeDir = "/tmp/test-claude-scope-main-cli";
-const testConfigDir = `${testHomeDir}/.claude-scope`;
+// `os.homedir()` ignores `HOME` on Windows, so isolation must go through
+// `CLAUDE_SCOPE_HOME` (src/config/paths.ts) instead of overriding HOME - a
+// real temp dir from `mkdtemp`, never a hard-coded `/tmp/...` literal (not a
+// real path on Windows).
+let testConfigDir: string;
 
 describe("ConfigLoader (Main CLI)", () => {
-  const originalHome = process.env.HOME;
+  const originalScopeHome = process.env.CLAUDE_SCOPE_HOME;
 
   before(async () => {
-    // Set HOME environment variable to test directory
-    process.env.HOME = testHomeDir;
-
-    // Create test directory
-    await mkdir(testConfigDir, { recursive: true });
+    testConfigDir = await mkdtemp(join(tmpdir(), "claude-scope-main-cli-"));
+    process.env.CLAUDE_SCOPE_HOME = testConfigDir;
   });
 
   after(async () => {
     // Clean up test directory
-    await rm(testHomeDir, { recursive: true, force: true });
+    await rm(testConfigDir, { recursive: true, force: true });
 
-    // Restore original HOME
-    process.env.HOME = originalHome;
+    // Restore original override
+    if (originalScopeHome === undefined) {
+      delete process.env.CLAUDE_SCOPE_HOME;
+    } else {
+      process.env.CLAUDE_SCOPE_HOME = originalScopeHome;
+    }
   });
 
   describe("loadWidgetConfig", () => {
@@ -47,7 +53,7 @@ describe("ConfigLoader (Main CLI)", () => {
         },
       };
 
-      const testConfigPath = `${testConfigDir}/config.json`;
+      const testConfigPath = join(testConfigDir, "config.json");
       await writeFile(testConfigPath, JSON.stringify(validConfig));
 
       const config = await loadWidgetConfig();
@@ -58,7 +64,7 @@ describe("ConfigLoader (Main CLI)", () => {
     });
 
     it("should return null for corrupt JSON", async () => {
-      const testConfigPath = `${testConfigDir}/config.json`;
+      const testConfigPath = join(testConfigDir, "config.json");
       await writeFile(testConfigPath, "{invalid json");
 
       const config = await loadWidgetConfig();
@@ -70,7 +76,7 @@ describe("ConfigLoader (Main CLI)", () => {
         version: "1.0.0",
       };
 
-      const testConfigPath = `${testConfigDir}/config.json`;
+      const testConfigPath = join(testConfigDir, "config.json");
       await writeFile(testConfigPath, JSON.stringify(invalidConfig));
 
       const config = await loadWidgetConfig();
@@ -98,7 +104,7 @@ describe("ConfigLoader (Main CLI)", () => {
         },
       };
 
-      const testConfigPath = `${testConfigDir}/config.json`;
+      const testConfigPath = join(testConfigDir, "config.json");
       await writeFile(testConfigPath, JSON.stringify(multiLineConfig));
 
       const config = await loadWidgetConfig();
@@ -123,7 +129,7 @@ describe("ConfigLoader (Main CLI)", () => {
         },
       };
 
-      const testConfigPath = `${testConfigDir}/config.json`;
+      const testConfigPath = join(testConfigDir, "config.json");
       await writeFile(testConfigPath, JSON.stringify(configWithVersion));
 
       const config = await loadWidgetConfig();
@@ -151,7 +157,7 @@ describe("ConfigLoader (Main CLI)", () => {
         },
       };
 
-      const testConfigPath = `${testConfigDir}/config.json`;
+      const testConfigPath = join(testConfigDir, "config.json");
       await writeFile(testConfigPath, JSON.stringify(multiWidgetConfig));
 
       const config = await loadWidgetConfig();

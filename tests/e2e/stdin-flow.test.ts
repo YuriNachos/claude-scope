@@ -3,15 +3,76 @@
  * Tests the complete CLI flow: stdin input → JSON parsing → widget rendering → output
  */
 
-import { exec } from "node:child_process";
-import { describe, it } from "node:test";
-import { promisify } from "node:util";
+import { spawn } from "node:child_process";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, before, describe, it } from "node:test";
 import { expect } from "chai";
+import { generateBalancedLayout } from "../../src/config/default-config.js";
 import { stripAnsi } from "../helpers/snapshot.js";
 
-const execAsync = promisify(exec);
+/**
+ * Spawn the built CLI with the given stdin payload and environment, and
+ * collect its stdout/stderr.
+ *
+ * Writes `input` directly to the child's stdin instead of shelling out
+ * through `echo '<json>' | node dist/index.js`: on Windows, `exec()` runs the
+ * command through `cmd.exe`, which mangles a JSON string containing quotes
+ * and `$` on the command line - the child then receives corrupted stdin,
+ * throws inside `main()`'s parse step, and silently falls back to the
+ * git-only status line regardless of what the config contains. Piping via
+ * `child.stdin` sidesteps shell quoting entirely.
+ */
+function runCli(
+  input: string,
+  env: NodeJS.ProcessEnv
+): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const child = spawn("node", ["dist/index.js"], { cwd: process.cwd(), env });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => {
+      stdout += chunk.toString();
+    });
+    child.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+    child.on("error", reject);
+    child.on("close", () => resolve({ stdout, stderr }));
+    child.stdin.write(input);
+    child.stdin.end();
+  });
+}
 
 describe("E2E: CLI stdin → stdout flow", () => {
+  // The spawned CLI resolves its config through `getConfigDir()`
+  // (src/config/paths.ts), which reads the REAL `~/.claude-scope/config.json`
+  // (or generates a default there) unless `CLAUDE_SCOPE_HOME` is set. Without
+  // an override, the rendered widget set - and therefore these assertions -
+  // would depend on whatever happens to exist on the machine running the
+  // suite. Every spawn below points CLAUDE_SCOPE_HOME at a temp dir seeded
+  // with a KNOWN config (model + context + cost + duration on line 0) so the
+  // assertions are deterministic and the suite never touches the developer's
+  // real ~/.claude-scope.
+  let scopeHomeDir: string;
+  let childEnv: NodeJS.ProcessEnv;
+
+  before(async () => {
+    scopeHomeDir = await mkdtemp(join(tmpdir(), "claude-scope-e2e-"));
+    const knownConfig = generateBalancedLayout("balanced", "monokai");
+    await writeFile(
+      join(scopeHomeDir, "config.json"),
+      JSON.stringify(knownConfig, null, 2),
+      "utf-8"
+    );
+    childEnv = { ...process.env, CLAUDE_SCOPE_HOME: scopeHomeDir };
+  });
+
+  after(async () => {
+    await rm(scopeHomeDir, { recursive: true, force: true });
+  });
+
   it("should process valid stdin JSON and output status line", async () => {
     const input = JSON.stringify({
       hook_event_name: "Status",
@@ -45,9 +106,7 @@ describe("E2E: CLI stdin → stdout flow", () => {
       },
     });
 
-    const { stdout } = await execAsync(`echo '${input}' | node dist/index.js`, {
-      cwd: process.cwd(),
-    });
+    const { stdout } = await runCli(input, childEnv);
 
     // Should output status line
     const cleanOutput = stripAnsi(stdout);
@@ -59,9 +118,7 @@ describe("E2E: CLI stdin → stdout flow", () => {
   });
 
   it("should return git fallback for invalid JSON", async () => {
-    const { stdout } = await execAsync(`echo 'invalid json' | node dist/index.js`, {
-      cwd: process.cwd(),
-    });
+    const { stdout } = await runCli("invalid json", childEnv);
 
     // Should return git branch as fallback (or empty if not in git repo)
     // We're in a git repo, so expect non-empty output with branch name
@@ -71,9 +128,7 @@ describe("E2E: CLI stdin → stdout flow", () => {
   });
 
   it("should return git fallback for empty stdin", async () => {
-    const { stdout } = await execAsync(`echo '' | node dist/index.js`, {
-      cwd: process.cwd(),
-    });
+    const { stdout } = await runCli("", childEnv);
 
     // Should return git branch as fallback
     expect(stdout).to.not.equal("");
@@ -115,9 +170,7 @@ describe("E2E: CLI stdin → stdout flow", () => {
       },
     });
 
-    const { stdout } = await execAsync(`echo '${input}' | node dist/index.js`, {
-      cwd: process.cwd(),
-    });
+    const { stdout } = await runCli(input, childEnv);
 
     // ccstatusline formula: input + cache_read + cache_creation (no output_tokens)
     // Calculation: (40000 + 15000 + 5000) / 100000 = 60%

@@ -48,6 +48,11 @@ export class ProcessDetector {
    * @returns Detected server status or null
    */
   async detect(): Promise<DetectedServer | null> {
+    // `ps aux` does not exist on Windows: skip the guaranteed-to-fail spawn
+    if (process.platform === "win32") {
+      return null;
+    }
+
     try {
       const { stdout } = await this.execFn("ps", ["aux"], {
         timeout: 1000,

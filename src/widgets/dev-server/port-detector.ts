@@ -49,6 +49,11 @@ export class PortDetector {
    * @returns Detected server info or null
    */
   async detect(): Promise<DetectedServer | null> {
+    // lsof does not exist on Windows: skip the guaranteed-to-fail spawn
+    if (process.platform === "win32") {
+      return null;
+    }
+
     try {
       // Build lsof command to check all common dev ports
       const args = [

@@ -5,22 +5,21 @@
 
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
-import { homedir } from "node:os";
-import { join } from "node:path";
+import { getConfigDir, getConfigPath } from "../../../config/paths.js";
 import type { ScopeConfig } from "./config-schema.js";
 
 /**
  * Get user config directory path
  */
 export function getUserConfigDir(): string {
-  return join(homedir(), ".claude-scope");
+  return getConfigDir();
 }
 
 /**
  * Get user config file path
  */
 export function getUserConfigPath(): string {
-  return join(getUserConfigDir(), "config.json");
+  return getConfigPath();
 }
 
 /**

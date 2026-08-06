@@ -4,25 +4,34 @@
  */
 
 import assert from "node:assert";
-import { mkdir, rm } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { after, before, describe, it } from "node:test";
 import { loadConfig, saveConfig } from "../../src/cli/commands/quick-config/index.js";
 import { generateDefaultConfig } from "../../src/config/default-config.js";
 
+// `os.homedir()` ignores `HOME` on Windows, so isolation must go through
+// `CLAUDE_SCOPE_HOME` (src/config/paths.ts) instead of overriding HOME - a
+// real temp dir from `mkdtemp`, never a hard-coded `/tmp/...` literal (not a
+// real path on Windows).
 describe("Quick Config Integration", () => {
-  const testHomeDir = "/tmp/test-quick-config-integration";
-  const originalHome = process.env.HOME;
+  const originalScopeHome = process.env.CLAUDE_SCOPE_HOME;
+  let testHomeDir: string;
 
   before(async () => {
-    // Set up test home directory
-    process.env.HOME = testHomeDir;
-    await mkdir(testHomeDir, { recursive: true });
+    testHomeDir = await mkdtemp(join(tmpdir(), "claude-scope-quick-config-integration-"));
+    process.env.CLAUDE_SCOPE_HOME = testHomeDir;
   });
 
   after(async () => {
-    // Clean up test directory and restore HOME
+    // Clean up test directory and restore override
     await rm(testHomeDir, { recursive: true, force: true });
-    process.env.HOME = originalHome;
+    if (originalScopeHome === undefined) {
+      delete process.env.CLAUDE_SCOPE_HOME;
+    } else {
+      process.env.CLAUDE_SCOPE_HOME = originalScopeHome;
+    }
   });
 
   describe("save and load config", () => {

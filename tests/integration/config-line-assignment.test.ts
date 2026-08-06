@@ -3,7 +3,10 @@
  * Verifies that widgets appear on correct lines per user config
  */
 
-import { afterEach, beforeEach, describe, it } from "node:test";
+import { mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { after, afterEach, before, beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
 import type { LoadedConfig } from "../../src/config/config-loader.js";
 import { Renderer } from "../../src/core/renderer.js";
@@ -109,6 +112,26 @@ async function registerWidgetWithConfig<
 }
 
 describe("Config Line Assignment Integration", () => {
+  // ContextWidget/CacheMetricsWidget updates go through CacheManager, which
+  // defaults to the real ~/.config/claude-scope/cache.json (src/config/paths.ts
+  // getCachePath). Point it at a temp dir for the lifetime of this file.
+  const originalScopeHome = process.env.CLAUDE_SCOPE_HOME;
+  let cacheHomeDir: string;
+
+  before(async () => {
+    cacheHomeDir = await mkdtemp(join(tmpdir(), "claude-scope-line-assignment-"));
+    process.env.CLAUDE_SCOPE_HOME = cacheHomeDir;
+  });
+
+  after(async () => {
+    if (originalScopeHome === undefined) {
+      delete process.env.CLAUDE_SCOPE_HOME;
+    } else {
+      process.env.CLAUDE_SCOPE_HOME = originalScopeHome;
+    }
+    await rm(cacheHomeDir, { recursive: true, force: true });
+  });
+
   let registry: WidgetRegistry;
   let renderer: Renderer;
 

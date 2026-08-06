@@ -18,6 +18,14 @@ export interface ConfigCounts {
 
 export interface ConfigScanOptions {
   cwd?: string;
+  /**
+   * Home directory to scan for user-scope config.
+   *
+   * Defaults to `os.homedir()`. Injectable so tests can point at a fixture
+   * directory instead of the real home - `$HOME` is not an option, since
+   * `os.homedir()` reads `%USERPROFILE%` on Windows and ignores it.
+   */
+  homeDir?: string;
 }
 
 /**
@@ -72,7 +80,7 @@ export class ConfigProvider implements IConfigProvider {
     let mcpCount = 0;
     let hooksCount = 0;
 
-    const homeDir = os.homedir();
+    const homeDir = options.homeDir ?? os.homedir();
     const claudeDir = path.join(homeDir, ".claude");
     const cwd = options.cwd;
 
