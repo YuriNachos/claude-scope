@@ -120,22 +120,23 @@ describe("Live Preview Menu Integration", () => {
     assert.ok(config.lines["0"], "Should have line 0");
     assert.ok(config.lines["1"], "Should have line 1");
 
-    // Line 0: model, context, cost, duration, lines (5 widgets)
-    assert.strictEqual(config.lines["0"].length, 5);
+    // Line 0: cwd, model, context, lines, cost, duration (6 widgets)
+    assert.strictEqual(config.lines["0"].length, 6);
     const line0Ids = config.lines["0"].map((w) => w.id);
+    assert.ok(line0Ids.includes("cwd"));
     assert.ok(line0Ids.includes("model"));
     assert.ok(line0Ids.includes("context"));
     assert.ok(line0Ids.includes("cost"));
     assert.ok(line0Ids.includes("duration"));
     assert.ok(line0Ids.includes("lines"));
 
-    // Line 1: git, cache-metrics, config-count, active-tools (4 widgets)
+    // Line 1: git, git-tag, cache-metrics, config-count (4 widgets)
     assert.strictEqual(config.lines["1"].length, 4);
     const line1Ids = config.lines["1"].map((w) => w.id);
     assert.ok(line1Ids.includes("git"));
+    assert.ok(line1Ids.includes("git-tag"));
     assert.ok(line1Ids.includes("cache-metrics"));
     assert.ok(line1Ids.includes("config-count"));
-    assert.ok(line1Ids.includes("active-tools"));
   });
 
   it("should verify Compact layout structure", () => {
@@ -145,9 +146,10 @@ describe("Live Preview Menu Integration", () => {
     assert.strictEqual(Object.keys(config.lines).length, 1);
     assert.ok(config.lines["0"], "Should have line 0");
 
-    // Line 0: model, context, cost, git, duration (5 widgets)
-    assert.strictEqual(config.lines["0"].length, 5);
+    // Line 0: cwd, model, context, cost, git, duration (6 widgets)
+    assert.strictEqual(config.lines["0"].length, 6);
     const line0Ids = config.lines["0"].map((w) => w.id);
+    assert.ok(line0Ids.includes("cwd"));
     assert.ok(line0Ids.includes("model"));
     assert.ok(line0Ids.includes("context"));
     assert.ok(line0Ids.includes("cost"));
@@ -158,33 +160,46 @@ describe("Live Preview Menu Integration", () => {
   it("should verify Rich layout structure", () => {
     const config = generateRichLayout("balanced", "monokai");
 
-    // Rich has 3 lines
-    assert.strictEqual(Object.keys(config.lines).length, 3);
+    // Rich has 5 lines
+    assert.strictEqual(Object.keys(config.lines).length, 5);
     assert.ok(config.lines["0"], "Should have line 0");
     assert.ok(config.lines["1"], "Should have line 1");
     assert.ok(config.lines["2"], "Should have line 2");
+    assert.ok(config.lines["3"], "Should have line 3");
+    assert.ok(config.lines["4"], "Should have line 4");
 
-    // Line 0: model, context, cost, lines, duration (5 widgets)
-    assert.strictEqual(config.lines["0"].length, 5);
+    // Line 0: cwd, model, context, lines, cost, duration (6 widgets)
+    assert.strictEqual(config.lines["0"].length, 6);
     const line0Ids = config.lines["0"].map((w) => w.id);
+    assert.ok(line0Ids.includes("cwd"));
     assert.ok(line0Ids.includes("model"));
     assert.ok(line0Ids.includes("context"));
     assert.ok(line0Ids.includes("cost"));
     assert.ok(line0Ids.includes("lines"));
     assert.ok(line0Ids.includes("duration"));
 
-    // Line 1: git, git-tag, active-tools (3 widgets)
-    assert.strictEqual(config.lines["1"].length, 3);
+    // Line 1: git, git-tag, cache-metrics, config-count (4 widgets)
+    assert.strictEqual(config.lines["1"].length, 4);
     const line1Ids = config.lines["1"].map((w) => w.id);
     assert.ok(line1Ids.includes("git"));
     assert.ok(line1Ids.includes("git-tag"));
-    assert.ok(line1Ids.includes("active-tools"));
+    assert.ok(line1Ids.includes("cache-metrics"));
+    assert.ok(line1Ids.includes("config-count"));
 
-    // Line 2: cache-metrics, config-count (2 widgets)
-    assert.strictEqual(config.lines["2"].length, 2);
+    // Line 2: dev-server, docker, active-tools (3 widgets)
+    assert.strictEqual(config.lines["2"].length, 3);
     const line2Ids = config.lines["2"].map((w) => w.id);
-    assert.ok(line2Ids.includes("cache-metrics"));
-    assert.ok(line2Ids.includes("config-count"));
+    assert.ok(line2Ids.includes("dev-server"));
+    assert.ok(line2Ids.includes("docker"));
+    assert.ok(line2Ids.includes("active-tools"));
+
+    // Line 3: sysmon (1 widget)
+    assert.strictEqual(config.lines["3"].length, 1);
+    assert.ok(config.lines["3"].map((w) => w.id).includes("sysmon"));
+
+    // Line 4: empty-line (1 widget)
+    assert.strictEqual(config.lines["4"].length, 1);
+    assert.ok(config.lines["4"].map((w) => w.id).includes("empty-line"));
   });
 
   it("should apply theme colors to all widgets", () => {

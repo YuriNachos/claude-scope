@@ -1,19 +1,44 @@
 import assert from "node:assert";
 import { mkdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { beforeEach, describe, it } from "node:test";
+import { after, before, beforeEach, describe, it } from "node:test";
 import type { StdinData } from "../../../../src/types.js";
 import { UsageResolver } from "../../../../src/widgets/core/usage-resolver.js";
 
+// UsageResolver constructs a real CacheManager internally (no injectable
+// path), which persists to `$CLAUDE_SCOPE_HOME/cache.json` - the developer's
+// real cache file by default. Without isolation, "should return null usage
+// when no data available" can read back usage a LATER test in this file
+// wrote for "session-1" on a subsequent run. Point the whole suite at a
+// fresh temp dir, same pattern as tests/unit/config/*.test.ts and
+// tests/unit/storage/cache-manager.test.ts.
 describe("UsageResolver", () => {
   const testDir = join(tmpdir(), "usage-resolver-test");
   let resolver: UsageResolver;
+  let originalScopeHome: string | undefined;
+  let scopeHomeDir: string;
 
   // Create test directory
   try {
     mkdirSync(testDir, { recursive: true });
   } catch {}
+
+  before(async () => {
+    originalScopeHome = process.env.CLAUDE_SCOPE_HOME;
+    scopeHomeDir = await mkdtemp(join(tmpdir(), "claude-scope-usage-resolver-"));
+    process.env.CLAUDE_SCOPE_HOME = scopeHomeDir;
+  });
+
+  after(async () => {
+    await rm(scopeHomeDir, { recursive: true, force: true });
+    if (originalScopeHome === undefined) {
+      delete process.env.CLAUDE_SCOPE_HOME;
+    } else {
+      process.env.CLAUDE_SCOPE_HOME = originalScopeHome;
+    }
+  });
 
   beforeEach(() => {
     resolver = new UsageResolver();

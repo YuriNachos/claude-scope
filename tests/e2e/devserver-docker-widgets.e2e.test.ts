@@ -69,7 +69,7 @@ describe("E2E: DevServer and Docker Widgets", () => {
       assert.strictEqual(devServerWidget.metadata.name, "Dev Server");
       assert.strictEqual(
         devServerWidget.metadata.description,
-        "Detects running dev server processes"
+        "Detects running dev server processes using hybrid port+process detection"
       );
 
       assert.strictEqual(dockerWidget.id, "docker");
@@ -248,8 +248,14 @@ describe("E2E: DevServer and Docker Widgets", () => {
       await devServerWidget.initialize({ config: { enabled: true } });
       await dockerWidget.initialize({ config: { enabled: true } });
 
-      await assert.doesNotReject(() => devServerWidget.cleanup());
-      await assert.doesNotReject(() => dockerWidget.cleanup());
+      // cleanup() is optional on IWidget (src/core/types.ts) - neither widget
+      // deliberately implements it.
+      if (devServerWidget.cleanup) {
+        await assert.doesNotReject(() => devServerWidget.cleanup!());
+      }
+      if (dockerWidget.cleanup) {
+        await assert.doesNotReject(() => dockerWidget.cleanup!());
+      }
     });
   });
 
@@ -276,9 +282,13 @@ describe("E2E: DevServer and Docker Widgets", () => {
       assert.ok(devServerResult === null || typeof devServerResult === "string");
       assert.ok(dockerResult === null || typeof dockerResult === "string");
 
-      // Cleanup
-      await assert.doesNotReject(() => devServerWidget.cleanup());
-      await assert.doesNotReject(() => dockerWidget.cleanup());
+      // Cleanup - optional on IWidget, neither widget implements it
+      if (devServerWidget.cleanup) {
+        await assert.doesNotReject(() => devServerWidget.cleanup!());
+      }
+      if (dockerWidget.cleanup) {
+        await assert.doesNotReject(() => dockerWidget.cleanup!());
+      }
     });
 
     it("should handle reconfiguration at runtime", async () => {

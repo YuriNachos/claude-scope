@@ -100,8 +100,14 @@ describe("DevServerWidget Unit", () => {
   describe("cleanup", () => {
     it("should cleanup without errors", async () => {
       await widget.initialize({ config: { enabled: true } });
-      await widget.cleanup(); // Should not throw
-      assert.ok(true);
+
+      // cleanup() is optional on IWidget (src/core/types.ts) - DevServerWidget
+      // deliberately does not implement it.
+      if (widget.cleanup) {
+        await widget.cleanup();
+      }
+
+      assert.strictEqual(widget.isEnabled(), true);
     });
   });
 
@@ -112,7 +118,10 @@ describe("DevServerWidget Unit", () => {
 
     it("should have correct metadata", () => {
       assert.strictEqual(widget.metadata.name, "Dev Server");
-      assert.strictEqual(widget.metadata.description, "Detects running dev server processes");
+      assert.strictEqual(
+        widget.metadata.description,
+        "Detects running dev server processes using hybrid port+process detection"
+      );
       assert.strictEqual(widget.metadata.line, 0);
     });
   });

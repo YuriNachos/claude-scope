@@ -174,7 +174,7 @@ describe("GitTagWidget", () => {
 
       // Widget returns null when no tag exists (disappears)
       expect(result).to.be.null;
-      await matchSnapshot("git-tag-widget-no-tag", "null");
+      await matchSnapshot("git-tag-widget-no-tag", result);
     });
   });
 
@@ -196,7 +196,7 @@ describe("GitTagWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("v0.5.4");
+        expect(stripAnsi(result || "")).to.equal("v0.5.4");
       });
 
       it("should return null when no tag (widget disappears)", async () => {
@@ -216,7 +216,7 @@ describe("GitTagWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("0.5.4");
+        expect(stripAnsi(result || "")).to.equal("0.5.4");
       });
 
       it("should return null when no tag (widget disappears)", async () => {
@@ -236,7 +236,7 @@ describe("GitTagWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("🏷️ v0.5.4");
+        expect(stripAnsi(result || "")).to.equal("🏷️ v0.5.4");
       });
 
       it("should return null when no tag (widget disappears)", async () => {
@@ -256,7 +256,7 @@ describe("GitTagWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("version v0.5.4");
+        expect(stripAnsi(result || "")).to.equal("version v0.5.4");
       });
 
       it("should return null when no tag (widget disappears)", async () => {
@@ -276,7 +276,7 @@ describe("GitTagWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("Tag: v0.5.4");
+        expect(stripAnsi(result || "")).to.equal("Tag: v0.5.4");
       });
 
       it("should return null when no tag (widget disappears)", async () => {
@@ -296,7 +296,7 @@ describe("GitTagWidget", () => {
 
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("● v0.5.4");
+        expect(stripAnsi(result || "")).to.equal("● v0.5.4");
       });
 
       it("should return null when no tag (widget disappears)", async () => {
@@ -314,10 +314,14 @@ describe("GitTagWidget", () => {
         const widget = createMockWidget(testTag);
 
         widget.setStyle("balanced");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("v0.5.4");
+        expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+          "v0.5.4"
+        );
 
         widget.setStyle("compact");
-        expect(await widget.render({ width: 80, timestamp: 0 })).to.equal("0.5.4");
+        expect(stripAnsi((await widget.render({ width: 80, timestamp: 0 })) || "")).to.equal(
+          "0.5.4"
+        );
       });
 
       it("should default to balanced for unknown styles", async () => {
@@ -327,7 +331,7 @@ describe("GitTagWidget", () => {
         widget.setStyle("unknown" as any);
         const result = await widget.render({ width: 80, timestamp: 0 });
 
-        expect(result).to.equal("v0.5.4");
+        expect(stripAnsi(result || "")).to.equal("v0.5.4");
       });
     });
   });

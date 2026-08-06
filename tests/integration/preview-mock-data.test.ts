@@ -46,7 +46,10 @@ describe("Preview with Mock Data", () => {
   });
 
   it("should show active tools in preview", async () => {
-    const config = generateBalancedLayout("balanced", "monokai");
+    // The active-tools widget only ships on the Rich layout (see
+    // src/config/default-config.ts generateRichLayout) - Balanced never
+    // included it, so this must render Rich rather than Balanced.
+    const config = generateRichLayout("balanced", "monokai");
     const preview = await renderPreviewFromConfig(config, "balanced", "monokai");
 
     // Should show tool names (Read, Edit, Bash)

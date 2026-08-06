@@ -103,8 +103,14 @@ describe("DevServerWidget Integration", () => {
   describe("cleanup", () => {
     it("should cleanup without errors", async () => {
       await widget.initialize({ config: { enabled: true } });
-      await widget.cleanup(); // Should not throw
-      assert.ok(true);
+
+      // cleanup() is optional on IWidget (src/core/types.ts) - DevServerWidget
+      // deliberately does not implement it.
+      if (widget.cleanup) {
+        await widget.cleanup();
+      }
+
+      assert.strictEqual(widget.isEnabled(), true);
     });
   });
 

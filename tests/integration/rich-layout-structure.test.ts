@@ -13,11 +13,11 @@ describe("Rich Layout Structure", () => {
     // Get widget IDs on line 0 in order
     const line0WidgetIds = config.lines["0"].map((w) => w.id);
 
-    // Expected order: model, context, lines, cost, duration (5 widgets)
-    expect(line0WidgetIds).to.deep.equal(["model", "context", "lines", "cost", "duration"]);
+    // Expected order: cwd, model, context, lines, cost, duration (6 widgets)
+    expect(line0WidgetIds).to.deep.equal(["cwd", "model", "context", "lines", "cost", "duration"]);
 
     // Verify correct count
-    expect(line0WidgetIds).to.have.lengthOf(5);
+    expect(line0WidgetIds).to.have.lengthOf(6);
   });
 
   it("should have correct widgets on line 1", () => {

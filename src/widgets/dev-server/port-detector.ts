@@ -4,12 +4,8 @@
  * Detects running development servers by checking listening ports using lsof.
  */
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
+import { defaultDetectorExec } from "./detector-exec.js";
 import type { DetectedServer, ExecFileFn } from "./detector-types.js";
-
-const execFileAsync = promisify(execFile);
 
 /**
  * Port to server mapping
@@ -41,7 +37,7 @@ export class PortDetector {
    * @param execFn - Optional execFile function for testing (dependency injection)
    */
   constructor(execFn?: ExecFileFn) {
-    this.execFn = execFn ?? execFileAsync;
+    this.execFn = execFn ?? defaultDetectorExec;
   }
 
   /**
@@ -49,11 +45,6 @@ export class PortDetector {
    * @returns Detected server info or null
    */
   async detect(): Promise<DetectedServer | null> {
-    // lsof does not exist on Windows: skip the guaranteed-to-fail spawn
-    if (process.platform === "win32") {
-      return null;
-    }
-
     try {
       // Build lsof command to check all common dev ports
       const args = [

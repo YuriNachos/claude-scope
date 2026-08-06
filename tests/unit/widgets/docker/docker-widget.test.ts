@@ -4,21 +4,14 @@
 
 import { beforeEach, describe, it } from "node:test";
 import { expect } from "chai";
-import type { StdinData } from "../../../../src/types.js";
 import { DEFAULT_THEME } from "../../../../src/ui/theme/index.js";
 import { DockerWidget } from "../../../../src/widgets/docker/docker-widget.js";
 
 describe("DockerWidget", () => {
   let widget: DockerWidget;
-  let __mockStdinData: StdinData;
 
   beforeEach(() => {
     widget = new DockerWidget(DEFAULT_THEME);
-    _mockStdinData = {
-      session_id: "test-session",
-      cwd: "/Users/test/project",
-      model: { id: "claude-opus-4-5-20251101", display_name: "Claude Opus 4.5" },
-    };
   });
 
   describe("initialization", () => {
@@ -68,7 +61,14 @@ describe("DockerWidget", () => {
 
   describe("cleanup", () => {
     it("should cleanup without errors", async () => {
-      await expect(widget.cleanup()).not.to.throw;
+      // cleanup() is optional on IWidget (src/core/types.ts) - DockerWidget
+      // deliberately does not implement it, same as GitWidget/GitTagWidget.
+      if (widget.cleanup) {
+        await widget.cleanup();
+      }
+
+      // Verify widget still works after cleanup
+      expect(widget.isEnabled()).to.be.true;
     });
   });
 });

@@ -5,12 +5,8 @@
  * Detects running dev servers by parsing system process list.
  */
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
+import { defaultDetectorExec } from "./detector-exec.js";
 import type { DetectedServer, ExecFileFn, ProcessPattern } from "./detector-types.js";
-
-const execFileAsync = promisify(execFile);
 
 /**
  * Process Detector
@@ -40,7 +36,7 @@ export class ProcessDetector {
    * @param execFn - Optional execFile function for testing (dependency injection)
    */
   constructor(execFn?: ExecFileFn) {
-    this.execFn = execFn ?? execFileAsync;
+    this.execFn = execFn ?? defaultDetectorExec;
   }
 
   /**
@@ -48,11 +44,6 @@ export class ProcessDetector {
    * @returns Detected server status or null
    */
   async detect(): Promise<DetectedServer | null> {
-    // `ps aux` does not exist on Windows: skip the guaranteed-to-fail spawn
-    if (process.platform === "win32") {
-      return null;
-    }
-
     try {
       const { stdout } = await this.execFn("ps", ["aux"], {
         timeout: 1000,

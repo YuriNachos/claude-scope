@@ -7,7 +7,16 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["src/**", "tests/**", "*.json", "*.ts", "*.js", "!dist", "!node_modules"]
+    "includes": [
+      "src/**",
+      "tests/**",
+      "scripts/**",
+      "*.json",
+      "*.ts",
+      "*.js",
+      "!dist",
+      "!node_modules"
+    ]
   },
   "formatter": {
     "enabled": true,
