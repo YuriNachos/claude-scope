@@ -4,6 +4,7 @@
  * Detects running development servers by checking listening ports using lsof.
  */
 
+import { EXEC_TIMEOUTS } from "../../constants.js";
 import { defaultDetectorExec } from "./detector-exec.js";
 import type { DetectedServer, ExecFileFn } from "./detector-types.js";
 
@@ -59,7 +60,7 @@ export class PortDetector {
       }
 
       const { stdout } = await this.execFn("lsof", args, {
-        timeout: 2000,
+        timeout: EXEC_TIMEOUTS.PORT_SCAN_MS,
       });
 
       // Parse lsof output format:

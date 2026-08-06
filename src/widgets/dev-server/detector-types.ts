@@ -25,23 +25,11 @@ export interface DetectedServer {
 }
 
 /**
- * Function signature for execFile (for dependency injection in tests)
+ * Exec types shared with every other external command in the project
  *
- * Both detectors use this signature to allow mocked execFile in unit tests.
+ * Re-exported here so detector consumers keep a single import site.
  */
-export type ExecFileFn = (
-  command: string,
-  args: string[],
-  options?: { timeout?: number }
-) => Promise<ExecFileResult>;
-
-/**
- * Result of execFile command
- */
-export interface ExecFileResult {
-  stdout: string;
-  stderr?: string;
-}
+export type { ExecFileFn, ExecFileResult } from "../../utils/exec.js";
 
 /**
  * Process detection patterns for dev servers

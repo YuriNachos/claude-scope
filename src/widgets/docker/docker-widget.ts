@@ -4,11 +4,7 @@
  * Displays Docker container count and status
  */
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
-
+import { EXEC_CACHE_TTL, EXEC_TIMEOUTS } from "../../constants.js";
 import {
   DEFAULT_WIDGET_STYLE,
   type StyleRendererFn,
@@ -18,6 +14,7 @@ import type { IWidget, RenderContext, StdinData, WidgetContext } from "../../cor
 import { createWidgetMetadata } from "../../core/widget-types.js";
 import { DEFAULT_THEME } from "../../ui/theme/index.js";
 import type { IDockerColors, IThemeColors } from "../../ui/theme/types.js";
+import { type ExecFileFn, runCommand } from "../../utils/exec.js";
 import { dockerStyles } from "./styles.js";
 import type { DockerRenderData, DockerStatus } from "./types.js";
 
@@ -37,10 +34,15 @@ export class DockerWidget implements IWidget {
   private styleFn: StyleRendererFn<DockerRenderData, IDockerColors> = dockerStyles.balanced!;
   private cachedStatus: DockerStatus | null = null;
   private lastCheck = 0;
-  private readonly CACHE_TTL = 5000;
+  private execFn?: ExecFileFn;
 
-  constructor(colors?: IThemeColors) {
+  /**
+   * @param colors - Theme colors, defaults to Monokai
+   * @param execFn - Optional exec function for testing (dependency injection)
+   */
+  constructor(colors?: IThemeColors, execFn?: ExecFileFn) {
     this.colors = colors ?? DEFAULT_THEME;
+    this.execFn = execFn;
   }
 
   setStyle(style: WidgetStyle = DEFAULT_WIDGET_STYLE): void {
@@ -76,8 +78,10 @@ export class DockerWidget implements IWidget {
     }
 
     const now = Date.now();
-    if (this.cachedStatus && now - this.lastCheck < this.CACHE_TTL) {
-      return this.styleFn({ status: this.cachedStatus }, this.colors.docker);
+    if (this.cachedStatus && now - this.lastCheck < this.getCacheTtl(this.cachedStatus)) {
+      return this.cachedStatus.isAvailable
+        ? this.styleFn({ status: this.cachedStatus }, this.colors.docker)
+        : null;
     }
 
     const status = await this.getDockerStatus();
@@ -91,32 +95,39 @@ export class DockerWidget implements IWidget {
     return this.styleFn({ status }, this.colors.docker);
   }
 
+  /**
+   * How long the current status may be reused
+   *
+   * A missing or stopped daemon is cached far longer: without Docker installed
+   * every render would otherwise spawn a process that is guaranteed to fail.
+   */
+  private getCacheTtl(status: DockerStatus): number {
+    return status.isAvailable ? EXEC_CACHE_TTL.DOCKER_MS : EXEC_CACHE_TTL.DOCKER_UNAVAILABLE_MS;
+  }
+
+  /**
+   * Query container counts with a single `docker ps` call
+   *
+   * Listing all containers with their state covers daemon availability, the
+   * running count and the total count at once - a failure to reach the daemon
+   * surfaces as a failed command.
+   */
   protected async getDockerStatus(): Promise<DockerStatus> {
-    try {
-      // Check if Docker daemon is available
-      await execFileAsync("docker", ["info"], { timeout: 2000 });
+    const stdout = await runCommand(
+      "docker",
+      ["ps", "-a", "--format", "{{.State}}"],
+      { timeout: EXEC_TIMEOUTS.DOCKER_MS },
+      this.execFn
+    );
 
-      // Get running container count
-      const { stdout: runningOutput } = await execFileAsync("docker", ["ps", "-q"], {
-        timeout: 1000,
-      });
-      const running = runningOutput
-        .trim()
-        .split("\n")
-        .filter((line) => line).length;
-
-      // Get total container count
-      const { stdout: allOutput } = await execFileAsync("docker", ["ps", "-aq"], {
-        timeout: 1000,
-      });
-      const total = allOutput
-        .trim()
-        .split("\n")
-        .filter((line) => line).length;
-
-      return { running, total, isAvailable: true };
-    } catch {
+    if (stdout === null) {
+      // Docker missing, daemon unreachable, or the command timed out
       return { running: 0, total: 0, isAvailable: false };
     }
+
+    const states = stdout.split("\n").filter((line) => line.trim());
+    const running = states.filter((state) => state.trim() === "running").length;
+
+    return { running, total: states.length, isAvailable: true };
   }
 }

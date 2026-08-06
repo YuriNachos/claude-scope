@@ -15,6 +15,34 @@ export const TIME = {
 } as const;
 
 /**
+ * Timeouts for external commands (milliseconds)
+ *
+ * The statusline is rendered synchronously from Claude Code's point of view,
+ * so every external command must be bounded. Values are chosen so that the
+ * worst case stays well below one render cycle.
+ */
+export const EXEC_TIMEOUTS = {
+  /** git status / diff / describe */
+  GIT_MS: 2000,
+  /** docker CLI calls */
+  DOCKER_MS: 2000,
+  /** System process listing (`ps aux`) */
+  PROCESS_LIST_MS: 1000,
+  /** Listening-port scan (`lsof`) */
+  PORT_SCAN_MS: 2000,
+} as const;
+
+/**
+ * Cache lifetimes for external command results (milliseconds)
+ */
+export const EXEC_CACHE_TTL = {
+  /** Docker status while the daemon is reachable */
+  DOCKER_MS: 5000,
+  /** Docker status after the daemon was found unreachable */
+  DOCKER_UNAVAILABLE_MS: 60000,
+} as const;
+
+/**
  * Context usage color thresholds (percentages)
  */
 export const CONTEXT_THRESHOLDS = {

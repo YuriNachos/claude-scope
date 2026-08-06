@@ -5,10 +5,8 @@
  * avoiding external dependencies like simple-git.
  */
 
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
-
-const execFileAsync = promisify(execFile);
+import { EXEC_TIMEOUTS } from "../constants.js";
+import { type ExecFileFn, runCommand } from "../utils/exec.js";
 
 /**
  * Result of git status operation
@@ -76,26 +74,37 @@ export interface IGit {
  */
 export class NativeGit implements IGit {
   private cwd: string;
+  private execFn?: ExecFileFn;
 
-  constructor(cwd: string) {
+  /**
+   * @param cwd - Working directory for git operations
+   * @param execFn - Optional exec function for testing (dependency injection)
+   */
+  constructor(cwd: string, execFn?: ExecFileFn) {
     this.cwd = cwd;
+    this.execFn = execFn;
+  }
+
+  /**
+   * Run a git command bounded by EXEC_TIMEOUTS.GIT_MS
+   *
+   * A git process can hang indefinitely (stale index.lock, unreachable network
+   * remote, filesystem stall) and would otherwise block the whole statusline.
+   */
+  private run(args: string[]): Promise<string | null> {
+    return runCommand("git", args, { cwd: this.cwd, timeout: EXEC_TIMEOUTS.GIT_MS }, this.execFn);
   }
 
   async status(): Promise<GitStatusResult> {
-    try {
-      const { stdout } = await execFileAsync("git", ["status", "--branch", "--short"], {
-        cwd: this.cwd,
-      });
-
-      // Parse output like: "## main" or "## feature-branch"
-      const match = stdout.match(/^##\s+(\S+)/m);
-      const current = match ? match[1] : null;
-
-      return { current };
-    } catch {
-      // Not in a git repo or git not available
+    const stdout = await this.run(["status", "--branch", "--short"]);
+    if (stdout === null) {
+      // Not in a git repo, git not available, or the command timed out
       return { current: null };
     }
+
+    // Parse output like: "## main" or "## feature-branch"
+    const match = stdout.match(/^##\s+(\S+)/m);
+    return { current: match ? match[1] : null };
   }
 
   async diffSummary(options?: string[]): Promise<GitDiffSummary> {
@@ -104,43 +113,33 @@ export class NativeGit implements IGit {
       args.push(...options);
     }
 
-    try {
-      const { stdout } = await execFileAsync("git", args, {
-        cwd: this.cwd,
-      });
-
-      // Parse output like: " 5 file(s) changed, 12 insertions(+), 3 deletions(-)"
-      // or: " 2 insertions(+), 1 deletion(-)"
-      const fileMatch = stdout.match(/(\d+)\s+file(s?)\s+changed/);
-      const insertionMatch = stdout.match(/(\d+)\s+insertion/);
-      const deletionMatch = stdout.match(/(\d+)\s+deletion/);
-
-      const fileCount = fileMatch ? parseInt(fileMatch[1], 10) : 0;
-      const insertions = insertionMatch ? parseInt(insertionMatch[1], 10) : 0;
-      const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
-
-      // Return a single "file" entry representing total changes
-      // This matches the simple-git behavior we had before
-      const files: GitDiffFile[] =
-        insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
-
-      return { fileCount, files };
-    } catch {
-      // Not in a git repo or git not available
+    const stdout = await this.run(args);
+    if (stdout === null) {
+      // Not in a git repo, git not available, or the command timed out
       return { fileCount: 0, files: [] };
     }
+
+    // Parse output like: " 5 file(s) changed, 12 insertions(+), 3 deletions(-)"
+    // or: " 2 insertions(+), 1 deletion(-)"
+    const fileMatch = stdout.match(/(\d+)\s+file(s?)\s+changed/);
+    const insertionMatch = stdout.match(/(\d+)\s+insertion/);
+    const deletionMatch = stdout.match(/(\d+)\s+deletion/);
+
+    const fileCount = fileMatch ? parseInt(fileMatch[1], 10) : 0;
+    const insertions = insertionMatch ? parseInt(insertionMatch[1], 10) : 0;
+    const deletions = deletionMatch ? parseInt(deletionMatch[1], 10) : 0;
+
+    // Return a single "file" entry representing total changes
+    // This matches the simple-git behavior we had before
+    const files: GitDiffFile[] =
+      insertions > 0 || deletions > 0 ? [{ file: "(total)", insertions, deletions }] : [];
+
+    return { fileCount, files };
   }
 
   async latestTag(): Promise<string | null> {
-    try {
-      const { stdout } = await execFileAsync("git", ["describe", "--tags", "--abbrev=0"], {
-        cwd: this.cwd,
-      });
-      return stdout.trim();
-    } catch {
-      // No tags found or not in a git repo
-      return null;
-    }
+    // Empty output is indistinguishable from "no tags", both mean no tag
+    return (await this.run(["describe", "--tags", "--abbrev=0"])) || null;
   }
 }
 

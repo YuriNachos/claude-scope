@@ -5,9 +5,9 @@
  * Detects running dev servers by parsing system process list.
  */
 
+import { EXEC_TIMEOUTS } from "../../constants.js";
 import { defaultDetectorExec } from "./detector-exec.js";
 import type { DetectedServer, ExecFileFn, ProcessPattern } from "./detector-types.js";
-
 /**
  * Process Detector
  *
@@ -46,7 +46,7 @@ export class ProcessDetector {
   async detect(): Promise<DetectedServer | null> {
     try {
       const { stdout } = await this.execFn("ps", ["aux"], {
-        timeout: 1000,
+        timeout: EXEC_TIMEOUTS.PROCESS_LIST_MS,
       });
 
       for (const pattern of this.processPatterns) {
