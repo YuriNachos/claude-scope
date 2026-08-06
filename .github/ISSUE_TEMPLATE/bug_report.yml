@@ -1,0 +1,75 @@
+name: Bug report
+description: Something in the statusline behaves incorrectly
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did the statusline do?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce
+      description: What you ran or configured, step by step.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: claude-scope version
+      description: The documented install is `npx -y claude-scope@latest`, which pins
+        nothing - so if you do not know the version, say roughly when you last ran it.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      description: Widgets shell out to git, docker and system probes, so this is
+        usually the first thing that matters.
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - WSL
+    validations:
+      required: true
+
+  - type: input
+    id: node
+    attributes:
+      label: Node version
+      description: "`node -v`"
+    validations:
+      required: false
+
+  - type: input
+    id: terminal
+    attributes:
+      label: Terminal
+      description: Only matters for colour, width or alignment problems.
+    validations:
+      required: false
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Your `~/.claude-scope/config.json`, and the `statusLine` block
+        from `~/.claude/settings.json` if it is relevant.
+      render: json
+    validations:
+      required: false

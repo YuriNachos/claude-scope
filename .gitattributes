@@ -1,0 +1,5 @@
+# Every text file is stored and checked out with LF, on every platform.
+# Without this the repository's LF convention rests on each contributor's
+# core.autocrlf setting, and biome.json pins lineEnding: "lf" while `biome ci`
+# only runs on ubuntu - so a CRLF checkout is never linted.
+* text=auto eol=lf

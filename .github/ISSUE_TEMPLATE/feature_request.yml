@@ -1,0 +1,31 @@
+name: Feature request
+description: Suggest a widget, theme, or behaviour
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For anything substantial, CONTRIBUTING.md asks that it be discussed in an
+        issue before the work starts - so this is the right place to begin.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What can you not see or do today?
+      description: The problem comes first; a proposal without one is hard to weigh.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: What would you like instead
+    validations:
+      required: false
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything you already tried or considered
+    validations:
+      required: false

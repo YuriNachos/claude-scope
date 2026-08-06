@@ -1,0 +1,28 @@
+version: 2
+updates:
+  # Dev tooling moves constantly and rarely alone - biome, typescript, tsx,
+  # esbuild, c8, husky, lint-staged and the type packages arrive as one PR
+  # rather than eight. Runtime dependencies stay ungrouped: there are only two
+  # and either can change what the statusline actually renders.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    # The default subject is "Bump x from a to b", which does not follow the
+    # Conventional Commits rule stated in CONTRIBUTING.md.
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+    groups:
+      dev-dependencies:
+        dependency-type: "development"
+
+  # The actions ecosystem discovers .github/workflows itself from the root.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "ci"
