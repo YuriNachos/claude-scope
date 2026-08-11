@@ -7,13 +7,16 @@
  */
 
 import type { ContextUsage } from "../schemas/stdin-schema.js";
-import { readJsonlLines } from "./jsonl-reader.js";
+import { scanJsonlTail } from "./jsonl-reader.js";
 import type { TranscriptLine } from "./usage-types.js";
 
 /**
  * Parses Claude Code transcript files to extract usage data
  */
 export class UsageParser {
+  /** Cache entries a window needs before its format verdict is trusted */
+  private readonly MIN_FORMAT_SAMPLE = 20;
+
   /**
    * Parse the last assistant message with usage data from transcript
    * Reads file in reverse to find the most recent data quickly
@@ -23,9 +26,22 @@ export class UsageParser {
    */
   async parseLastUsage(transcriptPath: string): Promise<ContextUsage | null> {
     try {
-      // Read all lines into memory (transcripts are typically small)
-      const lines = await readJsonlLines(transcriptPath);
+      // The most recent entry lives at the end, so a tail window that contains
+      // one is the whole answer. Empty-handed windows widen to the whole file.
+      return await scanJsonlTail(transcriptPath, (lines) => this.selectLastUsage(lines));
+    } catch {
+      // Any error (read, parse, etc.) returns null
+      // Let the fallback chain handle it
+      return null;
+    }
+  }
 
+  /**
+   * Pick the most recent usage entry out of a set of transcript lines
+   * Returns null when the lines hold none
+   */
+  private selectLastUsage(lines: string[]): ContextUsage | null {
+    try {
       if (lines.length === 0) {
         return null;
       }
@@ -94,69 +110,74 @@ export class UsageParser {
     transcriptPath: string
   ): Promise<{ cacheRead: number; cacheCreation: number } | null> {
     try {
-      const lines = await readJsonlLines(transcriptPath);
-
-      if (lines.length === 0) {
-        return null;
-      }
-
-      // Collect all cache entries with timestamps
-      const cacheEntries: { cacheRead: number; cacheCreation: number; timestamp: string }[] = [];
-
-      for (const line of lines) {
-        const entry = this.parseLineForCache(line);
-        if (entry) {
-          const timestamp = this.parseTimestamp(line);
-          cacheEntries.push({
-            cacheRead: entry.cacheRead,
-            cacheCreation: entry.cacheCreation,
-            timestamp: timestamp?.toISOString() || "",
-          });
+      return await scanJsonlTail(transcriptPath, (lines, isWholeFile) => {
+        if (lines.length === 0) {
+          return null;
         }
-      }
 
-      if (cacheEntries.length === 0) {
-        return null;
-      }
+        // Collect all cache entries
+        const cacheEntries: { cacheRead: number; cacheCreation: number }[] = [];
 
-      // Detect format: check if cache_read is monotonically increasing (cumulative format)
-      // If values grow or stay same → cumulative, use last value
-      // If values fluctuate → per-message, sum all
-      let isCumulativeFormat = false;
-      if (cacheEntries.length > 1) {
-        let nonDecreasingCount = 0;
-        for (let i = 1; i < cacheEntries.length; i++) {
-          if (cacheEntries[i].cacheRead >= cacheEntries[i - 1].cacheRead) {
-            nonDecreasingCount++;
+        for (const line of lines) {
+          const entry = this.parseLineForCache(line);
+          if (entry) {
+            cacheEntries.push(entry);
           }
         }
-        // If 80%+ are non-decreasing, assume cumulative format
-        isCumulativeFormat = nonDecreasingCount / (cacheEntries.length - 1) >= 0.8;
-      }
 
-      let cumulativeCacheRead: number;
-      let cumulativeCacheCreation: number;
+        if (cacheEntries.length === 0) {
+          return null;
+        }
 
-      if (isCumulativeFormat) {
-        // Cumulative format: use the last (most recent) value
-        const lastEntry = cacheEntries[cacheEntries.length - 1];
-        cumulativeCacheRead = lastEntry.cacheRead;
-        cumulativeCacheCreation = lastEntry.cacheCreation;
-      } else {
-        // Per-message format: sum all values
-        cumulativeCacheRead = cacheEntries.reduce((sum, e) => sum + e.cacheRead, 0);
-        cumulativeCacheCreation = cacheEntries.reduce((sum, e) => sum + e.cacheCreation, 0);
-      }
+        // Detect format: check if cache_read is monotonically increasing (cumulative format)
+        // If values grow or stay same → cumulative, use last value
+        // If values fluctuate → per-message, sum all
+        let isCumulativeFormat = false;
+        if (cacheEntries.length > 1) {
+          let nonDecreasingCount = 0;
+          for (let i = 1; i < cacheEntries.length; i++) {
+            if (cacheEntries[i].cacheRead >= cacheEntries[i - 1].cacheRead) {
+              nonDecreasingCount++;
+            }
+          }
+          // If 80%+ are non-decreasing, assume cumulative format
+          isCumulativeFormat = nonDecreasingCount / (cacheEntries.length - 1) >= 0.8;
+        }
 
-      // Return null if no cache data found at all
-      if (cumulativeCacheRead === 0 && cumulativeCacheCreation === 0) {
-        return null;
-      }
+        // Only the cumulative branch is answerable from a window, since it reads
+        // the last entry. Summing needs every entry, and the format verdict needs
+        // a real sample, so anything else widens.
+        if (
+          !isWholeFile &&
+          !(isCumulativeFormat && cacheEntries.length >= this.MIN_FORMAT_SAMPLE)
+        ) {
+          return null;
+        }
 
-      return {
-        cacheRead: cumulativeCacheRead,
-        cacheCreation: cumulativeCacheCreation,
-      };
+        let cumulativeCacheRead: number;
+        let cumulativeCacheCreation: number;
+
+        if (isCumulativeFormat) {
+          // Cumulative format: use the last (most recent) value
+          const lastEntry = cacheEntries[cacheEntries.length - 1];
+          cumulativeCacheRead = lastEntry.cacheRead;
+          cumulativeCacheCreation = lastEntry.cacheCreation;
+        } else {
+          // Per-message format: sum all values
+          cumulativeCacheRead = cacheEntries.reduce((sum, e) => sum + e.cacheRead, 0);
+          cumulativeCacheCreation = cacheEntries.reduce((sum, e) => sum + e.cacheCreation, 0);
+        }
+
+        // Return null if no cache data found at all
+        if (cumulativeCacheRead === 0 && cumulativeCacheCreation === 0) {
+          return null;
+        }
+
+        return {
+          cacheRead: cumulativeCacheRead,
+          cacheCreation: cumulativeCacheCreation,
+        };
+      });
     } catch {
       return null;
     }
