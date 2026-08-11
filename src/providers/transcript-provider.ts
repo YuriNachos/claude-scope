@@ -1,4 +1,4 @@
-import { readJsonlLines } from "./jsonl-reader.js";
+import { scanJsonlTail } from "./jsonl-reader.js";
 import type { ToolEntry } from "./transcript-types.js";
 
 /**
@@ -37,19 +37,29 @@ export class TranscriptProvider implements ITranscriptProvider {
    * @returns Array of tool entries, limited to last 20
    */
   async parseTools(transcriptPath: string): Promise<ToolEntry[]> {
-    const lines = await readJsonlLines(transcriptPath);
-    const toolMap = new Map<string, ToolEntry>();
+    const tools = await scanJsonlTail<ToolEntry[]>(transcriptPath, (lines, isWholeFile) => {
+      const toolMap = new Map<string, ToolEntry>();
 
-    for (const line of lines) {
-      try {
-        const entry = JSON.parse(line) as TranscriptLine;
-        this.processLine(entry, toolMap);
-      } catch {}
-    }
+      for (const line of lines) {
+        try {
+          const entry = JSON.parse(line) as TranscriptLine;
+          this.processLine(entry, toolMap);
+        } catch {}
+      }
 
-    // Convert to array and limit to last 20 tools
-    const tools = Array.from(toolMap.values());
-    return tools.slice(-this.MAX_TOOLS);
+      // A window holding MAX_TOOLS tool_use blocks already holds the file's last
+      // MAX_TOOLS, and a tool_result can only follow its own tool_use, so their
+      // statuses are in the window too. Widening cannot change the answer.
+      if (!isWholeFile && toolMap.size < this.MAX_TOOLS) {
+        return null;
+      }
+
+      // Convert to array and limit to last 20 tools
+      const tools = Array.from(toolMap.values());
+      return tools.slice(-this.MAX_TOOLS);
+    });
+
+    return tools ?? [];
   }
 
   /**
