@@ -247,4 +247,59 @@ describe("TranscriptProvider", () => {
     expect(tools).to.have.lengthOf(1);
     expect(tools[0].id).to.equal("tool-1");
   });
+
+  describe("api-request-blob lines", () => {
+    // Claude Code logs the outgoing API request as an `api-request-blob` line,
+    // which replays earlier tool_use/tool_result blocks. A replay is history,
+    // not a new tool call.
+    const toolUse = (id: string) => ({
+      type: "assistant",
+      message: { role: "assistant", content: [{ type: "tool_use", id, name: "Read" }] },
+    });
+    const toolResult = (id: string) => ({
+      type: "user",
+      message: { role: "user", content: [{ type: "tool_result", tool_use_id: id }] },
+    });
+    const blob = (ids: string[]) => ({
+      type: "api-request-blob",
+      message: {
+        role: "user",
+        content: ids.map((id) => ({ type: "tool_use", id, name: "Read" })),
+      },
+    });
+
+    it("should not reset a completed tool to running when it is replayed", async () => {
+      const transcriptPath = join(tempDir, "transcript.jsonl");
+      const lines = [toolUse("a"), toolResult("a"), toolUse("b"), blob(["a"])];
+      writeFileSync(transcriptPath, `${lines.map((l) => JSON.stringify(l)).join("\n")}\n`);
+
+      const tools = await provider.parseTools(transcriptPath);
+
+      expect(tools.map((t) => [t.id, t.status])).to.deep.equal([
+        ["a", "completed"],
+        ["b", "running"],
+      ]);
+    });
+
+    it("should not let replays in a tail window stand in for the real tools", async () => {
+      // The real tool calls sit before a padding line larger than the first
+      // tail window; a replay of some of them sits inside it.
+      const transcriptPath = join(tempDir, "transcript.jsonl");
+      const lines: object[] = [];
+      for (let i = 0; i < 25; i++) {
+        lines.push(toolUse(`tool-${i}`), toolResult(`tool-${i}`));
+      }
+      lines.push({ type: "assistant", message: { content: "x".repeat(2.5 * 1024 * 1024) } });
+      lines.push(blob(Array.from({ length: 20 }, (_, i) => `tool-${i}`)));
+      lines.push(toolUse("tool-new"));
+      writeFileSync(transcriptPath, `${lines.map((l) => JSON.stringify(l)).join("\n")}\n`);
+
+      const tools = await provider.parseTools(transcriptPath);
+
+      expect(tools).to.have.lengthOf(20);
+      expect(tools[0].id).to.equal("tool-6");
+      expect(tools[18]).to.include({ id: "tool-24", status: "completed" });
+      expect(tools[19]).to.include({ id: "tool-new", status: "running" });
+    });
+  });
 });

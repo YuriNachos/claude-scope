@@ -5,6 +5,7 @@ import type { ToolEntry } from "./transcript-types.js";
  * JSONL transcript line structure
  */
 interface TranscriptLine {
+  type?: string;
   message?: {
     content?: Array<{
       type: string;
@@ -66,6 +67,14 @@ export class TranscriptProvider implements ITranscriptProvider {
    * Process a single transcript line and update tool map
    */
   private processLine(line: TranscriptLine, toolMap: Map<string, ToolEntry>): void {
+    // Only conversation turns carry tool activity. Other line types, such as
+    // `api-request-blob` (a log of the outgoing API request), replay earlier
+    // tool_use blocks: counting those would reset finished tools to running and,
+    // in a tail window, stand in for tool calls that lie before the window.
+    if (line.type !== undefined && line.type !== "assistant" && line.type !== "user") {
+      return;
+    }
+
     const blocks = line.message?.content ?? [];
     const timestamp = new Date();
 
