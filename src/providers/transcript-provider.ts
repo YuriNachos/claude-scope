@@ -1,10 +1,11 @@
-import { readJsonlLines } from "./jsonl-reader.js";
+import { scanJsonlTail } from "./jsonl-reader.js";
 import type { ToolEntry } from "./transcript-types.js";
 
 /**
  * JSONL transcript line structure
  */
 interface TranscriptLine {
+  type?: string;
   message?: {
     content?: Array<{
       type: string;
@@ -37,25 +38,43 @@ export class TranscriptProvider implements ITranscriptProvider {
    * @returns Array of tool entries, limited to last 20
    */
   async parseTools(transcriptPath: string): Promise<ToolEntry[]> {
-    const lines = await readJsonlLines(transcriptPath);
-    const toolMap = new Map<string, ToolEntry>();
+    const tools = await scanJsonlTail<ToolEntry[]>(transcriptPath, (lines, isWholeFile) => {
+      const toolMap = new Map<string, ToolEntry>();
 
-    for (const line of lines) {
-      try {
-        const entry = JSON.parse(line) as TranscriptLine;
-        this.processLine(entry, toolMap);
-      } catch {}
-    }
+      for (const line of lines) {
+        try {
+          const entry = JSON.parse(line) as TranscriptLine;
+          this.processLine(entry, toolMap);
+        } catch {}
+      }
 
-    // Convert to array and limit to last 20 tools
-    const tools = Array.from(toolMap.values());
-    return tools.slice(-this.MAX_TOOLS);
+      // A window holding MAX_TOOLS tool_use blocks already holds the file's last
+      // MAX_TOOLS, and a tool_result can only follow its own tool_use, so their
+      // statuses are in the window too. Widening cannot change the answer.
+      if (!isWholeFile && toolMap.size < this.MAX_TOOLS) {
+        return null;
+      }
+
+      // Convert to array and limit to last 20 tools
+      const tools = Array.from(toolMap.values());
+      return tools.slice(-this.MAX_TOOLS);
+    });
+
+    return tools ?? [];
   }
 
   /**
    * Process a single transcript line and update tool map
    */
   private processLine(line: TranscriptLine, toolMap: Map<string, ToolEntry>): void {
+    // Only conversation turns carry tool activity. Other line types, such as
+    // `api-request-blob` (a log of the outgoing API request), replay earlier
+    // tool_use blocks: counting those would reset finished tools to running and,
+    // in a tail window, stand in for tool calls that lie before the window.
+    if (line.type !== undefined && line.type !== "assistant" && line.type !== "user") {
+      return;
+    }
+
     const blocks = line.message?.content ?? [];
     const timestamp = new Date();
 
